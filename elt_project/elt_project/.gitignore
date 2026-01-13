@@ -1,0 +1,10 @@
+# Python
+__pycache__/
+*.pyc
+
+# Environment Variables (Secrets)
+.env
+
+# Dagster
+.dagster/
+dagster_home/

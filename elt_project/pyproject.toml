@@ -1,0 +1,32 @@
+# pyproject.toml
+[tool.poetry]
+name = "elt_project"
+version = "0.1.0"
+description = "A dynamic ELT project with Dagster and SQL Server"
+authors = ["Your Name <you@example.com>"]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+dagster = "^1.7.0"
+dagster-pandas = "^0.23.0"
+pandas = "^2.2.0"
+pyodbc = "^5.0.0" # Or pymssql
+pydantic = "^2.5.0"
+pyyaml = "^6.0.0"
+python-dotenv = "^1.0.0"
+openpyxl = "^3.1.2" # For reading .xlsx files with pandas
+# Dependencies for web scraping assets
+selenium = "^4.0.0"
+webdriver-manager = "^4.0.0"
+pyotp = "^2.0.0"
+beautifulsoup4 = "^4.0.0"
+lxml = "^4.0.0"
+requests = "^2.0.0"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.dagster]
+# This tells Dagster where to find your Definitions object.
+module_name = "elt_project.definitions"
