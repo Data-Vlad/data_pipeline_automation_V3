@@ -635,16 +635,6 @@ This asset moves data from staging to the final, production-ready table.
 
             start_time = datetime.utcnow()
 
-            # --- SAFETY CHECK: Handle Queued Runs during Auto-Switch ---
-            # If this pipeline is now inactive, it might be because a previous run in this batch
-            # successfully completed and triggered the auto-switch to 'append'.
-            # If we simply skip, we lose the data for this queued run.
-            # Instead, we universally override the mode to 'append' to preserve data.
-            if not current_is_active:
-                context.log.info(f"Pipeline '{import_name}' is INACTIVE in the database. Treating this queued run as 'APPEND' to preserve data.")
-                current_load_method = 'append'
-                # We do NOT return; we proceed with the transform using 'append' logic.
-
             # The log entry is for this specific import's transform step
             log_details = {
                 "run_id": context.run_id, "pipeline_name": pipeline_name,
@@ -652,6 +642,22 @@ This asset moves data from staging to the final, production-ready table.
                 "start_time": start_time, "end_time": None, "status": "FAILURE", "rows_processed": None, "message": "",
                 "error_details": None, "resolution_steps": None # Initialize to None
             }
+
+            # --- SAFETY CHECK: Handle Queued Runs during Auto-Switch ---
+            # If this pipeline is now inactive, it might be because a previous run in this batch
+            # successfully completed and triggered the auto-switch to 'append'.
+            if not current_is_active:
+                # Only override to 'append' if this is a chain import (configured to auto-switch)
+                if config.on_success_deactivate_self_and_activate_import:
+                    context.log.info(f"Pipeline '{import_name}' is INACTIVE but is part of a chain (auto-switch). Treating this queued run as 'APPEND' to preserve data.")
+                    current_load_method = 'append'
+                else:
+                    context.log.warning(f"Pipeline '{import_name}' is INACTIVE in the database. Skipping transform.")
+                    log_details["status"] = "SKIPPED"
+                    log_details["message"] = "Skipped because pipeline is inactive."
+                    log_details["end_time"] = datetime.utcnow()
+                    _log_asset_run(engine, log_details)
+                    return
 
             try:
                 context.log.info(f"Executing transform for '{import_name}': procedure {transform_procedure}")
