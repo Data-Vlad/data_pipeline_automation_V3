@@ -752,18 +752,23 @@ This asset moves data from staging to the final, production-ready table.
                 try:
                     # Check if the destination table was updated very recently (last 2 minutes)
                     # We use the lock_conn to ensure we see the most committed state
-                    check_time_stmt = text(f"SELECT MAX(load_timestamp) FROM {config.destination_table}")
-                    last_load_time = lock_conn.execute(check_time_stmt).scalar()
+                    # FIX: Fetch GETUTCDATE() from DB to avoid clock skew between App Server and DB Server
+                    check_time_stmt = text(f"SELECT MAX(load_timestamp), GETUTCDATE() FROM {config.destination_table}")
+                    time_check_row = lock_conn.execute(check_time_stmt).fetchone()
                     
-                    if last_load_time:
-                        time_diff = datetime.utcnow() - last_load_time
+                    if time_check_row and time_check_row[0]:
+                        last_load_time = time_check_row[0]
+                        db_now = time_check_row[1]
+
+                        time_diff = db_now - last_load_time
                         seconds_ago = time_diff.total_seconds()
                         
                         # If updated < 120 seconds ago, assume it's part of the same batch
-                        if 0 <= seconds_ago < 120: 
+                        # Allow small negative buffer (-5) for micro-timing differences
+                        if -5 <= seconds_ago < 120: 
                             should_truncate = False
                             decision_reason = f"Downgraded REPLACE to APPEND. Table updated {int(seconds_ago)}s ago (Batch detection)."
-                            context.log.info(f"Batch detection: Last load was {last_load_time} ({int(seconds_ago)}s ago). Switching to APPEND.")
+                            context.log.info(f"Batch detection: Last load was {last_load_time} vs DB Time {db_now} ({int(seconds_ago)}s ago). Switching to APPEND.")
                 except Exception as e:
                     context.log.debug(f"Smart Replace check skipped (Table might not have load_timestamp): {e}")
             
@@ -871,26 +876,48 @@ This asset moves data from staging to the final, production-ready table.
             finally:
                 log_details["end_time"] = datetime.utcnow()
                 
-                # --- NOTIFY USER (Success/Failure) ---
-                # This is the final step of the mechanism, so we notify here.
-                # Use file_pattern as a proxy for the source file since we are in the transform step.
-                source_file_proxy = config.file_pattern or "Batch/Dependency Run"
-                
-                _show_toast_notification(
-                    status=log_details["status"],
-                    pipeline_name=pipeline_name,
-                    import_name=import_name,
-                    source_file=source_file_proxy,
-                    message=log_details["message"]
-                )
-                _write_user_feedback_log(
-                    monitored_directory=config.monitored_directory,
-                    pipeline_name=pipeline_name,
-                    import_name=import_name,
-                    status=log_details["status"],
-                    source_file=source_file_proxy,
-                    message=log_details["message"]
-                )
+                # Check for downstream dependencies to suppress SUCCESS notifications
+                # We only want to notify when the *final* import in a chain completes.
+                suppress_success_notification = False
+                if log_details["status"] == "SUCCESS":
+                    try:
+                        with engine.connect() as conn:
+                            # Check if any active pipeline depends on this one
+                            dep_rows = conn.execute(
+                                text("SELECT import_name, depends_on FROM elt_pipeline_configs WHERE is_active = 1 AND depends_on IS NOT NULL")
+                            ).fetchall()
+                            
+                            for r_name, r_deps in dep_rows:
+                                if r_deps:
+                                    deps_list = [d.strip() for d in r_deps.split(',')]
+                                    if import_name in deps_list:
+                                        suppress_success_notification = True
+                                        context.log.info(f"Suppressing success notification: Active pipeline '{r_name}' depends on this import.")
+                                        break
+                    except Exception as e:
+                        context.log.warning(f"Failed to check downstream dependencies: {e}")
+
+                if not suppress_success_notification:
+                    # --- NOTIFY USER (Success/Failure) ---
+                    # This is the final step of the mechanism, so we notify here.
+                    # Use file_pattern as a proxy for the source file since we are in the transform step.
+                    source_file_proxy = config.file_pattern or "Batch/Dependency Run"
+                    
+                    _show_toast_notification(
+                        status=log_details["status"],
+                        pipeline_name=pipeline_name,
+                        import_name=import_name,
+                        source_file=source_file_proxy,
+                        message=log_details["message"]
+                    )
+                    _write_user_feedback_log(
+                        monitored_directory=config.monitored_directory,
+                        pipeline_name=pipeline_name,
+                        import_name=import_name,
+                        status=log_details["status"],
+                        source_file=source_file_proxy,
+                        message=log_details["message"]
+                    )
 
                 # Now that _log_asset_run is in scope, we can call it.
                 _log_asset_run(engine, log_details)
