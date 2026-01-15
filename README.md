@@ -1,39 +1,51 @@
-# Dynamic, Metadata-Driven ELT Pipelines with Dagster
-# Dynamic, Metadata-Driven ELT Pipelines
+# Data Pipeline Automation Framework
 
-This project implements a metadata-driven, extensible, and production-ready ELT (Extract, Load, Transform) framework using [Dagster](https://dagster.io/). It is designed to dynamically generate data pipelines by reading configurations from a central SQL database. This architecture allows you to add, modify, and manage complex data sources by simply updating database records, eliminating the need to write new Python code for most pipelines.
-This project provides a one-click runner (`run_elt_service.bat`) to automate the setup and execution of a Dagster-based ELT framework. It handles environment checks, code updates, dependency installation, and service startup, making it easy for end-users to run the data pipelines.
+## Overview
+This project is a robust, metadata-driven ELT (Extract, Load, Transform) framework built on **Dagster** and **SQL Server**. It automates the ingestion of data from various sources (CSV, Excel, Web Scrapers, SFTP) into a centralized data warehouse, ensuring data integrity through strict locking and dependency management mechanisms.
 
-## 1. Core Concepts
-## Prerequisites
+This project provides a one-click runner (`run_elt_service.bat`) to automate the setup and execution of the framework. It handles environment checks, code updates, dependency installation, and service startup, making it easy for end-users to run the data pipelines.
 
-### Metadata-Driven Architecture
-Before running the service, please ensure you have the following software installed on your system:
+## Key Features
 
-The core principle is to separate the "what" from the "how".
-1.  **Python**: Required to run the core application and its dependencies. You can download it from python.org.
-    - **Important**: During installation, make sure to check the box that says **"Add Python to PATH"**.
-2.  **Git**: Required for automatically updating the project code. You can download it from git-scm.com.
+### 1. Dynamic Pipeline Generation
+Pipelines are not hardcoded. They are defined in the `elt_pipeline_configs` database table. Adding a new data source is as simple as adding a row to this table; the framework automatically generates the necessary Dagster assets, sensors, and jobs.
 
-*   **The "What"**: Pipeline-specific details (file paths, table names, parser types, credentials, business logic) are defined as data in the `elt_pipeline_configs` SQL table.
-*   **The "How"**: The execution logic for parsing, loading, and transforming is defined in reusable Python code (`assets/factory.py`) and SQL stored procedures.
-The runner script will verify that both are installed correctly.
+### 2. 🛡️ Smart Batch Processing ("Smart Replace")
+The system intelligently handles batch file drops to prevent data loss when using the `REPLACE` load method.
+*   **The Problem**: If you drop multiple files simultaneously (e.g., a split CSV report) for a pipeline configured as `REPLACE`, standard logic might run them in parallel. This causes race conditions where each file truncates the table, leaving only the last file's data.
+*   **The Solution**:
+    1.  **Locking**: The first file run acquires an exclusive application lock (`sp_getapplock`) on the destination table.
+    2.  **Time Check**: Before truncating, the system checks the `load_timestamp` of the destination table.
+    3.  **Auto-Switch**: If the table was updated within the last **120 seconds**, the system assumes this file is part of the same batch and automatically downgrades the operation from `REPLACE` to `APPEND`.
+*   **Result**: You can drop 50 files at once, and they will all be loaded into the destination table seamlessly, with the first one clearing the old data.
 
-When Dagster starts, it reads this configuration table and dynamically generates all the necessary assets, jobs, and sensors, creating a fully operational data platform from your metadata.
-## How to Run
+### 3. 🔗 Dependency Management & Chaining
+You can explicitly chain pipelines to ensure correct execution order using the `depends_on` configuration.
+*   **Use Case**: You have a "Master" file that must replace the table, followed by several "Append" files (Deltas) that must add to it.
+*   **Configuration**: Set the `depends_on` column in `elt_pipeline_configs` for the child pipelines to the `import_name` of the parent.
+*   **Mechanism**:
+    *   **Dagster Graph**: Dagster creates an explicit dependency edge, ensuring the child asset waits for the parent asset to complete.
+    *   **Runtime Safety**: Even if triggered manually out of order, the child pipeline detects the dependency at runtime and **forces** `APPEND` mode to prevent accidental data loss.
 
-### Separation of Parsing vs. Transformation
-1.  Navigate to the project folder in File Explorer.
-2.  Double-click the `run_elt_service.bat` file.
+### 4. 🔒 Robust Concurrency Control
+*   **Serialization Locking**: Uses `sp_getapplock` (SQL Server Application Locks) to ensure that only one process writes to a specific destination table at a time. This prevents race conditions and deadlocks, even if multiple Dagster runs overlap.
+
+### 5. Data Quality & Governance
+*   **Validation**: Automatically runs `sp_execute_data_quality_checks` immediately after loading data into staging.
+*   **Gatekeeping**: Pipelines halt immediately if critical data quality rules (severity 'FAIL') are violated, preventing bad data from reaching production tables.
+
+### 6. User Feedback
+*   **Toast Notifications**: (Windows) Instant desktop notifications upon file processing success or failure.
+*   **Local Logs**: Writes simple, readable success/failure logs back to the monitored directory (e.g., `2023-11-20__run_history.log`) for non-technical users.
+
+## Core Concepts
 
 It's crucial to distinguish between data parsing and data transformation within this framework:
-The script will handle the rest. A command prompt window will open and guide you through the setup process. The first time you run it, it may take a few minutes to download and install the necessary packages.
 
 *   **Data Parsing**: The process of interpreting a source file/stream and converting it into a structured format (like a Pandas DataFrame). It deals with the *physical structure* of the data.
     *   **Where it's done**: At the **Python level** within the `extract_and_load_staging` asset, using generic (`core/parsers.py`), custom (`core/custom_parsers.py`), or configurable parsers.
 *   **Data Transformation**: The process of cleaning, enriching, and reshaping structured data to meet business requirements. It deals with the *content and meaning* of the data (e.g., applying business rules, joining tables, calculating metrics).
     *   **Where it's done**: Exclusively at the **SQL stored procedure level** within the `transform` asset.
-Once started, the script will open the Dagster UI in your web browser at `http://localhost:3000`. To stop the services, simply close the command prompt window.
 
 This separation keeps the Python code focused on technical parsing, while business logic is centralized and managed within the database's powerful SQL capabilities.
 
@@ -149,15 +161,33 @@ Your new pipeline is now fully configured and ready to process files.
 
 ## User Guide: Running Pipelines with the Simple UI
 ## Credential Management: Using Windows Credential Manager
+## Configuration Guide
 
 This guide explains how to use the simple, user-friendly interface to run data imports. With just one click, it handles all the technical setup for you, allowing you to select and run pipelines from a clean web page.
 To connect to the database securely without asking for your password every time, the service uses the built-in Windows Credential Manager. This is a secure, one-time setup.
+All configuration is managed in the `elt_pipeline_configs` SQL table.
 
 ### Step 1: Prerequisite (One-Time Check)
 If the runner script cannot find the credentials it needs, it will display a warning and instructions. Follow the steps below to add them.
+| Column | Description |
+| :--- | :--- |
+| `pipeline_name` | Grouping name for related imports (e.g., "Finance_Reports"). |
+| `import_name` | Unique identifier for this specific import (e.g., "fin_budget_2024"). |
+| `file_pattern` | Glob pattern to match files (e.g., `Budget_*.csv`). |
+| `monitored_directory` | Full path to the folder where files are dropped. |
+| `staging_table` | Name of the SQL table for raw data load. |
+| `destination_table` | Name of the final SQL table. |
+| `transform_procedure` | Stored procedure to merge Staging -> Destination. |
+| `load_method` | `REPLACE` (truncate then load) or `APPEND` (add to existing). |
+| `depends_on` | (Optional) Comma-separated list of `import_name`s that must run first. |
 
 The only program you need on your computer is **Python**. Here’s how to check if you have it:
 ### Step-by-Step Guide to Add Credentials
+### Setting up Dependencies
+To ensure `Import_B` runs after `Import_A`:
+1.  Configure `Import_A` normally.
+2.  In `Import_B`'s config, set `depends_on` to `'Import_A'`.
+3.  **Restart Dagster** to apply the new dependency graph.
 
 1.  Open the Windows Start Menu and type `cmd`.
 2.  Select **Command Prompt**.
@@ -240,10 +270,16 @@ When you are finished, simply **close the command prompt window** that opened wh
 ---
 
 ## Administrator Guide
+## Utility Assets
 
 This guide is for advanced users and administrators responsible for maintaining the ELT framework. Administration tasks are intentionally separated from the simple end-user interface and are performed using standard developer tools.
+The framework includes "Utility" assets to help you set up new pipelines quickly. These can be triggered manually from the Dagster UI (Group: `_utility`).
 
 ### Managing Configurations (Pipelines & Rules)
+*   **`generate_ddl`**: Reads a sample file from the monitored directory and generates the `CREATE TABLE` and `CREATE PROCEDURE` SQL scripts needed for the pipeline.
+*   **`generate_column_mapping`**: Auto-generates the JSON mapping between your CSV headers and SQL columns if they don't match perfectly.
+*   **`generate_setup_sql`**: Generates a consolidated SQL script for an entire pipeline group.
+*   **`backup_database_objects`**: Scripts out your configuration tables and stored procedures to a local `backups/` folder for disaster recovery.
 
 The definitions for all pipelines, imports, and data quality rules are stored as metadata in the SQL database. The most direct and powerful way to manage these configurations is through a dedicated SQL client.
 
@@ -1885,24 +1921,46 @@ The runner script will verify that both are installed correctly.
 
 1.  Navigate to the project folder in File Explorer.
 2.  Double-click the `run_elt_service.bat` file.
+### 1. Start the System
+Run the launcher script (e.g., `Launch Data Importer.bat`). This starts:
+*   The Dagster Daemon (for sensors).
+*   The Dagster Web Server (UI).
+*   The Simple UI (User-facing status page).
 
 The script will handle the rest. A command prompt window will open and guide you through the setup process. The first time you run it, it may take a few minutes to download and install the necessary packages.
+### 2. Triggering Pipelines
+*   **Automatic**: Simply drop a file matching the `file_pattern` into the `monitored_directory`. The sensor will pick it up within 30 seconds.
+*   **Manual**: Use the Simple UI or Dagster UI to manually trigger a run for existing files.
 
 Once started, the script will open the Dagster UI in your web browser at `http://localhost:3000`. To stop the services, simply close the command prompt window.
 
 ---
 
 ## Credential Management: Using Windows Credential Manager
+## Troubleshooting
 
 To connect to the database securely without asking for your password every time, the service uses the built-in Windows Credential Manager. This is a secure, one-time setup.
+### Common Issues
 
 If the runner script cannot find the credentials it needs, it will display a warning and instructions. Follow the steps below to add them.
+**1. "File not processing"**
+*   Check `Launch Data Importer.log`.
+*   Ensure the file matches the `file_pattern` exactly (glob patterns are case-sensitive on some systems).
+*   Ensure the sensor is running in the Dagster UI.
 
 ### Step-by-Step Guide to Add Credentials
+**2. "Data replaced instead of appended"**
+*   Check the `load_method`.
+*   If it's `REPLACE`, ensure the files were dropped within the 2-minute batch window if you intended them to be a batch. If they are dropped 5 minutes apart, the system treats them as separate replacement events.
 
 1.  Open the **Start Menu** and type "**Credential Manager**", then open it.
+**3. "Lock timeout"**
+*   If a pipeline is stuck waiting for a lock, check if another long-running pipeline is writing to the same destination table.
 
     
+### Debugging Tools
+*   **Simple UI**: Go to `http://localhost:3000` (or your configured port) to see the status of the system and trigger imports.
+*   **Dagster UI**: Go to `http://localhost:3000/dagster` (default) for detailed execution graphs and logs.
 
 2.  Select **Windows Credentials**.
 
@@ -1995,8 +2053,13 @@ The recommended way to set this up is to store your PAT in the Windows Credentia
 ---
 
 ## Migrating to a Different Orchestrator (e.g., Airflow, Prefect, Luigi)
+## Developer Notes
 
 This project is built with Dagster, leveraging its asset-centric view, dynamic asset generation, and sensor capabilities. If you decide to switch to a different orchestrator, the core business logic for data processing (parsing, SQL loading, SQL transformations) is largely decoupled and reusable. However, the orchestration layer itself would require significant changes.
+### Adding Custom Parsers
+1.  Add your python function to `elt_project/assets/custom_parsers.py`.
+2.  Register the function name in the `ALLOWED_CUSTOM_PARSERS` set in `elt_project/assets/factory.py`.
+3.  Update the `parser_function` column in the database for your import.
 
 Here's a breakdown of what would need to be changed:
 
@@ -2320,3 +2383,8 @@ To start the application, simply double-click the **`Launch Data Importer.bat`**
 A command window will appear, showing the progress of the startup sequence. Once it's finished, it will automatically open the Data Importer UI in your default web browser at `http://localhost:3000`.
 
 A shortcut to this batch file will also be created on your Desktop for easy access.
+### Project Structure
+*   `elt_project/assets/factory.py`: Core logic for generating assets.
+*   `elt_project/sensors.py`: File sensor logic.
+*   `elt_project/definitions.py`: Main entry point for Dagster.
+*   `simple_ui.py`: The Flask-based user interface.
