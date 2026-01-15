@@ -329,18 +329,6 @@ If it fails, check the run logs for details on data quality issues or parsing er
             if not file_to_parse:
                 raise ValueError("No source file path provided or configured for extraction.")
 
-            # --- NEW: Ensure Staging is Empty Before Loading ---
-            # This guarantees that even if a previous run failed to clean up, 
-            # we start with a clean slate for this run.
-            try:
-                with engine.connect() as connection:
-                    with connection.begin() as transaction:
-                        connection.execute(text(f"TRUNCATE TABLE {current_staging_table}"))
-                        transaction.commit()
-                context.log.info(f"Cleared staging table {current_staging_table} before load.")
-            except Exception as e:
-                context.log.warning(f"Failed to clear staging table {current_staging_table} before load: {e}")
-
             # OPTIMIZATION: Use chunked loading for standard CSVs to save memory
             if config.file_type.lower() == 'csv' and not config.parser_function:
                 try:
