@@ -752,9 +752,10 @@ This asset moves data from staging to the final, production-ready table.
                 # we want the first one to Truncate, and the subsequent ones to Append.
                 try:
                     # Check if the destination table was updated very recently (last 2 minutes)
-                    # FIX: Use a FRESH connection to ensure we see the absolute latest committed data
+                    # FIX: Use a FRESH connection with READ COMMITTED isolation to ensure we see the absolute latest committed data
                     # regardless of the lock connection's transaction state.
-                    with engine.connect() as check_conn:
+                    # This prevents race conditions where a waiting connection sees an old snapshot.
+                    with engine.connect().execution_options(isolation_level="READ COMMITTED") as check_conn:
                         check_time_stmt = text(f"SELECT MAX(load_timestamp), GETUTCDATE() FROM {config.destination_table}")
                         time_check_row = check_conn.execute(check_time_stmt).fetchone()
                     
@@ -774,6 +775,11 @@ This asset moves data from staging to the final, production-ready table.
                 except Exception as e:
                     context.log.debug(f"Smart Replace check skipped (Table might not have load_timestamp): {e}")
                     context.log.warning(f"Smart Replace skipped. Destination table '{config.destination_table}' might be missing 'load_timestamp' column. Defaulting to TRUNCATE. Error: {e}")
+                    if "Invalid column name" in str(e) or "Invalid object name" in str(e):
+                        context.log.warning(f"Smart Replace SKIPPED: Destination table '{config.destination_table}' is missing 'load_timestamp' column or table does not exist. Defaulting to TRUNCATE.")
+                    else:
+                        context.log.debug(f"Smart Replace check skipped (Table might not have load_timestamp): {e}")
+                        context.log.warning(f"Smart Replace skipped. Error: {e}")
             
             else:
                 # Fallback for unknown states
