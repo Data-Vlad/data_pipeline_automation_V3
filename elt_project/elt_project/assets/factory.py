@@ -754,9 +754,10 @@ This asset moves data from staging to the final, production-ready table.
                     # Check if the destination table was updated very recently (last 2 minutes)
                     # FIX: Use a FRESH connection with READ COMMITTED isolation to ensure we see the absolute latest committed data
                     # regardless of the lock connection's transaction state.
-                    # This prevents race conditions where a waiting connection sees an old snapshot.
+                    # We also add WITH (READCOMMITTEDLOCK) to force SQL Server to bypass Snapshot Isolation (RCSI)
+                    # and read the actual current committed data.
                     with engine.connect().execution_options(isolation_level="READ COMMITTED") as check_conn:
-                        check_time_stmt = text(f"SELECT MAX(load_timestamp), GETUTCDATE() FROM {config.destination_table}")
+                        check_time_stmt = text(f"SELECT MAX(load_timestamp), GETUTCDATE() FROM {config.destination_table} WITH (READCOMMITTEDLOCK)")
                         time_check_row = check_conn.execute(check_time_stmt).fetchone()
                     
                     if time_check_row and time_check_row[0]:
