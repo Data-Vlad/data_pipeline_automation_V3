@@ -497,29 +497,32 @@ If it fails, check the run logs for details on data quality issues or parsing er
             log_details["resolution_steps"] = f"Review Dagster logs and stack trace for '{config.import_name}_extract_and_load_staging'. Check source file format, path ('{file_to_parse}'), and custom parser logic if applicable. Ensure staging table schema matches parsed data."
             log_details["message"] = str(e)
             context.log.error(f"Error during extraction for {config.import_name}: {e}")
+            
+            # --- NOTIFY ON FAILURE ONLY ---
+            # We only notify here if extraction fails. Success notifications are deferred to the Transform asset.
+            _show_toast_notification(
+                status="FAILURE",
+                pipeline_name=config.pipeline_name,
+                import_name=config.import_name,
+                source_file=resolved_path_for_feedback or "N/A",
+                message=log_details["message"]
+            )
+            _write_user_feedback_log(
+                monitored_directory=config.monitored_directory,
+                pipeline_name=config.pipeline_name,
+                import_name=config.import_name,
+                status="FAILURE",
+                source_file=resolved_path_for_feedback or "N/A",
+                message=log_details["message"]
+            )
+
             # The original exception must be re-raised here to fail the asset correctly.
             raise  # Re-raise the exception to fail the Dagster asset
 
         finally:
             log_details["end_time"] = datetime.utcnow()
-            # Always show a toast notification for immediate user feedback.
-            _show_toast_notification(
-                status=log_details["status"],
-                pipeline_name=config.pipeline_name,
-                import_name=config.import_name,
-                source_file=resolved_path_for_feedback or "N/A",
-                message=log_details["message"]
-            )
             # Write to the database log for long-term storage.
             _log_asset_run(engine, log_details)
-            _write_user_feedback_log(
-                monitored_directory=config.monitored_directory,
-                pipeline_name=config.pipeline_name,
-                import_name=config.import_name,
-                status=log_details["status"], # Use the final status from the log details
-                source_file=resolved_path_for_feedback or "N/A",
-                message=log_details["message"]
-            )
         return df
 
     return extract_and_load_staging
@@ -867,6 +870,28 @@ This asset moves data from staging to the final, production-ready table.
                 raise
             finally:
                 log_details["end_time"] = datetime.utcnow()
+                
+                # --- NOTIFY USER (Success/Failure) ---
+                # This is the final step of the mechanism, so we notify here.
+                # Use file_pattern as a proxy for the source file since we are in the transform step.
+                source_file_proxy = config.file_pattern or "Batch/Dependency Run"
+                
+                _show_toast_notification(
+                    status=log_details["status"],
+                    pipeline_name=pipeline_name,
+                    import_name=import_name,
+                    source_file=source_file_proxy,
+                    message=log_details["message"]
+                )
+                _write_user_feedback_log(
+                    monitored_directory=config.monitored_directory,
+                    pipeline_name=pipeline_name,
+                    import_name=import_name,
+                    status=log_details["status"],
+                    source_file=source_file_proxy,
+                    message=log_details["message"]
+                )
+
                 # Now that _log_asset_run is in scope, we can call it.
                 _log_asset_run(engine, log_details)
         finally:
