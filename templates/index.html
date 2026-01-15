@@ -462,6 +462,11 @@ document.addEventListener('DOMContentLoaded', function() {
     function checkAllPollersComplete() {
         if (Object.keys(activePollers).length === 0) {
             runImportsButton.disabled = false; // Re-enable the main button
+
+            // Auto-deselect all imports
+            document.querySelectorAll('.import-checkbox').forEach(cb => {
+                cb.checked = false;
+            });
         }
     }
 
