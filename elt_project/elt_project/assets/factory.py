@@ -670,6 +670,7 @@ This asset moves data from staging to the final, production-ready table.
                             {"import_name": import_name}
                         ).mappings().one_or_none()
                     except Exception:
+                        context.log.warning(f"Column 'depends_on' missing in elt_pipeline_configs. Dependency checks disabled.")
                         result = connection.execute(
                             text("SELECT load_method, is_active, scraper_config, staging_table FROM elt_pipeline_configs WHERE import_name = :import_name"),
                             {"import_name": import_name}
@@ -751,10 +752,11 @@ This asset moves data from staging to the final, production-ready table.
                 # we want the first one to Truncate, and the subsequent ones to Append.
                 try:
                     # Check if the destination table was updated very recently (last 2 minutes)
-                    # We use the lock_conn to ensure we see the most committed state
-                    # FIX: Fetch GETUTCDATE() from DB to avoid clock skew between App Server and DB Server
-                    check_time_stmt = text(f"SELECT MAX(load_timestamp), GETUTCDATE() FROM {config.destination_table}")
-                    time_check_row = lock_conn.execute(check_time_stmt).fetchone()
+                    # FIX: Use a FRESH connection to ensure we see the absolute latest committed data
+                    # regardless of the lock connection's transaction state.
+                    with engine.connect() as check_conn:
+                        check_time_stmt = text(f"SELECT MAX(load_timestamp), GETUTCDATE() FROM {config.destination_table}")
+                        time_check_row = check_conn.execute(check_time_stmt).fetchone()
                     
                     if time_check_row and time_check_row[0]:
                         last_load_time = time_check_row[0]
@@ -771,6 +773,7 @@ This asset moves data from staging to the final, production-ready table.
                             context.log.info(f"Batch detection: Last load was {last_load_time} vs DB Time {db_now} ({int(seconds_ago)}s ago). Switching to APPEND.")
                 except Exception as e:
                     context.log.debug(f"Smart Replace check skipped (Table might not have load_timestamp): {e}")
+                    context.log.warning(f"Smart Replace skipped. Destination table '{config.destination_table}' might be missing 'load_timestamp' column. Defaulting to TRUNCATE. Error: {e}")
             
             else:
                 # Fallback for unknown states
