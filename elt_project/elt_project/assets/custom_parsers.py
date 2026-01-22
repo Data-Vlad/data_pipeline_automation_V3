@@ -200,9 +200,14 @@ def generic_selenium_scraper(scraper_config_json: str) -> dict[str, pd.DataFrame
                 element = wait.until(EC.presence_of_element_located((by, action["selector_value"])))
 
             if action_type == "find_and_fill":
-                value = os.getenv(action["value_env_var"])
+                value = None
+                if "value" in action:
+                    value = action["value"]
+                elif "value_env_var" in action:
+                    value = os.getenv(action["value_env_var"])
+
                 if value is None:
-                    raise ValueError(f"Environment variable '{action['value_env_var']}' not set.")
+                    raise ValueError(f"Action 'find_and_fill' requires 'value' or 'value_env_var'.")
                 element.clear()
                 element.send_keys(value)
 
@@ -272,6 +277,9 @@ def generic_selenium_scraper(scraper_config_json: str) -> dict[str, pd.DataFrame
                 xpath = f"//input[@name='{group}' and @value='{val}']"
                 wait = WebDriverWait(driver, action.get("timeout", 10))
                 wait.until(EC.element_to_be_clickable((By.XPATH, xpath))).click()
+
+            elif action_type == "navigate":
+                driver.get(action["url"])
 
             elif action_type == "wait":
                 time.sleep(action["duration_seconds"])

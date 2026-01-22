@@ -73,11 +73,19 @@ def _perform_action(driver, action):
     if action_type == "wait":
         time.sleep(action.get("duration_seconds", 1))
         
+    elif action_type == "navigate":
+        driver.get(action["url"])
+        
     elif action_type == "find_and_fill":
         elem = _find_element(driver, action)
-        val = os.getenv(action["value_env_var"])
-        if val is None:
-            raise ValueError(f"Environment variable '{action['value_env_var']}' is missing.")
+        val = None
+        if "value" in action:
+            val = action["value"]
+        elif "value_env_var" in action:
+            val = os.getenv(action["value_env_var"])
+        
+        if not val:
+            raise ValueError(f"Action 'find_and_fill' requires 'value' or 'value_env_var'.")
         elem.clear()
         elem.send_keys(val)
         

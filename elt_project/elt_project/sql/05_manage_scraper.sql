@@ -1,3 +1,4 @@
+
 UPDATE elt_pipeline_configs
 SET
     -- 1. Set the parser to use the Selenium logic
@@ -14,15 +15,15 @@ SET
                 "type": "find_and_fill",
                 "selector": "id",
                 "selector_value": "CUNYLoginUsernameDisplay",
-                "value_env_var": "vladimir.nimchenko97@login.cuny.edu"
+                "value": "vladimir.nimchenko97@login.cuny.edu"
             },
             {
                 "type": "find_and_fill",
                 "selector": "id",
                 "selector_value": "CUNYLoginPassword",
-                "value_env_var": "Coolster@4445"
+                "value": "Coolster@4445"
             },
-			 {
+            {
                 "type": "click",
                 "selector": "id",
                 "selector_value": "submit"
@@ -33,83 +34,78 @@ SET
                 "selector_value": "[[$current.data.fieldId]]",
                 "totp_secret_env_var": "MY_SITE_TOTP_SECRET"
             },
-			 {
+            {
                 "type": "click",
-                "selector": "Verify",
-                "selector_value": "Verify"
+                "selector": "xpath",
+                "selector_value": "//*[text()=''Verify'']"
             },
-           "login_url": "https://fscm.cunyfirst.cuny.edu/psp/cnyfsprd/EMPLOYEE/ERP/c/QUERY_MANAGER.SCHED_QUERY.GBL?FolderPath=PORTAL_ROOT_OBJECT.PT_REPORTING_TOOLS.PT_QUERY.PT_SCHED_QUERY_GBL&IsFolder=false&IgnoreParamTempl=FolderPath%2cIsFolder
-          ",
-
-		    {
+            {
+                "type": "navigate",
+                "url": "https://fscm.cunyfirst.cuny.edu/psp/cnyfsprd/EMPLOYEE/ERP/c/QUERY_MANAGER.SCHED_QUERY.GBL?FolderPath=PORTAL_ROOT_OBJECT.PT_REPORTING_TOOLS.PT_QUERY.PT_SCHED_QUERY_GBL&IsFolder=false&IgnoreParamTempl=FolderPath%2cIsFolder"
+            },
+            {
                 "type": "find_and_fill",
                 "selector": "id",
                 "selector_value": "QUERY_RUN_CNTRL_RUN_CNTL_ID",
                 "value_env_var": "IMPORT_NAME"
             },
-			 {
+            {
                 "type": "click",
                 "selector": "id",
                 "selector_value": "PRCSRQSTDLG_WRK_LOADPRCSRQSTDLGPB"
             },
-
-			
-     "actions": [
-    {
-      "type": "switch_to_frame",
-      "selector": "id", 
-      "selector_value": "ptModFrame_0" 
-    },
-    {
-      "type": "click",
-      "selector": "xpath",
-      "selector_value": "/html/body/form/div[4]/div[2]/span/a[1]"
-    },
-    {
-      "type": "switch_to_default_content"
-    }
-  ],
-  {
+            {
+                "type": "switch_to_frame",
+                "selector": "id", 
+                "selector_value": "ptModFrame_0" 
+            },
+            {
+                "type": "click",
+                "selector": "xpath",
+                "selector_value": "/html/body/form/div[4]/div[2]/span/a[1]"
+            },
+            {
+                "type": "switch_to_default_content"
+            },
+            {
                 "type": "click",
                 "selector": "id",
                 "selector_value": "PRCSRQSTDLG_WRK_LOADPRCSMONITORPB"
-   },
-   {
-  "type": "wait",
-  "duration_seconds": 10
-  },
-    {
+            },
+            {
+                "type": "wait",
+                "duration_seconds": 10
+            },
+            {
                 "type": "click",
                 "selector": "id",
                 "selector_value": "PRCSDETAIL_BTN$0"
-   },
-    {
+            },
+            {
                 "type": "click",
                 "selector": "id",
                 "selector_value": "PMN_DERIVED_INDEX_BTN"
-   },
-     {
+            },
+            {
                 "type": "click",
                 "selector": "id",
                 "selector_value": "URL$1"
-   },
-     {
+            },
+            {
                 "type": "click",
                 "selector": "id",
                 "selector_value": "PSPUSHBUTTONRETURN"
-   },
-   {
-     "type": "select_radio_by_value",
-     "group_name": "PMN_DERIVED_DELETEREQUEST",
-     "value": "PMN_DERIVED_DELETEREQUEST"
-   },
-   {
+            },
+            {
+                "type": "select_radio_by_value",
+                "group_name": "PMN_DERIVED_DELETEREQUEST",
+                "value": "PMN_DERIVED_DELETEREQUEST"
+            },
+            {
                 "type": "click",
-                "selector": "id",
+                "selector": "css_selector",
                 "selector_value": "#ICSave"
-   },
-
-
-     
+            }
+        ]
     }'
 WHERE import_name = 'BKL_BUDGET_ALL_VER_1_3'; -- Replace with the specific import you are configuring
