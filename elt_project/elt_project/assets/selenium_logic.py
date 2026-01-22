@@ -25,7 +25,15 @@ def generic_selenium_scraper(config_json: str):
     options.add_argument("--window-size=1920,1080")
     
     # Automatically manage ChromeDriver installation
-    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
+    driver_path = ChromeDriverManager().install()
+    # WinError 193 fix: Ensure path ends in .exe
+    if not str(driver_path).lower().endswith(".exe"):
+        directory = os.path.dirname(driver_path) if os.path.isfile(driver_path) else driver_path
+        potential_exe = os.path.join(directory, "chromedriver.exe")
+        if os.path.exists(potential_exe):
+            driver_path = potential_exe
+            
+    driver = webdriver.Chrome(service=ChromeService(driver_path), options=options)
     
     try:
         # --- 2. Login / Navigation ---

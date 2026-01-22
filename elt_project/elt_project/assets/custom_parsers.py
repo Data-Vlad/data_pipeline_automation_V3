@@ -128,6 +128,11 @@ def generic_selenium_scraper(scraper_config_json: str) -> dict[str, pd.DataFrame
 
     try:
         config = json.loads(scraper_config_json)
+        
+        # Automatically expose import_name as an environment variable
+        if "import_name" in config:
+            os.environ["IMPORT_NAME"] = str(config["import_name"])
+            
     except json.JSONDecodeError as e:
         _log_error_to_simple_ui(f"JSON Decode Error: {e}")
         raise ValueError(f"Invalid JSON in scraper_config: {e}")
@@ -211,9 +216,62 @@ def generic_selenium_scraper(scraper_config_json: str) -> dict[str, pd.DataFrame
                 element.clear()
                 element.send_keys(token)
 
+            elif action_type == "fetch_db_value":
+                # Lazy import pyodbc to avoid dependency issues if not used
+                try:
+                    import pyodbc
+                except ImportError:
+                    raise ImportError("The 'pyodbc' library is required for the 'fetch_db_value' action.")
+
+                query = action.get("query")
+                target_env_var = action.get("target_env_var")
+                
+                if not query or not target_env_var:
+                    raise ValueError("Action 'fetch_db_value' requires 'query' and 'target_env_var'.")
+
+                # Resolve credentials (checking both standard and Dagster-prefixed vars)
+                server = os.getenv("DB_SERVER")
+                database = os.getenv("DB_DATABASE")
+                driver = os.getenv("DB_DRIVER", "ODBC Driver 17 for SQL Server")
+                username = os.getenv("DB_USERNAME") or os.getenv("DAGSTER_DB_USERNAME")
+                password = os.getenv("DB_PASSWORD") or os.getenv("DAGSTER_DB_PASSWORD")
+
+                if not all([server, database, username, password]):
+                    raise ValueError("Database credentials are missing from environment variables.")
+
+                conn_str = f"DRIVER={{{driver}}};SERVER={server};DATABASE={database};UID={username};PWD={password}"
+                with pyodbc.connect(conn_str) as conn:
+                    with conn.cursor() as cursor:
+                        cursor.execute(query)
+                        row = cursor.fetchone()
+                        if row:
+                            # Store result in environment for subsequent actions to use
+                            os.environ[target_env_var] = str(row[0])
+                            print(f"DEBUG: 'fetch_db_value' set {target_env_var} = {row[0]}")
+                        else:
+                            print(f"WARNING: 'fetch_db_value' query returned no results: {query}")
+
             elif action_type == "click":
                 # Wait for element to be clickable before clicking
                 wait.until(EC.element_to_be_clickable((by, action["selector_value"]))).click()
+
+            elif action_type == "switch_to_frame":
+                # Switch context to the iframe identified by the selector
+                wait.until(EC.frame_to_be_available_and_switch_to_it((by, action["selector_value"])))
+
+            elif action_type == "switch_to_default_content":
+                # Switch context back to the main page
+                driver.switch_to.default_content()
+
+            elif action_type == "select_radio_by_value":
+                # Select a radio button by its group name and value
+                group = action.get("group_name")
+                val = action.get("value")
+                if not group or not val:
+                    raise ValueError("Action 'select_radio_by_value' requires 'group_name' and 'value'.")
+                xpath = f"//input[@name='{group}' and @value='{val}']"
+                wait = WebDriverWait(driver, action.get("timeout", 10))
+                wait.until(EC.element_to_be_clickable((By.XPATH, xpath))).click()
 
             elif action_type == "wait":
                 time.sleep(action["duration_seconds"])
@@ -268,10 +326,22 @@ def generic_selenium_scraper(scraper_config_json: str) -> dict[str, pd.DataFrame
     options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1920,1080")
 
+    def _get_driver_path_safe():
+        """Helper to ensure we get a valid executable path from webdriver-manager."""
+        path = ChromeDriverManager().install()
+        # WinError 193 fix: Ensure path ends in .exe
+        if not str(path).lower().endswith(".exe"):
+            # If it points to a directory or non-exe file, look for chromedriver.exe nearby
+            directory = os.path.dirname(path) if os.path.isfile(path) else path
+            potential_exe = os.path.join(directory, "chromedriver.exe")
+            if os.path.exists(potential_exe):
+                return potential_exe
+        return path
+
     # --- WebDriver Initialization with Cache Clearing Retry ---
     try:
         print("DEBUG: Initializing Selenium WebDriver (Attempt 1)...")
-        driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
+        driver = webdriver.Chrome(service=ChromeService(_get_driver_path_safe()), options=options)
         print("DEBUG: WebDriver initialized successfully.")
     except OSError as e:
         if "[WinError 193]" in str(e):
@@ -294,7 +364,7 @@ def generic_selenium_scraper(scraper_config_json: str) -> dict[str, pd.DataFrame
             # Retry initialization
             try:
                 print("DEBUG: Initializing Selenium WebDriver (Attempt 2)...")
-                driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
+                driver = webdriver.Chrome(service=ChromeService(_get_driver_path_safe()), options=options)
                 print("DEBUG: WebDriver initialized successfully on second attempt.")
             except Exception as e2:
                 _log_error_to_simple_ui(f"WebDriver Init Failed on second attempt: {e2}\n{traceback.format_exc()}")

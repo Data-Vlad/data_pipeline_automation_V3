@@ -415,8 +415,18 @@ If it fails, check the run logs for details on data quality issues or parsing er
                         if config.parser_function in INGESTION_FUNCTIONS:
                             if not config.scraper_config:
                                 raise ValueError(f"'{config.parser_function}' requires a non-null 'scraper_config' in the database.")
+                            
+                            # Inject import_name into the config JSON so the scraper can access it
+                            try:
+                                scraper_conf_dict = json.loads(config.scraper_config)
+                                scraper_conf_dict['import_name'] = config.import_name
+                                config_json_with_context = json.dumps(scraper_conf_dict)
+                            except Exception as e:
+                                context.log.warning(f"Failed to inject import_name into scraper config: {e}")
+                                config_json_with_context = config.scraper_config
+
                             # Scrapers can return one DataFrame or a dict of them
-                            scraped_result = custom_parser_func(config.scraper_config)
+                            scraped_result = custom_parser_func(config_json_with_context)
                             if isinstance(scraped_result, dict):
                                 # If it's a dict, find the DataFrame for the current asset's import_name
                                 df = scraped_result.get(config.import_name)
