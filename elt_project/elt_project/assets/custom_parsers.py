@@ -3,6 +3,7 @@ import os
 import json
 import time
 import tempfile
+import traceback
 
 def parse_ri_dbt_custom(file_path: str) -> pd.DataFrame:
     """
@@ -107,6 +108,29 @@ def generic_selenium_scraper(scraper_config_json: str) -> dict[str, pd.DataFrame
     Returns:
         A dictionary mapping target_import_name to its scraped pandas DataFrame.
     """
+    def _log_error_to_simple_ui(msg):
+        try:
+            # Path to simple_ui.log relative to this file: ../../../simple_ui.log
+            base_dir = os.path.dirname(os.path.abspath(__file__))
+            log_path = os.path.abspath(os.path.join(base_dir, "..", "..", "..", "simple_ui.log"))
+            
+            # Try writing to simple_ui.log; fallback to scraper_error.log if locked
+            target_file = log_path
+            try:
+                with open(target_file, "a") as f:
+                    f.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} - ERROR - generic_selenium_scraper - {msg}\n")
+            except PermissionError:
+                with open(os.path.join(os.path.dirname(log_path), "scraper_error.log"), "a") as f:
+                    f.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} - ERROR - generic_selenium_scraper - {msg}\n")
+        except Exception:
+            pass
+
+    try:
+        config = json.loads(scraper_config_json)
+    except json.JSONDecodeError as e:
+        _log_error_to_simple_ui(f"JSON Decode Error: {e}")
+        raise ValueError(f"Invalid JSON in scraper_config: {e}")
+
     # --- Lazy Import Selenium and related libraries ---
     # This ensures these packages are only imported when this function is actually called.
     try:
@@ -225,18 +249,31 @@ def generic_selenium_scraper(scraper_config_json: str) -> dict[str, pd.DataFrame
             else:
                 raise ValueError(f"Unsupported Selenium action type: {action_type}")
 
-    config = json.loads(scraper_config_json)
-
     # --- 1. Setup Selenium WebDriver ---
     options = webdriver.ChromeOptions()
-    if config.get("driver_options", {}).get("headless", False):
+    is_headless = config.get("driver_options", {}).get("headless", False)
+    if is_headless:
         options.add_argument("--headless")
+        print("DEBUG: Running Selenium in HEADLESS mode.")
+    else:
+        print("DEBUG: Running Selenium in VISIBLE mode.")
+    
+    # NEW: Configure the browser's default download directory
+    driver_options = config.get("driver_options", {})
+    if "download_directory" in driver_options:
+        prefs = {"download.default_directory": driver_options["download_directory"]}
+        options.add_experimental_option("prefs", prefs)
+
     options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1920,1080")
 
     try:
+        print("DEBUG: Initializing Selenium WebDriver...")
         driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
+        print("DEBUG: WebDriver initialized successfully.")
     except Exception as e:
+        _log_error_to_simple_ui(f"WebDriver Init Failed: {e}\n{traceback.format_exc()}")
+        traceback.print_exc()
         raise RuntimeError(f"Failed to initialize Selenium WebDriver. Ensure Google Chrome is installed. Error: {e}")
 
     scraped_data = {}
@@ -256,7 +293,20 @@ def generic_selenium_scraper(scraper_config_json: str) -> dict[str, pd.DataFrame
                 raise ValueError("Each item in 'data_extraction' must have a 'target_import_name'.")
             df = _extract_data(driver, extraction_target)
             if not df.empty:
+                # NEW: Save the extracted data to a file if 'output_file' is specified
+                if "output_file" in extraction_target:
+                    output_path = extraction_target["output_file"]
+                    # Ensure directory exists
+                    os.makedirs(os.path.dirname(output_path), exist_ok=True)
+                    if output_path.lower().endswith('.xlsx'):
+                        df.to_excel(output_path, index=False)
+                    else:
+                        df.to_csv(output_path, index=False)
                 scraped_data[target_name] = df
+
+    except Exception as e:
+        _log_error_to_simple_ui(f"Scraping Runtime Error: {e}\n{traceback.format_exc()}")
+        raise e
 
     finally:
         # --- 5. Cleanup ---
@@ -282,11 +332,19 @@ def generic_sftp_downloader(scraper_config_json: str) -> pd.DataFrame:
         A pandas DataFrame containing the data from the downloaded file.
     """
     # --- Lazy Import SFTP and related libraries ---
-    import pysftp
+    try:
+        import pysftp
+    except ImportError:
+        raise ImportError("The 'pysftp' library is required for SFTP downloads. Please install it via 'pip install pysftp'.")
+
     from .parsers import parser_factory # Use the existing parser factory
     import fnmatch
 
-    config = json.loads(scraper_config_json)
+    try:
+        config = json.loads(scraper_config_json)
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Invalid JSON in scraper_config: {e}")
+
     sftp_config = config.get("sftp_details")
     parse_config = config.get("parse_details")
 
@@ -305,7 +363,13 @@ def generic_sftp_downloader(scraper_config_json: str) -> pd.DataFrame:
     # --- Production-Ready Host Key Handling ---
     # For development, you might disable host key checking.
     # For production, you should ALWAYS verify the host key.
-    cnopts = pysftp.CnOpts()
+    try:
+        cnopts = pysftp.CnOpts()
+    except Exception:
+        # Fallback if known_hosts file is missing (common on Windows dev machines)
+        cnopts = pysftp.CnOpts(knownhosts=None)
+        cnopts.hostkeys = None
+
     if os.getenv("APP_ENV", "development").lower() == "production":
         # In production, load known host keys to prevent man-in-the-middle attacks.
         cnopts.hostkeys.load(os.path.expanduser("~/.ssh/known_hosts"))
@@ -326,35 +390,38 @@ def generic_sftp_downloader(scraper_config_json: str) -> pd.DataFrame:
     # Create a temporary directory to download the file into
     with tempfile.TemporaryDirectory() as temp_dir:
         print(f"Connecting to SFTP server at {hostname}...")
-        with pysftp.Connection(**sftp_params) as sftp:
-            remote_dir = sftp_config["remote_path"]
-            file_pattern = sftp_config.get("file_pattern", "*") # Default to all files if no pattern
+        try:
+            with pysftp.Connection(**sftp_params) as sftp:
+                remote_dir = sftp_config["remote_path"]
+                file_pattern = sftp_config.get("file_pattern", "*") # Default to all files if no pattern
 
-            print(f"Listing files in remote directory '{remote_dir}' matching pattern '{file_pattern}'...")
-            
-            # List files and filter by pattern
-            remote_files = sftp.listdir(remote_dir)
-            matching_files = [f for f in remote_files if fnmatch.fnmatch(f, file_pattern)]
-
-            if not matching_files:
-                print("No matching files found on SFTP server. Returning empty DataFrame.")
-                return pd.DataFrame()
-
-            print(f"Found {len(matching_files)} matching files to download.")
-
-            # Download and parse each matching file
-            for filename in matching_files:
-                remote_filepath = f"{remote_dir}/{filename}"
-                local_filepath = os.path.join(temp_dir, filename)
+                print(f"Listing files in remote directory '{remote_dir}' matching pattern '{file_pattern}'...")
                 
-                print(f"Downloading '{remote_filepath}' to '{local_filepath}'...")
-                sftp.get(remote_filepath, local_filepath)
+                # List files and filter by pattern
+                remote_files = sftp.listdir(remote_dir)
+                matching_files = [f for f in remote_files if fnmatch.fnmatch(f, file_pattern)]
 
-                # Use the existing parser factory to parse the downloaded file
-                parser = parser_factory.get_parser(parse_config["file_type"])
-                df_single = parser.parse(local_filepath)
-                all_dfs.append(df_single)
-                print(f"Successfully parsed {len(df_single)} rows from '{filename}'.")
+                if not matching_files:
+                    print("No matching files found on SFTP server. Returning empty DataFrame.")
+                    return pd.DataFrame()
+
+                print(f"Found {len(matching_files)} matching files to download.")
+
+                # Download and parse each matching file
+                for filename in matching_files:
+                    remote_filepath = f"{remote_dir}/{filename}"
+                    local_filepath = os.path.join(temp_dir, filename)
+                    
+                    print(f"Downloading '{remote_filepath}' to '{local_filepath}'...")
+                    sftp.get(remote_filepath, local_filepath)
+
+                    # Use the existing parser factory to parse the downloaded file
+                    parser = parser_factory.get_parser(parse_config["file_type"])
+                    df_single = parser.parse(local_filepath)
+                    all_dfs.append(df_single)
+                    print(f"Successfully parsed {len(df_single)} rows from '{filename}'.")
+        except Exception as e:
+            raise RuntimeError(f"SFTP Operation Failed: {e}") from e
 
     # Concatenate all DataFrames into one
     if not all_dfs:

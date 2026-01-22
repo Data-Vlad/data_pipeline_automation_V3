@@ -19,7 +19,6 @@ set "UI_SCRIPT=%SCRIPT_DIR%simple_ui.py"
 set "GET_CREDS_SCRIPT=%SCRIPT_DIR%get_credentials.py"
 set "CREATE_DIRS_SCRIPT=%SCRIPT_DIR%create_dirs.py"
 set "ERROR_LOG=%SCRIPT_DIR%launcher-error.log"
-set "UI_LOG=%SCRIPT_DIR%ui-server.log"
 set "DAGSTER_HOME_DIR=%SCRIPT_DIR%dagster_home"
 
 :: Clean up old log files
@@ -264,7 +263,7 @@ set "UI_CMD=%PYTHONW_EXE% %UI_SCRIPT% --server %DB_SERVER% --database %DB_DATABA
 :: ----------------------------------------------------------------------------
 
 :: Start the UI process in the background FIRST.
-start "Data Importer UI" /B %UI_CMD% >"%UI_LOG%" 2>&1
+start "Data Importer UI" /B %UI_CMD% >nul 2>&1
 
 :: --- Wait for the server to be ready before opening the browser ---
 :: This loop actively checks if the port is open, avoiding the "Connection Refused" error.
@@ -279,7 +278,7 @@ timeout /t 1 /nobreak >nul
 set /a wait_time+=1
 if %wait_time% lss 30 goto :wait_loop
 
-call :handle_error "The server failed to start after 30 seconds. Check ui-server.log for details."
+call :handle_error "The server failed to start after 30 seconds. Check simple_ui.log for details."
 
 :launch_browser
 start http://localhost:3000

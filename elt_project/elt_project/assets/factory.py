@@ -412,7 +412,7 @@ If it fails, check the run logs for details on data quality issues or parsing er
                             raise TypeError(f"The specified parser '{config.parser_function}' is not a callable function.")
 
                         # Differentiate between file-based parsers and config-based scrapers
-                        if config.parser_function in ["generic_web_scraper", "generic_selenium_scraper"]:
+                        if config.parser_function in INGESTION_FUNCTIONS:
                             if not config.scraper_config:
                                 raise ValueError(f"'{config.parser_function}' requires a non-null 'scraper_config' in the database.")
                             # Scrapers can return one DataFrame or a dict of them

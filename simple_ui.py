@@ -2,6 +2,7 @@ import os
 import argparse
 import sys
 import threading
+import re
 import logging
 from collections import defaultdict
 from typing import List, Optional, Any
@@ -36,14 +37,10 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)-8s - %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
-    # The launcher script will redirect stdout/stderr to a log file.
+    # Log directly to simple_ui.log instead of stdout to avoid duplicate logs (e.g. ui-server.log)
+    handlers=[logging.FileHandler('simple_ui.log')]
 )
 logger = logging.getLogger(__name__)
-
-# Explicitly log to simple_ui.log to ensure errors are captured in a known file
-file_handler = logging.FileHandler('simple_ui.log')
-file_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)-8s - %(message)s"))
-logger.addHandler(file_handler)
 
 app = Flask(__name__)
 app.template_folder = 'templates'
@@ -357,6 +354,10 @@ def get_pipelines():
     # This line should not be reachable, but is here as a fallback.
     return jsonify({"error": "An unexpected error occurred in get_pipelines."}), 500
 
+def sanitize_name(name: str) -> str:
+    """Sanitizes a string to be a valid Dagster asset name."""
+    return re.sub(r'[^A-Za-z0-9_]', '_', name)
+
 @app.route("/api/run_imports", methods=["POST"])
 def run_imports():
     """
@@ -371,6 +372,28 @@ def run_imports():
 
         import_names = [item['import_name'] if isinstance(item, dict) else item for item in selected_imports]
         logger.info(f"API     : Received request to run {len(selected_imports)} imports: {import_names}")
+
+        # --- Fix for Asset Renaming ---
+        # Identify "Ingestion" imports (scrapers) to patch their run_config keys.
+        # The sensors might still generate config for the old name '_extract_and_load_staging',
+        # but the assets are now named '_ingest'.
+        ingestion_imports = set()
+        try:
+            conn = get_db_connection()
+            query = text("SELECT import_name, parser_function FROM elt_pipeline_configs WHERE is_active = 1")
+            results = conn.execute(query).fetchall()
+            
+            INGESTION_FUNCTIONS = {
+                "generic_web_scraper",
+                "generic_selenium_scraper",
+                "generic_sftp_downloader"
+            }
+            
+            for row in results:
+                if row.import_name in import_names and row.parser_function in INGESTION_FUNCTIONS:
+                    ingestion_imports.add(row.import_name)
+        except Exception as e:
+            logger.warning(f"API     : Failed to check for ingestion types. Config patching may be skipped. Error: {e}")
 
         workspace_file_path = os.path.join(dagster_home_path, "workspace.yaml")
         instance = DagsterInstance.get()
@@ -443,6 +466,18 @@ def run_imports():
                         continue
 
                     for run_req in tick_result.run_requests:
+                        # --- Patch Config for Ingestion Assets ---
+                        if import_name in ingestion_imports:
+                            old_op_name = sanitize_name(f"{import_name}_extract_and_load_staging")
+                            new_op_name = sanitize_name(f"{import_name}_ingest")
+                            
+                            if run_req.run_config and 'ops' in run_req.run_config:
+                                ops_config = run_req.run_config['ops']
+                                if old_op_name in ops_config:
+                                    logger.info(f"API     : Patching run_config. Renaming '{old_op_name}' to '{new_op_name}'.")
+                                    ops_config[new_op_name] = ops_config.pop(old_op_name)
+                        # -----------------------------------------
+
                         # Resolve the job name (sensor might target a specific job or be dynamic)
                         job_name = run_req.job_name
                         if not job_name:
