@@ -186,136 +186,151 @@ def generic_selenium_scraper(scraper_config_json: str) -> dict[str, pd.DataFrame
 
     # --- Recursive function to process a list of actions ---
     def _process_actions(driver, actions_list, scraped_data_accumulator):
-        for action in actions_list:
-            action_type = action["type"]
-            selector_map = {
-                "id": By.ID, "name": By.NAME, "xpath": By.XPATH,
-                "css_selector": By.CSS_SELECTOR, "link_text": By.LINK_TEXT, "class_name": By.CLASS_NAME,
-            }
+        for i, action in enumerate(actions_list):
+            try:
+                action_type = action["type"]
+                selector_map = {
+                    "id": By.ID, "name": By.NAME, "xpath": By.XPATH,
+                    "css_selector": By.CSS_SELECTOR, "link_text": By.LINK_TEXT, "class_name": By.CLASS_NAME,
+                }
 
-            element = None
-            # Pre-fetch element if a selector is present for standard actions
-            if "selector" in action:
-                by = selector_map[action["selector"]]
-                wait = WebDriverWait(driver, action.get("timeout", 10))
-                element = wait.until(EC.presence_of_element_located((by, action["selector_value"])))
+                element = None
+                # Pre-fetch element if a selector is present for standard actions
+                if "selector" in action:
+                    by = selector_map[action["selector"]]
+                    wait = WebDriverWait(driver, action.get("timeout", 10))
+                    element = wait.until(EC.presence_of_element_located((by, action["selector_value"])))
 
-            if action_type == "find_and_fill":
-                value = None
-                if "value" in action:
-                    value = action["value"]
-                elif "value_env_var" in action:
-                    value = os.getenv(action["value_env_var"])
+                if action_type == "find_and_fill":
+                    value = None
+                    if "value" in action:
+                        value = action["value"]
+                    elif "value_env_var" in action:
+                        value = os.getenv(action["value_env_var"])
 
-                if value is None:
-                    raise ValueError(f"Action 'find_and_fill' requires 'value' or 'value_env_var'.")
-                element.clear()
-                element.send_keys(value)
+                    if value is None:
+                        raise ValueError(f"Action 'find_and_fill' requires 'value' or 'value_env_var'.")
+                    element.clear()
+                    element.send_keys(value)
 
-            elif action_type == "find_and_fill_totp":
-                import pyotp
-                secret = os.getenv(action["totp_secret_env_var"])
-                if secret is None:
-                    raise ValueError(f"Environment variable '{action['totp_secret_env_var']}' for TOTP secret not set.")
-                totp = pyotp.TOTP(secret)
-                token = totp.now()
-                element.clear()
-                element.send_keys(token)
+                elif action_type == "find_and_fill_totp":
+                    import pyotp
+                    secret = os.getenv(action["totp_secret_env_var"])
+                    if secret is None:
+                        raise ValueError(f"Environment variable '{action['totp_secret_env_var']}' for TOTP secret not set.")
+                    totp = pyotp.TOTP(secret)
+                    token = totp.now()
+                    element.clear()
+                    element.send_keys(token)
 
-            elif action_type == "fetch_db_value":
-                # Lazy import pyodbc to avoid dependency issues if not used
-                try:
-                    import pyodbc
-                except ImportError:
-                    raise ImportError("The 'pyodbc' library is required for the 'fetch_db_value' action.")
+                elif action_type == "fetch_db_value":
+                    # Lazy import pyodbc to avoid dependency issues if not used
+                    try:
+                        import pyodbc
+                    except ImportError:
+                        raise ImportError("The 'pyodbc' library is required for the 'fetch_db_value' action.")
 
-                query = action.get("query")
-                target_env_var = action.get("target_env_var")
-                
-                if not query or not target_env_var:
-                    raise ValueError("Action 'fetch_db_value' requires 'query' and 'target_env_var'.")
+                    query = action.get("query")
+                    target_env_var = action.get("target_env_var")
+                    
+                    if not query or not target_env_var:
+                        raise ValueError("Action 'fetch_db_value' requires 'query' and 'target_env_var'.")
 
-                # Resolve credentials (checking both standard and Dagster-prefixed vars)
-                server = os.getenv("DB_SERVER")
-                database = os.getenv("DB_DATABASE")
-                driver = os.getenv("DB_DRIVER", "ODBC Driver 17 for SQL Server")
-                username = os.getenv("DB_USERNAME") or os.getenv("DAGSTER_DB_USERNAME")
-                password = os.getenv("DB_PASSWORD") or os.getenv("DAGSTER_DB_PASSWORD")
+                    # Resolve credentials (checking both standard and Dagster-prefixed vars)
+                    server = os.getenv("DB_SERVER")
+                    database = os.getenv("DB_DATABASE")
+                    driver = os.getenv("DB_DRIVER", "ODBC Driver 17 for SQL Server")
+                    username = os.getenv("DB_USERNAME") or os.getenv("DAGSTER_DB_USERNAME")
+                    password = os.getenv("DB_PASSWORD") or os.getenv("DAGSTER_DB_PASSWORD")
 
-                if not all([server, database, username, password]):
-                    raise ValueError("Database credentials are missing from environment variables.")
+                    if not all([server, database, username, password]):
+                        raise ValueError("Database credentials are missing from environment variables.")
 
-                conn_str = f"DRIVER={{{driver}}};SERVER={server};DATABASE={database};UID={username};PWD={password}"
-                with pyodbc.connect(conn_str) as conn:
-                    with conn.cursor() as cursor:
-                        cursor.execute(query)
-                        row = cursor.fetchone()
-                        if row:
-                            # Store result in environment for subsequent actions to use
-                            os.environ[target_env_var] = str(row[0])
-                            print(f"DEBUG: 'fetch_db_value' set {target_env_var} = {row[0]}")
-                        else:
-                            print(f"WARNING: 'fetch_db_value' query returned no results: {query}")
+                    conn_str = f"DRIVER={{{driver}}};SERVER={server};DATABASE={database};UID={username};PWD={password}"
+                    with pyodbc.connect(conn_str) as conn:
+                        with conn.cursor() as cursor:
+                            cursor.execute(query)
+                            row = cursor.fetchone()
+                            if row:
+                                # Store result in environment for subsequent actions to use
+                                os.environ[target_env_var] = str(row[0])
+                                print(f"DEBUG: 'fetch_db_value' set {target_env_var} = {row[0]}")
+                            else:
+                                print(f"WARNING: 'fetch_db_value' query returned no results: {query}")
 
-            elif action_type == "click":
-                # Wait for element to be clickable before clicking
-                wait.until(EC.element_to_be_clickable((by, action["selector_value"]))).click()
+                elif action_type == "click":
+                    # Wait for element to be clickable before clicking
+                    wait.until(EC.element_to_be_clickable((by, action["selector_value"]))).click()
 
-            elif action_type == "switch_to_frame":
-                # Switch context to the iframe identified by the selector
-                wait.until(EC.frame_to_be_available_and_switch_to_it((by, action["selector_value"])))
+                elif action_type == "switch_to_frame":
+                    # Switch context to the iframe identified by the selector
+                    wait.until(EC.frame_to_be_available_and_switch_to_it((by, action["selector_value"])))
 
-            elif action_type == "switch_to_default_content":
-                # Switch context back to the main page
-                driver.switch_to.default_content()
+                elif action_type == "switch_to_default_content":
+                    # Switch context back to the main page
+                    driver.switch_to.default_content()
 
-            elif action_type == "select_radio_by_value":
-                # Select a radio button by its group name and value
-                group = action.get("group_name")
-                val = action.get("value")
-                if not group or not val:
-                    raise ValueError("Action 'select_radio_by_value' requires 'group_name' and 'value'.")
-                xpath = f"//input[@name='{group}' and @value='{val}']"
-                wait = WebDriverWait(driver, action.get("timeout", 10))
-                wait.until(EC.element_to_be_clickable((By.XPATH, xpath))).click()
+                elif action_type == "select_radio_by_value":
+                    # Select a radio button by its group name and value
+                    group = action.get("group_name")
+                    val = action.get("value")
+                    if not group or not val:
+                        raise ValueError("Action 'select_radio_by_value' requires 'group_name' and 'value'.")
+                    xpath = f"//input[@name='{group}' and @value='{val}']"
+                    wait = WebDriverWait(driver, action.get("timeout", 10))
+                    wait.until(EC.element_to_be_clickable((By.XPATH, xpath))).click()
 
-            elif action_type == "navigate":
-                driver.get(action["url"])
+                elif action_type == "navigate":
+                    driver.get(action["url"])
 
-            elif action_type == "wait":
-                time.sleep(action["duration_seconds"])
+                elif action_type == "wait":
+                    time.sleep(action["duration_seconds"])
 
-            elif action_type == "wait_for_element":
-                # The element finding logic at the start of the loop already handles this.
-                # This action type is useful for explicitly waiting for a page transition to complete.
-                pass
+                elif action_type == "wait_for_element":
+                    # The element finding logic at the start of the loop already handles this.
+                    # This action type is useful for explicitly waiting for a page transition to complete.
+                    pass
 
-            elif action_type == "if":
-                if _check_condition(driver, action["condition"]):
-                    _process_actions(driver, action.get("then", []), scraped_data_accumulator)
+                elif action_type == "if":
+                    if _check_condition(driver, action["condition"]):
+                        _process_actions(driver, action.get("then", []), scraped_data_accumulator)
+                    else:
+                        _process_actions(driver, action.get("else", []), scraped_data_accumulator)
+
+                elif action_type == "while_loop":
+                    max_iterations = action.get("max_iterations", 10) # Safety break
+                    iterations = 0
+                    while iterations < max_iterations and _check_condition(driver, action["condition"]):
+                        _process_actions(driver, action.get("loop_actions", []), scraped_data_accumulator)
+                        iterations += 1
+
+                elif action_type == "extract_and_accumulate":
+                    target_name = action.get("target_import_name")
+                    if not target_name:
+                        raise ValueError("'extract_and_accumulate' action requires a 'target_import_name'.")
+                    
+                    new_df = _extract_data(driver, action)
+                    if not new_df.empty:
+                        if target_name not in scraped_data_accumulator:
+                            scraped_data_accumulator[target_name] = []
+                        scraped_data_accumulator[target_name].append(new_df)
+
                 else:
-                    _process_actions(driver, action.get("else", []), scraped_data_accumulator)
-
-            elif action_type == "while_loop":
-                max_iterations = action.get("max_iterations", 10) # Safety break
-                iterations = 0
-                while iterations < max_iterations and _check_condition(driver, action["condition"]):
-                    _process_actions(driver, action.get("loop_actions", []), scraped_data_accumulator)
-                    iterations += 1
-
-            elif action_type == "extract_and_accumulate":
-                target_name = action.get("target_import_name")
-                if not target_name:
-                    raise ValueError("'extract_and_accumulate' action requires a 'target_import_name'.")
+                    raise ValueError(f"Unsupported Selenium action type: {action_type}")
+            
+            except Exception as e:
+                # If it's already a detailed error (from recursive call), just re-raise
+                if "SCRAPER ACTION FAILED" in str(e):
+                    raise e
                 
-                new_df = _extract_data(driver, action)
-                if not new_df.empty:
-                    if target_name not in scraped_data_accumulator:
-                        scraped_data_accumulator[target_name] = []
-                    scraped_data_accumulator[target_name].append(new_df)
-
-            else:
-                raise ValueError(f"Unsupported Selenium action type: {action_type}")
+                # Otherwise, wrap it with details
+                try:
+                    action_json = json.dumps(action, indent=4)
+                except Exception:
+                    action_json = str(action)
+                
+                msg = f"SCRAPER ACTION FAILED at index {i}:\n{action_json}\nError: {str(e)}"
+                raise RuntimeError(msg) from e
 
     # --- 1. Setup Selenium WebDriver ---
     options = webdriver.ChromeOptions()
