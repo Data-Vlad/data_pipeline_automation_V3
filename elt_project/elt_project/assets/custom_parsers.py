@@ -5,6 +5,7 @@ import time
 import tempfile
 import shutil
 import traceback
+import pickle
 
 def parse_ri_dbt_custom(file_path: str) -> pd.DataFrame:
     """
@@ -389,11 +390,58 @@ def generic_selenium_scraper(scraper_config_json: str) -> dict[str, pd.DataFrame
     scraped_data = {}
     scraped_data_accumulator = {} # For multi-page results
     try:
-        # --- 2. Navigate to Login URL ---
-        driver.get(config["login_url"])
+        # --- Session Management: Restore ---
+        session_config = config.get("session_strategy")
+        skipped_login = False
 
-        # --- 3. Execute Actions (now using the recursive processor) ---
-        _process_actions(driver, config.get("actions", []), scraped_data_accumulator)
+        if session_config and session_config.get("type") == "local_file":
+            cookie_path = session_config.get("path")
+            if cookie_path and os.path.exists(cookie_path):
+                print(f"DEBUG: Attempting to restore session from {cookie_path}")
+                try:
+                    # Navigate to domain to allow setting cookies
+                    driver.get(config["login_url"])
+                    with open(cookie_path, "rb") as f:
+                        cookies = pickle.load(f)
+                    for cookie in cookies:
+                        try:
+                            driver.add_cookie(cookie)
+                        except Exception:
+                            pass # Ignore domain mismatch errors
+                    driver.refresh()
+                    
+                    # Validate session
+                    validation = session_config.get("validation")
+                    if validation:
+                        if _check_condition(driver, validation):
+                            print("DEBUG: Session validation successful. Skipping login actions.")
+                            skipped_login = True
+                        else:
+                            print("DEBUG: Session validation failed. Proceeding with login.")
+                    else:
+                        print("DEBUG: No session validation configured. Assuming session is valid.")
+                        skipped_login = True
+                except Exception as e:
+                    print(f"WARNING: Failed to restore session: {e}")
+
+        if not skipped_login:
+            # --- 2. Navigate to Login URL ---
+            driver.get(config["login_url"])
+
+            # --- 3. Execute Actions (now using the recursive processor) ---
+            _process_actions(driver, config.get("actions", []), scraped_data_accumulator)
+            
+            # --- Session Management: Save ---
+            if session_config and session_config.get("type") == "local_file":
+                cookie_path = session_config.get("path")
+                if cookie_path:
+                    try:
+                        os.makedirs(os.path.dirname(cookie_path), exist_ok=True)
+                        with open(cookie_path, "wb") as f:
+                            pickle.dump(driver.get_cookies(), f)
+                        print(f"DEBUG: Session cookies saved to {cookie_path}")
+                    except Exception as e:
+                        print(f"WARNING: Failed to save session: {e}")
 
         # --- 4. Data Extraction ---
         # This now iterates over a list of extraction targets

@@ -1,9 +1,5 @@
 # --- Core Dagster Stack (Pinned to latest stable) ---
-<<<<<<< HEAD
-dagster==1.12.3
-=======
 dagster
->>>>>>> 60c084f (committ)
 dagster-webserver==1.12.3
 dagster-pipes==1.12.3
 

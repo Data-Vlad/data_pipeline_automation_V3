@@ -10,6 +10,16 @@ SET
             "headless": false
         },
         "login_url": "https://ssologin.cuny.edu/oam/server/obrareq.cgi?encquery%3DbuEvSU77NNhATGCa2aFF%2FElzz%2BcPLV%2FTLPDCW%2BOrakV3N4DNjQSxhO%2FHJQiXyN46oMRHCZ57q3vkNRaucLJL81U32Gyi6QJQfThLlj9a4vzCZwBDG5n02cMuKbb4ms3SRYFuD3Md660uvlgGkdxUaB2u%2BewBT5rEyNp%2Bb3NZQm5gBDikRf%2BdB4j5PxyeRaycwxp1KYrA8OftVIQTVRpXyB2N7E1S4%2Bcq2tG1cDtdiZT%2BootBgPB%2BZL4c8SRBv8XPPntPNwxfz3RDTsUNH4fdA%2B1iUPSzd%2BZFCyBAum86AzWfi90Fktckt7lWn1fErHM6YCJ5iLBcrobyORgaVjsnpH8eEHAbyOMOYReH3EfIy3yYQoPON9NEQ8%2FRJevFiRF9J1Roy3%2FQs7Y8SIKDLJSmzs4WugREMr%2Bxodoc3q%2B8Llf5EYuKHKQ3%2BpjFNt0vvq9HMoBosJsAXljHO2RrNECNTw%3D%3D%20agentid%3DPeopleSoft%20ver%3D1%20crmethod%3D0%26cksum%3D16a9831a8918eb1aff9d98bddc68867bad4af07e&ECID-Context=1.006IFdqoBUf7q205rzx0iY006Pue00062Q%3BkXjE",
+        "session_strategy": {
+        "type": "local_file",
+        "path": "C:/temp/selenium_sessions/example_com_session.pkl",
+        "validation": {
+            "type": "element_exists",
+            "selector": "id",
+            "selector_value": "dashboard-content",
+            "timeout": 5
+        }
+    },
         "actions": [
             {
                 "type": "find_and_fill",
