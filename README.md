@@ -40,6 +40,12 @@ You can explicitly chain pipelines to ensure correct execution order using the `
 *   **Toast Notifications**: (Windows) Instant desktop notifications upon file processing success or failure.
 *   **Local Logs**: Writes simple, readable success/failure logs back to the monitored directory (e.g., `2023-11-20__run_history.log`) for non-technical users.
 
+### 7. 🤖 Modern Analytics & AI
+*   **Automated Forecasting**: Built-in ML engine automatically generates forecasts for time-series data found in destination tables.
+*   **Anomaly Detection**: Uses Isolation Forest algorithms to automatically flag data points that deviate significantly from the norm.
+*   **Interactive Analytics UI**: A separate, modern **Streamlit** application (`analytics_ui.py`) allows users to explore data, view dashboards, and visualize AI predictions interactively.
+*   **Metadata-Driven**: Just like pipelines, you configure which tables to analyze in the `analytics_config` table, and the system handles the rest.
+
 ## Core Concepts
 
 It's crucial to distinguish between data parsing and data transformation within this framework:
@@ -73,6 +79,7 @@ This separation keeps the Python code focused on technical parsing, while busine
     *   **Database Backup**: A one-click asset that scripts out the data from critical configuration and log tables to `.sql` files for versioning or disaster recovery.
     *   **Local Scraper Testing**: A command-line script (`test_scraper_config.py`) allows for rapid, local testing of complex scraper configurations before deployment to the database.
 *   **Security Hardening**: Includes built-in protections against common vulnerabilities like arbitrary code execution, path traversal, and SQL injection.
+*   **AI Integration**: Native support for `scikit-learn` based predictive modeling assets.
 
 ## 3. Getting Started
 
@@ -101,6 +108,7 @@ pip install -e .
     2.  `02_setup_data_governance.sql` (Creates data quality tables)
     3.  `03_manage_elt_pipeline_configs.sql` (Creates the main config table)
     4.  `05_setup_data_enrichment.sql` (Creates enrichment rules table)
+    5.  `06_setup_analytics.sql` (Creates analytics config and prediction tables)
     5.  *(Execute any other custom table/procedure scripts you have)*
 
 > **Note**: The SQL files in the `sql/` directory are numbered to suggest an execution order.
@@ -126,6 +134,14 @@ DB_TRUST_SERVER_CERTIFICATE="yes"
     dagster dev
     ```
 2.  **Open the UI**: Navigate to `http://localhost:3000` in your web browser. You should see the assets and jobs that have been dynamically generated.
+
+### 3.6. Running the Analytics UI
+
+To launch the modern analytics dashboard:
+```bash
+streamlit run analytics_ui.py
+```
+This will open a new tab in your browser (usually `http://localhost:8501`) with the interactive dashboard.
 
 ## 4. How to Add a New Pipeline (The Easy Way)
 
@@ -1889,6 +1905,53 @@ INSERT INTO elt_pipeline_configs (..., parser_function) VALUES (..., NULL);
 
 After defining your custom parser function and updating the database configuration, restart your Dagster instance (`dagster dev`) for the changes to be picked up. When the asset for that specific pipeline runs, it will now invoke your custom parsing logic.
 You can now use `parser_type: "json"` in your YAML configuration files.
+
+---
+
+## 7. Modern Analytics & AI Guide
+
+This framework includes a built-in Machine Learning (ML) engine that runs alongside your data pipelines. It can automatically detect data anomalies and generate forecasts without requiring you to write Python code.
+
+### 7.1. Architecture
+*   **The Brain (`ml_engine.py`)**: A Python module using `scikit-learn` to perform calculations.
+*   **The Memory (SQL Server)**: Stores configuration (`analytics_config`) and results (`analytics_predictions`).
+*   **The Automation (Dagster)**: The `analytics_ai` asset group runs the models automatically.
+*   **The Interface (Streamlit)**: A web-based dashboard for configuration and visualization.
+
+### 7.2. How to Configure Analytics
+
+You can enable analytics on any table in your database that has a **Date** column and a **Numeric Value** column.
+
+#### Method A: Using the Configuration Manager (Recommended)
+1.  Start the Analytics UI: `streamlit run analytics_ui.py`
+2.  Navigate to the **Configuration Manager** tab in the sidebar.
+3.  **Target Table**: Select the table you want to analyze (e.g., `dest_daily_sales`).
+4.  **Date Column**: Enter the name of the time-series column (e.g., `sale_date`).
+5.  **Value Column**: Enter the name of the numeric column to analyze (e.g., `total_amount`).
+6.  **Model Type**: Choose `anomaly_detection` or `forecast`.
+7.  Click **Activate Analytics**.
+
+#### Method B: Using SQL
+You can manually insert rules into the database if you prefer SQL scripts.
+
+```sql
+-- Enable Anomaly Detection
+INSERT INTO analytics_config (target_table, date_column, value_column, model_type)
+VALUES ('dest_daily_sales', 'sale_date', 'total_amount', 'anomaly_detection');
+
+-- Enable Forecasting
+INSERT INTO analytics_config (target_table, date_column, value_column, model_type)
+VALUES ('dest_daily_sales', 'sale_date', 'total_amount', 'forecast');
+```
+
+### Example: Enable Forecasting
+
+```sql
+INSERT INTO analytics_config (target_table, date_column, value_column, model_type)
+VALUES ('dest_daily_sales', 'sale_date', 'total_amount', 'forecast');
+```
+
+Once configured, the `run_predictive_analytics` asset in Dagster will pick up these settings, run the models, and save the results to `analytics_predictions`. You can then view these results in the **Analytics UI**.
 
 ---
 

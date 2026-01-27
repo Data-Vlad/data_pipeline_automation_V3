@@ -41,13 +41,17 @@ SET
             {
                 "type": "find_and_fill_totp",
                 "selector": "id",
-                "selector_value": "[[$current.data.fieldId]]",
+                "selector_value": "otpValue|input",
                 "totp_secret_env_var": "MY_SITE_TOTP_SECRET"
             },
             {
                 "type": "click",
                 "selector": "xpath",
                 "selector_value": "//*[text()=''Verify'']"
+            },
+            {
+                "type": "wait",
+                "duration_seconds": 15
             },
             {
                 "type": "navigate",
