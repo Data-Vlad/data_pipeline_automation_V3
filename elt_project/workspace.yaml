@@ -1,0 +1,6 @@
+# workspace.yaml
+load_from:
+  - python_module:
+      module_name: elt_project.definitions
+      # This 'attribute' key tells Dagster to look for the 'defs' object inside the module.
+      attribute: defs
