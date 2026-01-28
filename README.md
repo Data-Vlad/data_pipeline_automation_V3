@@ -1,6 +1,6 @@
 # Data Pipeline Automation Framework
 
-**Note: This version implements the Analytics and unstructured data part of the system.**
+**This version implements the Analytics and unstructured data part of the system.**
 
 ## Overview
 This project is a robust, metadata-driven ELT (Extract, Load, Transform) framework built on **Dagster** and **SQL Server**. It automates the ingestion of data from various sources (CSV, Excel, Web Scrapers, SFTP) into a centralized data warehouse, ensuring data integrity through strict locking and dependency management mechanisms.
