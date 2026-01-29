@@ -285,16 +285,16 @@ def get_pipelines():
     """
     logger.info("API     : Fetching pipeline configurations from database...")
     
-    # Use a defaultdict to easily group imports under their parent pipeline.
-    # We now have separate lists for file-based imports and scrapers.
-    pipeline_groups = defaultdict(lambda: {
-        "etl_imports": [], 
-        "ingestion_imports": [], 
-        "monitored_directory": None
-    })
-
     for attempt in range(2):  # Allow one retry
         try:
+            # Initialize/reset on each attempt to prevent duplicates on retry.
+            # Reverting to original key names as the previous change was incorrect.
+            pipeline_groups = defaultdict(lambda: {
+                "load_imports": [], 
+                "ingest_imports": [], 
+                "monitored_directory": None
+            })
+
             conn = get_db_connection()
             # Query to get all active pipeline configurations.
             query = text("""
@@ -316,9 +316,9 @@ def get_pipelines():
                 import_data = {"import_name": row.import_name}
 
                 if is_scraper:
-                    pipeline_groups[row.pipeline_name]["ingestion_imports"].append(import_data)
+                    pipeline_groups[row.pipeline_name]["ingest_imports"].append(import_data)
                 else:
-                    pipeline_groups[row.pipeline_name]["etl_imports"].append(import_data)
+                    pipeline_groups[row.pipeline_name]["load_imports"].append(import_data)
 
                 if row.monitored_directory:
                     pipeline_groups[row.pipeline_name]["monitored_directory"] = os.path.normpath(
@@ -330,7 +330,7 @@ def get_pipelines():
             pipelines = [
                 {"pipeline_name": pipeline_name, **data} 
                 for pipeline_name, data in pipeline_groups.items()
-                if data["etl_imports"] or data["ingestion_imports"]
+                if data["load_imports"] or data["ingest_imports"]
             ]
             
             logger.info(f"API     : Successfully fetched and processed {len(pipelines)} pipelines.")
