@@ -809,3 +809,19 @@ Error: ('Connection aborted.', ConnectionResetError(10054, 'An existing connecti
 2026-01-29 16:02:06 - INFO     - <-- GET /api/pipelines - 200 OK
 2026-01-29 16:02:06 - INFO     - --> GET /favicon.ico
 2026-01-29 16:02:06 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-01-29 16:04:18 - INFO     - --> POST /api/run_imports
+2026-01-29 16:04:18 - INFO     - API     : Received request to run 1 imports: ['BKL_BUDGET_ALL_VER_1_3']
+2026-01-29 16:04:18 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 16:04:21 - INFO     - setup plugin alembic.autogenerate.schemas
+2026-01-29 16:04:21 - INFO     - setup plugin alembic.autogenerate.tables
+2026-01-29 16:04:21 - INFO     - setup plugin alembic.autogenerate.types
+2026-01-29 16:04:21 - INFO     - setup plugin alembic.autogenerate.constraints
+2026-01-29 16:04:21 - INFO     - setup plugin alembic.autogenerate.defaults
+2026-01-29 16:04:21 - INFO     - setup plugin alembic.autogenerate.comments
+2026-01-29 16:04:23 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:04:23 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:04:25 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:04:25 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:04:25 - INFO     - Running stamp_revision  -> 7e2f3204cf8e
+2026-01-29 16:04:25 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:04:25 - INFO     - Will assume non-transactional DDL.
