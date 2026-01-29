@@ -341,9 +341,8 @@ def get_pipelines():
             ]
             
             logger.info(f"API     : Successfully fetched and processed {len(pipelines)} pipelines.")
-            response = jsonify({"pipelines": pipelines})
-            response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-            return response
+            # The frontend error "pipelines.forEach is not a function" indicates it expects a raw list.
+            return jsonify(pipelines)
 
         except Exception as e:
             logger.warning(
