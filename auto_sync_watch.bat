@@ -5,13 +5,11 @@ setlocal EnableDelayedExpansion
 :: CONFIGURATION
 :: ============================================================================
 
-:: Path to Repository 1 (Calculated: Go up 3 levels from sql/ folder to project root)
-pushd "%~dp0..\..\.."
-set "REPO_1=%CD%"
-popd
+:: Path to Repository 1 (The folder containing .git for V2)
+set "REPO_1=C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2"
 
-:: Path to Repository 2 (Auto-detected by replacing V2 with V3)
-set "REPO_2=%REPO_1:V2=V3%"
+:: Path to Repository 2 (The folder containing .git for V3)
+set "REPO_2=C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V3"
 
 :: How often to check for changes (in seconds)
 set "INTERVAL=10"
