@@ -1,7 +1,7 @@
 @echo off
 setlocal EnableDelayedExpansion
 
-title Data Launchpad Launcher
+title GitHub Updater
 :: ============================================================================
 :: CONFIGURATION
 :: ============================================================================

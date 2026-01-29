@@ -275,7 +275,7 @@ set "UI_CMD=%PYTHONW_EXE% %UI_SCRIPT% --server %DB_SERVER% --database %DB_DATABA
 :: ----------------------------------------------------------------------------
 
 :: Start the UI process in the background FIRST.
-start "Data Importer UI" /B %UI_CMD% >nul 2>&1
+start "Data Importer UI" %UI_CMD%
 
 :: --- Wait for the server to be ready before opening the browser ---
 :: This loop actively checks if the port is open, avoiding the "Connection Refused" error.
