@@ -375,3 +375,29 @@
 2026-01-29 15:54:24 - INFO     - <-- GET /api/pipelines - 200 OK
 2026-01-29 15:54:24 - INFO     - --> GET /favicon.ico
 2026-01-29 15:54:24 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-01-29 15:55:42 - INFO     - --> POST /api/run_imports
+2026-01-29 15:55:42 - INFO     - API     : Received request to run 1 imports: ['BKL_BUDGET_ALL_VER_1_3']
+2026-01-29 15:55:42 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:55:47 - INFO     - setup plugin alembic.autogenerate.schemas
+2026-01-29 15:55:47 - INFO     - setup plugin alembic.autogenerate.tables
+2026-01-29 15:55:47 - INFO     - setup plugin alembic.autogenerate.types
+2026-01-29 15:55:47 - INFO     - setup plugin alembic.autogenerate.constraints
+2026-01-29 15:55:47 - INFO     - setup plugin alembic.autogenerate.defaults
+2026-01-29 15:55:47 - INFO     - setup plugin alembic.autogenerate.comments
+2026-01-29 15:55:50 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:55:50 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:55:53 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:55:53 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:55:54 - INFO     - Running stamp_revision  -> 7e2f3204cf8e
+2026-01-29 15:55:54 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:55:54 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:55:55 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:55:55 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:55:56 - INFO     - Running stamp_revision  -> 7e2f3204cf8e
+2026-01-29 15:55:56 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:55:56 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:55:56 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:55:56 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:55:57 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:55:57 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:55:58 - INFO     - Running stamp_revision  -> 7e2f3204cf8e
