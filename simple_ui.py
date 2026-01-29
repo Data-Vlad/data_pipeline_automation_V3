@@ -333,6 +333,10 @@ def get_pipelines():
                 if data["load_imports"] or data["ingest_imports"]
             ]
             
+            if pipelines:
+                # Log the first pipeline object to help debug frontend key mismatches
+                logger.info(f"API     : DEBUG - Pipeline Data Structure: {pipelines[0]}")
+
             logger.info(f"API     : Successfully fetched and processed {len(pipelines)} pipelines.")
             return jsonify(pipelines)
 
