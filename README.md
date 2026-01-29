@@ -1,13 +1,11 @@
 # Data Pipeline Automation Framework
 
-**This version implements the Analytics and unstructured data part of the system.**
+**This version of the code includes ELT loading process.**
 
 ## Overview
 This project is a robust, metadata-driven ELT (Extract, Load, Transform) framework built on **Dagster** and **SQL Server**. It automates the ingestion of data from various sources (CSV, Excel, Web Scrapers, SFTP) into a centralized data warehouse, ensuring data integrity through strict locking and dependency management mechanisms.
 
 This project provides a one-click runner (`run_elt_service.bat`) to automate the setup and execution of the framework. It handles environment checks, code updates, dependency installation, and service startup, making it easy for end-users to run the data pipelines.
-
-**Note:** This version of the code includes **Ingestion** capabilities, enabling independent execution of data acquisition (Web Scraping, SFTP) separate from the ELT loading process.
 
 ## Key Features
 
@@ -42,12 +40,6 @@ You can explicitly chain pipelines to ensure correct execution order using the `
 *   **Toast Notifications**: (Windows) Instant desktop notifications upon file processing success or failure.
 *   **Local Logs**: Writes simple, readable success/failure logs back to the monitored directory (e.g., `2023-11-20__run_history.log`) for non-technical users.
 
-### 7. 🤖 Modern Analytics & AI
-*   **Automated Forecasting**: Built-in ML engine automatically generates forecasts for time-series data found in destination tables.
-*   **Anomaly Detection**: Uses Isolation Forest algorithms to automatically flag data points that deviate significantly from the norm.
-*   **Interactive Analytics UI**: A separate, modern **Streamlit** application (`analytics_ui.py`) allows users to explore data, view dashboards, and visualize AI predictions interactively.
-*   **Metadata-Driven**: Just like pipelines, you configure which tables to analyze in the `analytics_config` table, and the system handles the rest.
-
 ## Core Concepts
 
 It's crucial to distinguish between data parsing and data transformation within this framework:
@@ -81,7 +73,6 @@ This separation keeps the Python code focused on technical parsing, while busine
     *   **Database Backup**: A one-click asset that scripts out the data from critical configuration and log tables to `.sql` files for versioning or disaster recovery.
     *   **Local Scraper Testing**: A command-line script (`test_scraper_config.py`) allows for rapid, local testing of complex scraper configurations before deployment to the database.
 *   **Security Hardening**: Includes built-in protections against common vulnerabilities like arbitrary code execution, path traversal, and SQL injection.
-*   **AI Integration**: Native support for `scikit-learn` based predictive modeling assets.
 
 ## 3. Getting Started
 
@@ -110,7 +101,6 @@ pip install -e .
     2.  `02_setup_data_governance.sql` (Creates data quality tables)
     3.  `03_manage_elt_pipeline_configs.sql` (Creates the main config table)
     4.  `05_setup_data_enrichment.sql` (Creates enrichment rules table)
-    5.  `06_setup_analytics.sql` (Creates analytics config and prediction tables)
     5.  *(Execute any other custom table/procedure scripts you have)*
 
 > **Note**: The SQL files in the `sql/` directory are numbered to suggest an execution order.
@@ -136,14 +126,6 @@ DB_TRUST_SERVER_CERTIFICATE="yes"
     dagster dev
     ```
 2.  **Open the UI**: Navigate to `http://localhost:3000` in your web browser. You should see the assets and jobs that have been dynamically generated.
-
-### 3.6. Running the Analytics UI
-
-To launch the modern analytics dashboard:
-```bash
-streamlit run analytics_ui.py
-```
-This will open a new tab in your browser (usually `http://localhost:8501`) with the interactive dashboard.
 
 ## 4. How to Add a New Pipeline (The Easy Way)
 
@@ -1910,106 +1892,18 @@ You can now use `parser_type: "json"` in your YAML configuration files.
 
 ---
 
-## 7. Modern Analytics & AI Guide
-
-This framework includes a built-in, automated Machine Learning (ML) engine designed to provide actionable insights from your data without requiring deep data science expertise. It runs alongside your ELT pipelines, monitoring data for anomalies and generating future forecasts.
-
-### 7.1. Architecture
-
-The analytics module consists of four integrated components:
-*   **The Brain (`ml_engine.py`)**: A Python module using `scikit-learn` to perform calculations.
-*   **The Memory (SQL Server)**: Stores configuration (`analytics_config`) and results (`analytics_predictions`).
-*   **The Automation (Dagster)**: The `analytics_ai` asset group runs the models automatically.
-*   **The Interface (Streamlit)**: A web-based dashboard for configuration and visualization.
-
-### 7.2. Implementation Steps
-
-#### Step 1: Database Setup
-Ensure you have executed the setup script to create the necessary tables.
-*   Script: `elt_project/sql/06_setup_analytics.sql`
-*   Action: Run this script in your SQL Server database. It creates `analytics_config` and `analytics_predictions`.
-
-#### Step 2: Install Dependencies
-The ML engine requires specific Python libraries. Ensure your environment has them installed:
-```bash
-pip install scikit-learn prophet plotly streamlit
-```
-*(Note: `prophet` is optional but recommended for better forecasting. The system falls back to Linear Regression if it's missing.)*
-
-#### Step 3: Launch the Analytics UI
-To configure rules and view dashboards, run the Streamlit application:
-```bash
-streamlit run analytics_ui.py
-```
-This will open the interface in your browser (default: `http://localhost:8501`).
-
-### 7.3. Configuration Guide
-
-You can configure analytics rules either through the UI or directly via SQL.
-
-#### Method A: Using the Configuration Manager (UI)
-1.  Navigate to the **Configuration Manager** tab in the Analytics UI.
-2.  **Target Table**: Select the database table you wish to analyze (e.g., `dest_daily_sales`).
-3.  **Date Column**: Enter the name of the column containing date/time data (e.g., `sale_date`).
-4.  **Value Column**: Enter the name of the numeric column to analyze (e.g., `total_amount`).
-5.  **Model Type**:
-    *   `anomaly_detection`: Flags unusual data points.
-    *   `forecast`: Predicts future values.
-6.  **Alert Webhook URL** (Optional): Paste a Slack or Microsoft Teams webhook URL. The system will send a POST request to this URL if anomalies are detected.
-7.  Click **Activate Analytics**.
-
-#### Method B: Using SQL
-You can insert configuration rows directly into the database.
-
-```sql
--- Example: Enable Anomaly Detection with Alerting
-INSERT INTO analytics_config (target_table, date_column, value_column, model_type, alert_webhook_url)
-VALUES ('dest_daily_sales', 'sale_date', 'total_amount', 'anomaly_detection', 'https://hooks.slack.com/services/T000/B000/XXX');
-
--- Example: Enable Forecasting
-INSERT INTO analytics_config (target_table, date_column, value_column, model_type)
-VALUES ('dest_daily_sales', 'sale_date', 'total_amount', 'forecast');
-```
-
-### 7.4. How It Works (The Execution Loop)
-
-1.  **Trigger**: The `run_predictive_analytics` asset in Dagster executes (either manually or via schedule).
-2.  **Fetch**: It reads active rules from `analytics_config` and queries the specified `target_table` for data.
-3.  **Process**:
-    *   **Anomaly Detection**: Uses the **Isolation Forest** algorithm to identify data points that deviate significantly from the norm.
-    *   **Forecasting**: Uses **Facebook Prophet** (if installed) or **Linear Regression** to generate predictions for the next 30 days.
-4.  **Alert**: If anomalies are found and a webhook is configured, a notification is sent immediately.
-5.  **Store**: Results (anomalies, scores, predicted values) are saved to the `analytics_predictions` table.
-
-### 7.5. Using the Analytics Dashboard
-
-The Streamlit UI provides several views:
-
-*   **Dashboard**: A high-level executive view showing pipeline health metrics (Success/Fail counts) and the total number of AI-detected anomalies.
-*   **Predictive Insights**: A detailed view for specific tables.
-    *   Select a table to see a time-series chart.
-    *   **Red Dots**: Indicate detected anomalies.
-    *   **Dashed Lines**: Indicate future forecasts.
-*   **Auto-Dashboards**: A "Smart" view where the AI analyzes the structure of a table and automatically generates the best visualization (e.g., Correlation Matrix, Bar Chart, Scatter Plot) without manual setup.
-*   **Data Explorer**: A raw data viewer for quick ad-hoc analysis.
-
-### 7.6. Smart Auto-Dashboards Logic
-
-The **Auto-Dashboards** feature uses the ML Engine to automatically determine the best way to visualize any table in your database.
-
-**How it works:**
-1.  **Data Inspection**: When you select a table, the engine samples the data to identify column types (Numeric, Date/Time, Categorical).
-2.  **Pattern Recognition**: It applies heuristic logic to detect patterns:
-    *   **Time Series**: If a Date and Numeric column are found.
-    *   **Correlation**: If 3+ Numeric columns are found.
-    *   **Scatter Plot**: If exactly 2 Numeric columns are found.
-    *   **Bar Chart**: If Categorical and Numeric columns are found.
-    *   **Distribution**: If a single Numeric column is found.
-3.  **Auto-Rendering**: The system dynamically generates the appropriate interactive Plotly chart based on the recommendation.
-
----
-
 ## Purpose of the `id` Field in `elt_pipeline_configs`
+
+The `id` field in the `elt_pipeline_configs` table serves as the **primary key** for the table, providing several key functions:
+
+1.  **Unique Identification**: As a `PRIMARY KEY`, it guarantees that each row (i.e., each pipeline configuration) has a unique identifier.
+2.  **Auto-Incrementing**: The `IDENTITY(1,1)` property ensures that the database automatically assigns a unique integer value to `id` for each new row inserted, starting from 1 and incrementing by 1. This removes the need for manual ID management.
+3.  **Data Integrity**: It enforces entity integrity, a fundamental principle of relational databases, ensuring that every record is uniquely identifiable.
+4.  **Referential Integrity (Potential)**: While not explicitly used as a foreign key in other tables within this project's current scope, a primary key like `id` is crucial for establishing relationships. For instance, a future `pipeline_run_logs` table could use `config_id` as a foreign key referencing `elt_pipeline_configs.id`.
+5.  **Efficient Data Retrieval**: Database systems leverage primary keys to create indexes, which significantly accelerate data retrieval operations when querying for specific configurations.
+
+In essence, `id` is a standard, best-practice database column that provides a stable, unique, and efficient way to reference and manage individual pipeline configurations within your metadata store.
+
 
 # Dynamic, Metadata-Driven ELT Pipelines
 
@@ -2496,63 +2390,3 @@ A shortcut to this batch file will also be created on your Desktop for easy acce
 *   `elt_project/sensors.py`: File sensor logic.
 *   `elt_project/definitions.py`: Main entry point for Dagster.
 *   `simple_ui.py`: The Flask-based user interface.
-
-
-### 7.5. Smart Auto-Dashboards
-
-The **Auto-Dashboards** feature uses the ML Engine to automatically determine the best way to visualize any table in your database, without manual configuration.
-
-**How it works:**
-1.  **Data Inspection**: When you select a table, the engine samples the data to identify column types (Numeric, Date/Time, Categorical).
-2.  **Pattern Recognition**: It applies heuristic logic to detect patterns:
-    *   **Time Series**: If a Date and Numeric column are found.
-    *   **Correlation**: If 3+ Numeric columns are found.
-    *   **Scatter Plot**: If exactly 2 Numeric columns are found.
-    *   **Bar Chart**: If Categorical and Numeric columns are found.
-    *   **Distribution**: If a single Numeric column is found.
-3.  **Auto-Rendering**: The system dynamically generates the appropriate interactive Plotly chart based on the recommendation.
-
----
-
-## 8. Data Stewardship & Master Data Management (MDM)
-
-The **Data Steward** interface allows authorized users to manually intervene in the data pipeline. It provides a spreadsheet-like view for editing database tables directly from the web browser, eliminating the need for direct SQL access or re-uploading source files to fix minor errors.
-
-### 8.1. Features
-*   **Interactive Grid**: Sort, filter, and edit data just like in Excel.
-*   **Schema-Aware**: Respects the underlying database schema (columns and data types).
-*   **Safe Updates**: Uses a transaction-safe method to update records without destroying table structures.
-*   **Filtered Access**: Restricts editing to Staging (`stg_`) and Dimension (`dim_`) tables to protect system integrity.
-
-### 8.2. Common Scenarios
-
-#### Scenario A: Correcting Data Quality Failures
-A pipeline fails because a row in `stg_sales` has a `Country` code of 'USA ' (with a trailing space) which violates a foreign key constraint.
-1.  Go to **Data Steward**.
-2.  Select `stg_sales`.
-3.  Find the row with 'USA '.
-4.  Edit the cell to 'USA'.
-5.  Click **Save Changes**.
-6.  Re-run the **Transform** asset in Dagster.
-
-#### Scenario B: Managing Lookup Tables
-You need to add a new product category to your mapping table.
-1.  Go to **Data Steward**.
-2.  Select `dim_product_categories`.
-3.  Scroll to the bottom and add a new row: `Category_ID: 105`, `Name: 'Smart Home'`.
-4.  Click **Save Changes**.
-5.  The new category is immediately available for enrichment rules.
-
-### 8.3. Implementation Details
-
-The Data Steward module is built into `analytics_ui.py` using Streamlit's `data_editor` widget.
-
-**How Saving Works:**
-When you click "Save Changes", the application performs the following atomic operation:
-1.  **Connect**: Opens a transaction with the SQL Server database.
-2.  **Truncate**: Executes `DELETE FROM [Selected_Table]`. This clears the data but keeps the table definition (keys, indexes, types) intact.
-3.  **Insert**: Bulk inserts the data from the UI grid back into the table.
-4.  **Commit**: If all steps succeed, the transaction is committed. If any error occurs (e.g., data type mismatch), the transaction rolls back, and the original data is restored.
-
-**Configuration:**
-No additional configuration is required. The module automatically scans the database for tables matching the pattern `stg_%` or `dim_%`. To expose more tables, modify the SQL query in the `Data Steward` section of `analytics_ui.py`.
