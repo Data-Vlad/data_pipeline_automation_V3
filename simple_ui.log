@@ -682,3 +682,104 @@
 2026-01-29 15:58:30 - INFO     - Context impl SQLiteImpl.
 2026-01-29 15:58:30 - INFO     - Will assume non-transactional DDL.
 2026-01-29 15:58:31 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:59:00 - ERROR - generic_selenium_scraper - Scraping Runtime Error for 'BKL_BUDGET_ALL_VER_1_3':
+SCRAPER ACTION FAILED at index 6:
+{
+    "type": "navigate",
+    "url": "https://fscm.cunyfirst.cuny.edu/psp/cnyfsprd/EMPLOYEE/ERP/c/QUERY_MANAGER.SCHED_QUERY.GBL?FolderPath=PORTAL_ROOT_OBJECT.PT_REPORTING_TOOLS.PT_QUERY.PT_SCHED_QUERY_GBL&IsFolder=false&IgnoreParamTempl=FolderPath%2cIsFolder"
+}
+Error: ('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))
+
+Stack Trace:
+Traceback (most recent call last):
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\urllib3\connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\urllib3\connection.py", line 571, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 1423, in getresponse
+    response.begin()
+  File "C:\Users\Staff\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 331, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 292, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\AppData\Local\Programs\Python\Python312\Lib\socket.py", line 707, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users/Staff/Dropbox/Projects/Work/data_pipeline_automation_V2\elt_project\elt_project\assets\custom_parsers.py", line 284, in _process_actions
+    driver.get(action["url"])
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\selenium\webdriver\remote\webdriver.py", line 356, in get
+    self.execute(Command.GET, {"url": url})
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\selenium\webdriver\remote\webdriver.py", line 345, in execute
+    response = self.command_executor.execute(driver_command, params)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\selenium\webdriver\remote\remote_connection.py", line 302, in execute
+    return self._request(command_info[0], url, body=data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\selenium\webdriver\remote\remote_connection.py", line 322, in _request
+    response = self._conn.request(method, url, body=body, headers=headers)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\urllib3\_request_methods.py", line 143, in request
+    return self.request_encode_body(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\urllib3\_request_methods.py", line 278, in request_encode_body
+    return self.urlopen(method, url, **extra_kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\urllib3\poolmanager.py", line 457, in urlopen
+    response = conn.urlopen(method, u.request_uri, **kw)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\urllib3\connectionpool.py", line 841, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\urllib3\util\retry.py", line 490, in increment
+    raise reraise(type(error), error, _stacktrace)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\urllib3\util\util.py", line 38, in reraise
+    raise value.with_traceback(tb)
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\urllib3\connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\urllib3\connection.py", line 571, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 1423, in getresponse
+    response.begin()
+  File "C:\Users\Staff\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 331, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 292, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\AppData\Local\Programs\Python\Python312\Lib\socket.py", line 707, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+urllib3.exceptions.ProtocolError: ('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users/Staff/Dropbox/Projects/Work/data_pipeline_automation_V2\elt_project\elt_project\assets\custom_parsers.py", line 447, in generic_selenium_scraper
+    _process_actions(driver, config.get("actions", []), scraped_data_accumulator)
+  File "C:\Users/Staff/Dropbox/Projects/Work/data_pipeline_automation_V2\elt_project\elt_project\assets\custom_parsers.py", line 333, in _process_actions
+    raise RuntimeError(msg) from e
+RuntimeError: SCRAPER ACTION FAILED at index 6:
+{
+    "type": "navigate",
+    "url": "https://fscm.cunyfirst.cuny.edu/psp/cnyfsprd/EMPLOYEE/ERP/c/QUERY_MANAGER.SCHED_QUERY.GBL?FolderPath=PORTAL_ROOT_OBJECT.PT_REPORTING_TOOLS.PT_QUERY.PT_SCHED_QUERY_GBL&IsFolder=false&IgnoreParamTempl=FolderPath%2cIsFolder"
+}
+Error: ('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))
+
