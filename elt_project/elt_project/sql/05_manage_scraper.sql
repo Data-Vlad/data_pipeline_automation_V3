@@ -58,6 +58,10 @@ SET
                 "url": "https://fscm.cunyfirst.cuny.edu/psp/cnyfsprd/EMPLOYEE/ERP/c/QUERY_MANAGER.SCHED_QUERY.GBL?FolderPath=PORTAL_ROOT_OBJECT.PT_REPORTING_TOOLS.PT_QUERY.PT_SCHED_QUERY_GBL&IsFolder=false&IgnoreParamTempl=FolderPath%2cIsFolder"
             },
             {
+                "type": "wait",
+                "duration_seconds": 10
+            },
+            {
                 "type": "find_and_fill",
                 "selector": "id",
                 "selector_value": "QUERY_RUN_CNTRL_RUN_CNTL_ID",
