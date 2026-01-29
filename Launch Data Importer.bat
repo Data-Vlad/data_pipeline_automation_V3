@@ -108,6 +108,17 @@ if %errorlevel% neq 0 (call :log INFO "Could not check for updates via Git. Usin
 
 :: ----------------------------------------------------------------------------
 :: Verifying Python virtual environment...
+if exist "%PYTHON_EXE%" (
+    "%PYTHON_EXE%" --version >nul 2>&1
+    if errorlevel 1 (
+        call :log WARNING "Virtual environment is corrupted. Removing..."
+        rd /s /q "%VENV_DIR%"
+        if exist "%VENV_DIR%" (
+            call :handle_error "Failed to remove corrupted virtual environment. A file may be locked by another process. Please close other programs and try again."
+        )
+    )
+)
+
 if not exist "%PYTHON_EXE%" (
     call :log WARNING "Virtual environment not found. Creating it now..."
     python -m venv "%VENV_DIR%" >"%ERROR_LOG%" 2>&1
