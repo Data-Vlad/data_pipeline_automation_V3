@@ -1,6 +1,7 @@
 @echo off
 setlocal EnableDelayedExpansion
 
+title Data Launchpad Launcher
 :: ============================================================================
 :: CONFIGURATION
 :: ============================================================================
