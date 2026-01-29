@@ -38,7 +38,7 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)-8s - %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
     # Log directly to simple_ui.log instead of stdout to avoid duplicate logs (e.g. ui-server.log)
-    handlers=[logging.FileHandler('simple_ui.log')]
+    handlers=[logging.FileHandler('simple_ui.log', mode='w')]
 )
 logger = logging.getLogger(__name__)
 
