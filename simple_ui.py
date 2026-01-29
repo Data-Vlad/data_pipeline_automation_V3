@@ -341,7 +341,7 @@ def get_pipelines():
             ]
             
             logger.info(f"API     : Successfully fetched and processed {len(pipelines)} pipelines.")
-            return jsonify({"pipelines": pipelines})
+            return jsonify(pipelines)
 
         except Exception as e:
             logger.warning(
