@@ -334,7 +334,7 @@ def get_pipelines():
             ]
             
             logger.info(f"API     : Successfully fetched and processed {len(pipelines)} pipelines.")
-            return jsonify(pipelines)
+            return jsonify({"pipelines": pipelines})
 
         except Exception as e:
             logger.warning(
@@ -620,4 +620,3 @@ if __name__ == "__main__":
     # The server starts immediately. The launcher script (`.bat` file) is responsible
     # for opening the web browser. The user will first see the status page.
     serve(app, host="0.0.0.0", port=3000)
-
