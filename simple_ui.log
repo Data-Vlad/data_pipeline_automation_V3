@@ -226,3 +226,14 @@
 2026-01-29 15:33:23 - INFO     - <-- GET /api/pipelines - 200 OK
 2026-01-29 15:33:23 - INFO     - --> GET /favicon.ico
 2026-01-29 15:33:23 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-01-29 15:33:49 - INFO     - --> GET /
+2026-01-29 15:33:49 - INFO     - <-- GET / - 200 OK
+2026-01-29 15:33:49 - INFO     - --> GET /.well-known/appspecific/com.chrome.devtools.json
+2026-01-29 15:33:49 - INFO     - --> GET /api/pipelines
+2026-01-29 15:33:49 - WARNING  - 404 Not Found: http://localhost:3000/.well-known/appspecific/com.chrome.devtools.json
+2026-01-29 15:33:49 - INFO     - API     : Fetching pipeline configurations from database...
+2026-01-29 15:33:49 - INFO     - <-- GET /.well-known/appspecific/com.chrome.devtools.json - 404 NOT FOUND
+2026-01-29 15:33:49 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-01-29 15:33:49 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-01-29 15:33:49 - INFO     - --> GET /favicon.ico
+2026-01-29 15:33:49 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
