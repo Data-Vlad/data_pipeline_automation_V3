@@ -5688,3 +5688,30 @@ Symbols not available. Dumping unresolved backtrace:
 2026-01-29 14:21:02 - INFO     - <-- GET /api/pipelines - 200 OK
 2026-01-29 14:21:02 - INFO     - --> GET /favicon.ico
 2026-01-29 14:21:02 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-01-29 14:26:05 - INFO     - ============================================================
+2026-01-29 14:26:05 - INFO     - Server  : Starting Data Importer UI on http://localhost:3000
+2026-01-29 14:26:05 - INFO     - --- Application Initialization Started ---
+2026-01-29 14:26:05 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\simple_ui.log
+2026-01-29 14:26:05 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-01-29 14:26:05 - INFO     - Server  : Initialization is running in the background...
+2026-01-29 14:26:05 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-01-29 14:26:05 - INFO     - INIT(2/3): Testing database connection...
+2026-01-29 14:26:05 - INFO     - DB      : Creating temporary engine to test connection...
+2026-01-29 14:26:05 - INFO     - Serving on http://0.0.0.0:3000
+2026-01-29 14:26:05 - INFO     - DB      : Connection test successful.
+2026-01-29 14:26:05 - INFO     - INIT(2/3): Database connection test successful.
+2026-01-29 14:26:05 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-01-29 14:26:05 - INFO     - [3/3] Dagster workspace file found.
+2026-01-29 14:26:05 - INFO     - --- Application Initialization Succeeded ---
+2026-01-29 14:26:05 - INFO     - ============================================================
+2026-01-29 14:26:06 - INFO     - --> GET /
+2026-01-29 14:26:06 - INFO     - <-- GET / - 200 OK
+2026-01-29 14:26:06 - INFO     - --> GET /api/pipelines
+2026-01-29 14:26:06 - INFO     - API     : Fetching pipeline configurations from database...
+2026-01-29 14:26:06 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-01-29 14:26:06 - INFO     - DB      : Database engine initialized successfully.
+2026-01-29 14:26:06 - INFO     - API     : DEBUG - Pipeline Data Structure: {'pipeline_name': 'CUNYFirst_FSC', 'load_imports': [{'import_name': 'COA_Operating_Unit'}, {'import_name': 'CU_BUDGET_OVERVIEW_ALL'}, {'import_name': 'CU_FSCC_RECON_DATA'}, {'import_name': 'CU_FSPO_REQUESTORS'}, {'import_name': 'CU_FSTE_EMPLOYEE_DATA'}, {'import_name': 'CU_FSTE_PROXY'}, {'import_name': 'CU_FSTE_VAL_DEPT_APPROVERS'}, {'import_name': 'CU_PRD_MY_WALLET_TRANS'}, {'import_name': 'CU_SEC_ASL_ROLES_BY_USER'}], 'ingest_imports': [{'import_name': 'BKL_BUDGET_ALL_VER_1_3'}], 'monitored_directory': 'C:\\Pipelines\\CUNYFirst_FSC'}
+2026-01-29 14:26:06 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-01-29 14:26:06 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-01-29 14:26:06 - INFO     - --> GET /favicon.ico
+2026-01-29 14:26:06 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
