@@ -1,6 +1,0 @@
-# Make sure you are in the project directory and the venv is active
-cd "c:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation\"
-.\venv\Scripts\activate
-
-# Run the script again
-python find_bad_imports.py
