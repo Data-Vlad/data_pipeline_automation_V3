@@ -38,7 +38,7 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)-8s - %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
     # Log directly to simple_ui.log instead of stdout to avoid duplicate logs (e.g. ui-server.log)
-    handlers=[logging.FileHandler('simple_ui.log', mode='w')]
+    handlers=[logging.FileHandler('simple_ui.log')]
 )
 logger = logging.getLogger(__name__)
 
@@ -285,16 +285,16 @@ def get_pipelines():
     """
     logger.info("API     : Fetching pipeline configurations from database...")
     
+    # Use a defaultdict to easily group imports under their parent pipeline.
+    # We now have separate lists for file-based imports and scrapers.
+    pipeline_groups = defaultdict(lambda: {
+        "load_imports": [], 
+        "ingest_imports": [], 
+        "monitored_directory": None
+    })
+
     for attempt in range(2):  # Allow one retry
         try:
-            # Initialize/reset on each attempt to prevent duplicates on retry.
-            # Reverting to original key names as the previous change was incorrect.
-            pipeline_groups = defaultdict(lambda: {
-                "load_imports": [], 
-                "ingest_imports": [], 
-                "monitored_directory": None
-            })
-
             conn = get_db_connection()
             # Query to get all active pipeline configurations.
             query = text("""
@@ -328,21 +328,11 @@ def get_pipelines():
             # Convert the grouped data into a list format for the JSON response.
             # Filter out any pipeline groups that have no imports at all.
             pipelines = [
-                {
-                    "pipeline_name": pipeline_name,
-                    "load_imports": data["load_imports"],
-                    "etl_imports": data["load_imports"], # Alias for frontend compatibility
-                    "ingest_imports": data["ingest_imports"],
-                    "ingestion_imports": data["ingest_imports"], # Alias for frontend compatibility
-                    "monitored_directory": data["monitored_directory"]
-                }
+                {"pipeline_name": pipeline_name, **data} 
                 for pipeline_name, data in pipeline_groups.items()
                 if data["load_imports"] or data["ingest_imports"]
             ]
             
-            if not pipelines:
-                logger.warning("API     : No active pipelines found in the database.")
-
             logger.info(f"API     : Successfully fetched and processed {len(pipelines)} pipelines.")
             return jsonify(pipelines)
 
@@ -630,3 +620,4 @@ if __name__ == "__main__":
     # The server starts immediately. The launcher script (`.bat` file) is responsible
     # for opening the web browser. The user will first see the status page.
     serve(app, host="0.0.0.0", port=3000)
+
