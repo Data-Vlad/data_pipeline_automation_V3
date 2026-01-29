@@ -154,3 +154,35 @@
 2026-01-29 15:29:35 - INFO     - <-- GET /api/pipelines - 200 OK
 2026-01-29 15:29:35 - INFO     - --> GET /favicon.ico
 2026-01-29 15:29:35 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-01-29 15:30:02 - INFO     - --> GET /
+2026-01-29 15:30:02 - INFO     - <-- GET / - 200 OK
+2026-01-29 15:30:02 - INFO     - --> GET /api/pipelines
+2026-01-29 15:30:02 - INFO     - API     : Fetching pipeline configurations from database...
+2026-01-29 15:30:02 - INFO     - --> GET /favicon.ico
+2026-01-29 15:30:02 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-01-29 15:30:02 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-01-29 15:30:02 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-01-29 15:30:03 - INFO     - --> GET /
+2026-01-29 15:30:03 - INFO     - <-- GET / - 200 OK
+2026-01-29 15:30:03 - INFO     - --> GET /api/pipelines
+2026-01-29 15:30:03 - INFO     - API     : Fetching pipeline configurations from database...
+2026-01-29 15:30:03 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-01-29 15:30:03 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-01-29 15:30:03 - INFO     - --> GET /favicon.ico
+2026-01-29 15:30:03 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-01-29 15:30:03 - INFO     - --> GET /
+2026-01-29 15:30:03 - INFO     - <-- GET / - 200 OK
+2026-01-29 15:30:03 - INFO     - --> GET /api/pipelines
+2026-01-29 15:30:03 - INFO     - API     : Fetching pipeline configurations from database...
+2026-01-29 15:30:03 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-01-29 15:30:03 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-01-29 15:30:03 - INFO     - --> GET /favicon.ico
+2026-01-29 15:30:03 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-01-29 15:30:04 - INFO     - --> GET /
+2026-01-29 15:30:04 - INFO     - <-- GET / - 200 OK
+2026-01-29 15:30:04 - INFO     - --> GET /api/pipelines
+2026-01-29 15:30:04 - INFO     - API     : Fetching pipeline configurations from database...
+2026-01-29 15:30:04 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-01-29 15:30:04 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-01-29 15:30:04 - INFO     - --> GET /favicon.ico
+2026-01-29 15:30:04 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
