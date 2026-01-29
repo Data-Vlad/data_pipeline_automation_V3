@@ -948,3 +948,143 @@ Error: ('Connection aborted.', ConnectionResetError(10054, 'An existing connecti
 2026-01-29 16:05:38 - INFO     - Context impl SQLiteImpl.
 2026-01-29 16:05:38 - INFO     - Will assume non-transactional DDL.
 2026-01-29 16:05:39 - INFO     - <-- GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a - 200 OK
+2026-01-29 16:05:40 - INFO     - --> GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a
+2026-01-29 16:05:40 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 16:05:40 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:40 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:40 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:40 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:41 - INFO     - <-- GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a - 200 OK
+2026-01-29 16:05:43 - INFO     - --> GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a
+2026-01-29 16:05:43 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 16:05:43 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:43 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:44 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:44 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:44 - INFO     - <-- GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a - 200 OK
+2026-01-29 16:05:46 - INFO     - --> GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a
+2026-01-29 16:05:46 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 16:05:46 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:46 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:47 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:47 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:47 - INFO     - <-- GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a - 200 OK
+2026-01-29 16:05:49 - INFO     - --> GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a
+2026-01-29 16:05:49 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 16:05:49 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:49 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:50 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:50 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:50 - INFO     - <-- GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a - 200 OK
+2026-01-29 16:06:23 - ERROR - generic_selenium_scraper - Scraping Runtime Error for 'BKL_BUDGET_ALL_VER_1_3':
+SCRAPER ACTION FAILED at index 6:
+{
+    "type": "navigate",
+    "url": "https://fscm.cunyfirst.cuny.edu/psp/cnyfsprd/EMPLOYEE/ERP/c/QUERY_MANAGER.SCHED_QUERY.GBL?FolderPath=PORTAL_ROOT_OBJECT.PT_REPORTING_TOOLS.PT_QUERY.PT_SCHED_QUERY_GBL&IsFolder=false&IgnoreParamTempl=FolderPath%2cIsFolder"
+}
+Error: Message: invalid session id: session deleted as the browser has closed the connection
+from disconnected: not connected to DevTools
+  (Session info: chrome=144.0.7559.109)
+Stacktrace:
+Symbols not available. Dumping unresolved backtrace:
+	0xf78543
+	0xf78584
+	0xd6b4e0
+	0xd5a46e
+	0xd78fc8
+	0xddf05c
+	0xdf4e59
+	0xdd7fb6
+	0xda96f9
+	0xdaa4b4
+	0x11cd034
+	0x11c82c9
+	0x11e6460
+	0xf91a68
+	0xf9988d
+	0xf80df8
+	0xf80fc2
+	0xf6ab3a
+	0x75835d49
+	0x7737d5db
+	0x7737d561
+
+
+Stack Trace:
+Traceback (most recent call last):
+  File "C:\Users/Staff/Dropbox/Projects/Work/data_pipeline_automation_V2\elt_project\elt_project\assets\custom_parsers.py", line 284, in _process_actions
+    driver.get(action["url"])
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\selenium\webdriver\remote\webdriver.py", line 356, in get
+    self.execute(Command.GET, {"url": url})
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\selenium\webdriver\remote\webdriver.py", line 347, in execute
+    self.error_handler.check_response(response)
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\selenium\webdriver\remote\errorhandler.py", line 229, in check_response
+    raise exception_class(message, screen, stacktrace)
+selenium.common.exceptions.InvalidSessionIdException: Message: invalid session id: session deleted as the browser has closed the connection
+from disconnected: not connected to DevTools
+  (Session info: chrome=144.0.7559.109)
+Stacktrace:
+Symbols not available. Dumping unresolved backtrace:
+	0xf78543
+	0xf78584
+	0xd6b4e0
+	0xd5a46e
+	0xd78fc8
+	0xddf05c
+	0xdf4e59
+	0xdd7fb6
+	0xda96f9
+	0xdaa4b4
+	0x11cd034
+	0x11c82c9
+	0x11e6460
+	0xf91a68
+	0xf9988d
+	0xf80df8
+	0xf80fc2
+	0xf6ab3a
+	0x75835d49
+	0x7737d5db
+	0x7737d561
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users/Staff/Dropbox/Projects/Work/data_pipeline_automation_V2\elt_project\elt_project\assets\custom_parsers.py", line 447, in generic_selenium_scraper
+    _process_actions(driver, config.get("actions", []), scraped_data_accumulator)
+  File "C:\Users/Staff/Dropbox/Projects/Work/data_pipeline_automation_V2\elt_project\elt_project\assets\custom_parsers.py", line 333, in _process_actions
+    raise RuntimeError(msg) from e
+RuntimeError: SCRAPER ACTION FAILED at index 6:
+{
+    "type": "navigate",
+    "url": "https://fscm.cunyfirst.cuny.edu/psp/cnyfsprd/EMPLOYEE/ERP/c/QUERY_MANAGER.SCHED_QUERY.GBL?FolderPath=PORTAL_ROOT_OBJECT.PT_REPORTING_TOOLS.PT_QUERY.PT_SCHED_QUERY_GBL&IsFolder=false&IgnoreParamTempl=FolderPath%2cIsFolder"
+}
+Error: Message: invalid session id: session deleted as the browser has closed the connection
+from disconnected: not connected to DevTools
+  (Session info: chrome=144.0.7559.109)
+Stacktrace:
+Symbols not available. Dumping unresolved backtrace:
+	0xf78543
+	0xf78584
+	0xd6b4e0
+	0xd5a46e
+	0xd78fc8
+	0xddf05c
+	0xdf4e59
+	0xdd7fb6
+	0xda96f9
+	0xdaa4b4
+	0x11cd034
+	0x11c82c9
+	0x11e6460
+	0xf91a68
+	0xf9988d
+	0xf80df8
+	0xf80fc2
+	0xf6ab3a
+	0x75835d49
+	0x7737d5db
+	0x7737d561
+
+
