@@ -288,8 +288,8 @@ def get_pipelines():
     # Use a defaultdict to easily group imports under their parent pipeline.
     # We now have separate lists for file-based imports and scrapers.
     pipeline_groups = defaultdict(lambda: {
-        "load_imports": [], 
-        "ingest_imports": [], 
+        "etl_imports": [], 
+        "ingestion_imports": [], 
         "monitored_directory": None
     })
 
@@ -316,9 +316,9 @@ def get_pipelines():
                 import_data = {"import_name": row.import_name}
 
                 if is_scraper:
-                    pipeline_groups[row.pipeline_name]["ingest_imports"].append(import_data)
+                    pipeline_groups[row.pipeline_name]["ingestion_imports"].append(import_data)
                 else:
-                    pipeline_groups[row.pipeline_name]["load_imports"].append(import_data)
+                    pipeline_groups[row.pipeline_name]["etl_imports"].append(import_data)
 
                 if row.monitored_directory:
                     pipeline_groups[row.pipeline_name]["monitored_directory"] = os.path.normpath(
@@ -330,7 +330,7 @@ def get_pipelines():
             pipelines = [
                 {"pipeline_name": pipeline_name, **data} 
                 for pipeline_name, data in pipeline_groups.items()
-                if data["load_imports"] or data["ingest_imports"]
+                if data["etl_imports"] or data["ingestion_imports"]
             ]
             
             logger.info(f"API     : Successfully fetched and processed {len(pipelines)} pipelines.")
