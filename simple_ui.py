@@ -341,7 +341,9 @@ def get_pipelines():
             ]
             
             logger.info(f"API     : Successfully fetched and processed {len(pipelines)} pipelines.")
-            return jsonify(pipelines)
+            response = jsonify({"pipelines": pipelines})
+            response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+            return response
 
         except Exception as e:
             logger.warning(
