@@ -630,3 +630,41 @@
 2026-01-29 15:58:09 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
 2026-01-29 15:58:09 - INFO     - Context impl SQLiteImpl.
 2026-01-29 15:58:09 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:58:09 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:58:09 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:58:09 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:58:12 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:58:12 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:58:12 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:58:12 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:58:12 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:58:12 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:58:12 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:58:15 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:58:15 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:58:15 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:58:15 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:58:15 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:58:15 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:58:15 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:58:18 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:58:18 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:58:18 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:58:18 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:58:18 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:58:18 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:58:18 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:58:22 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:58:22 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:58:22 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:58:22 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:58:22 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:58:22 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:58:22 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:58:24 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:58:24 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:58:24 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:58:24 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:58:24 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:58:24 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:58:24 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
