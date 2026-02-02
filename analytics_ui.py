@@ -182,7 +182,7 @@ elif page == "Clustering & Segmentation":
         df_preview = run_query(f"SELECT TOP 5 * FROM {selected_table}")
         numeric_cols = df_preview.select_dtypes(include=['float', 'int']).columns.tolist()
         
-        selected_features = st.multiselect("Select Features for Clustering", numeric_cols)
+        selected_features = st.multiselect("Select Features for Clustering", numeric_cols, default=numeric_cols, help="We've auto-selected all numeric columns. Remove any ID columns or irrelevant data.")
         n_clusters = st.slider("Number of Clusters", 2, 10, 3)
 
         if st.button("Run Clustering") and len(selected_features) >= 2:
@@ -424,16 +424,24 @@ elif page == "Configuration Manager":
     st.title("⚙️ Analytics Configuration")
     st.markdown("Enable AI models on your data tables without writing SQL.")
 
+    # Move table selection outside the form to allow dynamic column loading
+    tables_df = run_query("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'")
+    target_table = st.selectbox("Select Target Table", tables_df['TABLE_NAME'], help="Choose the table you want the AI to monitor.")
+    
+    columns = []
+    if target_table:
+        try:
+            cols_df = run_query(f"SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '{target_table}'")
+            columns = cols_df['COLUMN_NAME'].tolist()
+        except:
+            pass
+
     with st.form("add_config_form"):
         st.subheader("Add New Analysis Rule")
         
-        # Fetch available tables for dropdown
-        tables_df = run_query("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'")
-        
-        target_table = st.selectbox("Target Table", tables_df['TABLE_NAME'])
-        date_col = st.text_input("Date Column Name (e.g., sale_date)")
-        value_col = st.text_input("Value Column Name (e.g., total_amount)")
-        model_type = st.selectbox("Model Type", ["anomaly_detection", "forecast"])
+        date_col = st.selectbox("Date Column", columns, help="Select the column representing time (e.g., OrderDate).")
+        value_col = st.selectbox("Value Column", columns, help="Select the numeric metric to track (e.g., TotalAmount).")
+        model_type = st.selectbox("Model Type", ["anomaly_detection", "forecast"], help="Anomaly Detection finds outliers. Forecast predicts future values.")
         webhook_url = st.text_input("Alert Webhook URL (Optional - Slack/Teams)", type="password")
         
         submitted = st.form_submit_button("Activate Analytics")
