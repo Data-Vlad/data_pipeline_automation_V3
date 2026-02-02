@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 from sklearn.ensemble import IsolationForest
 from sklearn.linear_model import LinearRegression
+from sklearn.cluster import KMeans
 try:
     from prophet import Prophet
     PROPHET_INSTALLED = True
@@ -32,6 +33,22 @@ class MLEngine:
         df['is_anomaly'] = df['anomaly_score'].apply(lambda x: 1 if x == -1 else 0)
         
         return df
+
+    @staticmethod
+    def perform_clustering(df: pd.DataFrame, features: list, n_clusters: int = 3) -> pd.DataFrame:
+        """
+        Performs K-Means clustering on selected features.
+        """
+        if df.empty or len(features) < 1:
+            return df
+            
+        # Drop rows with missing values in selected features
+        data = df[features].dropna()
+        
+        model = KMeans(n_clusters=n_clusters, random_state=42, n_init=10)
+        data['cluster_id'] = model.fit_predict(data[features])
+        
+        return data
 
     @staticmethod
     def generate_forecast(df: pd.DataFrame, date_col: str, value_col: str, periods: int = 30, context=None) -> pd.DataFrame:
