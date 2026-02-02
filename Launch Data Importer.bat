@@ -19,11 +19,11 @@ set "UI_SCRIPT=%SCRIPT_DIR%simple_ui.py"
 set "GET_CREDS_SCRIPT=%SCRIPT_DIR%get_credentials.py"
 set "CREATE_DIRS_SCRIPT=%SCRIPT_DIR%create_dirs.py"
 set "ERROR_LOG=%SCRIPT_DIR%launcher-error.log"
-set "UI_LOG=%SCRIPT_DIR%ui-server.log"
 set "DAGSTER_HOME_DIR=%SCRIPT_DIR%dagster_home"
 
 :: Clean up old log files
 if exist "%ERROR_LOG%" del "%ERROR_LOG%"
+if exist "simple_ui.log" del "simple_ui.log"
 
 
 :: ============================================================================
@@ -109,8 +109,20 @@ if %errorlevel% neq 0 (call :log INFO "Could not check for updates via Git. Usin
 
 :: ----------------------------------------------------------------------------
 :: Verifying Python virtual environment...
+if exist "%PYTHON_EXE%" (
+    :: Venv exists, let's check its health. A broken pip is a common sign of corruption.
+    "%PYTHON_EXE%" -m pip --version >nul 2>&1
+    if %errorlevel% neq 0 (
+        call :log WARNING "Virtual environment is corrupted (pip is not working). Removing..."
+        rd /s /q "%VENV_DIR%"
+        if exist "%VENV_DIR%" (
+            call :handle_error "Failed to remove corrupted virtual environment. A file may be locked by another process. Please close other programs and try again."
+        )
+    )
+)
+
 if not exist "%PYTHON_EXE%" (
-    call :log WARNING "Virtual environment not found. Creating it now..."
+    call :log WARNING "Virtual environment not found or was corrupted. Creating it now..."
     python -m venv "%VENV_DIR%" >"%ERROR_LOG%" 2>&1
    if %errorlevel% neq 0 (
         echo.
@@ -190,11 +202,22 @@ if not defined CREDENTIAL_TARGET call :handle_error "CREDENTIAL_TARGET is not de
 
 set "DB_USERNAME="
 set "DB_PASSWORD="
+set "CREDS_OUTPUT=%TEMP%\creds_output.txt"
 
-:: The extra "" around the command are crucial for paths with spaces.
-for /f "tokens=1,* delims==" %%a in ('""%PYTHON_EXE%" "%GET_CREDS_SCRIPT%" --dotenv-path "%ENV_FILE%"" 2^>"%ERROR_LOG%"') do (
+:: Run the script first to capture output and check for errors.
+"%PYTHON_EXE%" "%GET_CREDS_SCRIPT%" --dotenv-path "%ENV_FILE%" > "%CREDS_OUTPUT%" 2> "%ERROR_LOG%"
+if %errorlevel% neq 0 (
+    echo.
+    echo [ERROR] The credential retrieval script failed.
+    type "%ERROR_LOG%"
+    if exist "%CREDS_OUTPUT%" del "%CREDS_OUTPUT%"
+    call :handle_error "Failed to retrieve database credentials. See logs above."
+)
+
+for /f "tokens=1,* delims==" %%a in ('type "%CREDS_OUTPUT%"') do (
     set "%%a=%%b"
 )
+if exist "%CREDS_OUTPUT%" del "%CREDS_OUTPUT%"
 
 if not defined DB_USERNAME (
     echo.
@@ -207,7 +230,7 @@ call :log INFO "Step 5/6: Preparing application resources..."
 
 :: Use a block with setlocal to temporarily set environment variables
 :: for just the create_dirs.py script. This is the most reliable way to pass them.
-set "CREATE_DIRS_CMD=%PYTHON_EXE% %CREATE_DIRS_SCRIPT%"
+set "CREATE_DIRS_CMD="%PYTHON_EXE%" "%CREATE_DIRS_SCRIPT%""
 cmd /c "set DB_USERNAME=%DB_USERNAME% && set DB_PASSWORD=%DB_PASSWORD% && %CREATE_DIRS_CMD%" >"%ERROR_LOG%" 2>&1
 
 if %errorlevel% neq 0 (
@@ -264,7 +287,7 @@ set "UI_CMD=%PYTHONW_EXE% %UI_SCRIPT% --server %DB_SERVER% --database %DB_DATABA
 :: ----------------------------------------------------------------------------
 
 :: Start the UI process in the background FIRST.
-start "Data Importer UI" /B %UI_CMD% >"%UI_LOG%" 2>&1
+start "Data Importer UI" %UI_CMD%
 
 :: --- Wait for the server to be ready before opening the browser ---
 :: This loop actively checks if the port is open, avoiding the "Connection Refused" error.
@@ -279,7 +302,7 @@ timeout /t 1 /nobreak >nul
 set /a wait_time+=1
 if %wait_time% lss 30 goto :wait_loop
 
-call :handle_error "The server failed to start after 30 seconds. Check ui-server.log for details."
+call :handle_error "The server failed to start after 30 seconds. Check simple_ui.log for details."
 
 :launch_browser
 start http://localhost:3000

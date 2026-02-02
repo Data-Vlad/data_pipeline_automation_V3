@@ -6,13 +6,13 @@ setlocal EnableDelayedExpansion
 :: ============================================================================
 
 :: Path to Main Repository (Source)
-set "REPO_MAIN=C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation"
+set "REPO_MAIN=C:\Users\Staff\Dropbox\Backup\data_pipeline_automation"
 
 :: Path to Repository 1 (The folder containing .git for V2)
-set "REPO_1=C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2"
+set "REPO_1=C:\Users\Staff\Dropbox\Backup\data_pipeline_automation_V2"
 
 :: Path to Repository 2 (The folder containing .git for V3)
-set "REPO_2=C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V3"
+set "REPO_2=C:\Users\Staff\Dropbox\Backup\data_pipeline_automation_V3"
 
 :: How often to check for changes (in seconds)
 set "INTERVAL=10"
