@@ -434,20 +434,30 @@ elif page == "AI Data Entry":
         schema_df = run_query(f"SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '{target_table}'")
         schema_context = schema_df.to_csv(index=False)
         
-        # Input
-        input_text = st.text_area("Paste Text Here", height=200, placeholder="E.g., 'Received shipment of 500 units of Widget A on 2023-10-25. Vendor: Acme Corp.'")
+        # Input Options
+        col_input1, col_input2 = st.columns(2)
+        with col_input1:
+            input_text = st.text_area("Option 1: Paste Text", height=200, placeholder="E.g., 'Received shipment of 500 units of Widget A...'")
+        with col_input2:
+            uploaded_file = st.file_uploader("Option 2: Upload File", type=['pdf', 'csv', 'xlsx', 'png', 'jpg', 'txt'], help="AI will extract text from the file automatically.")
         
         if st.button("✨ Extract & Map Data"):
-            if input_text:
+            content_to_process = input_text
+            
+            if uploaded_file:
+                with st.spinner(f"Reading {uploaded_file.name}..."):
+                    content_to_process = MLEngine.extract_content_from_file(uploaded_file)
+            
+            if content_to_process:
                 with st.spinner("AI is analyzing and mapping data..."):
                     try:
-                        extracted_df = MLEngine.parse_unstructured_data(input_text, target_table, schema_context)
+                        extracted_df = MLEngine.parse_unstructured_data(content_to_process, target_table, schema_context)
                         st.session_state['extracted_data'] = extracted_df
                         st.success("Extraction Complete! Review the data below.")
                     except Exception as e:
                         st.error(f"Extraction Failed: {e}")
             else:
-                st.warning("Please enter some text.")
+                st.warning("Please paste text or upload a file.")
 
         # Review & Save
         if 'extracted_data' in st.session_state:

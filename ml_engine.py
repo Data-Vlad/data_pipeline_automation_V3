@@ -5,6 +5,8 @@ from sklearn.linear_model import LinearRegression
 from sklearn.cluster import KMeans
 import re
 import json
+import io
+import base64
 try:
     from prophet import Prophet
     PROPHET_INSTALLED = True
@@ -22,6 +24,12 @@ try:
     OPENAI_INSTALLED = True
 except ImportError:
     OPENAI_INSTALLED = False
+
+try:
+    import pypdf
+    PYPDF_INSTALLED = True
+except ImportError:
+    PYPDF_INSTALLED = False
     
 class MLEngine:
     """
@@ -93,6 +101,59 @@ class MLEngine:
             return pd.DataFrame(data)
         except json.JSONDecodeError:
             raise ValueError(f"Failed to parse AI response as JSON: {response_text}")
+
+    @staticmethod
+    def extract_content_from_file(uploaded_file) -> str:
+        """
+        Extracts text content from various file types (PDF, CSV, Excel, Image).
+        """
+        file_type = uploaded_file.name.split('.')[-1].lower()
+        
+        if file_type == 'pdf':
+            if not PYPDF_INSTALLED:
+                return "Error: `pypdf` library not installed. Cannot parse PDF."
+            try:
+                reader = pypdf.PdfReader(uploaded_file)
+                text = ""
+                for page in reader.pages:
+                    text += page.extract_text() + "\n"
+                return text
+            except Exception as e:
+                return f"Error reading PDF: {e}"
+
+        elif file_type in ['csv', 'txt']:
+            try:
+                # Assume utf-8 for simplicity
+                return uploaded_file.getvalue().decode("utf-8")
+            except:
+                return str(uploaded_file.read())
+
+        elif file_type in ['xlsx', 'xls']:
+            try:
+                df = pd.read_excel(uploaded_file)
+                return df.to_string()
+            except Exception as e:
+                return f"Error reading Excel: {e}"
+
+        elif file_type in ['png', 'jpg', 'jpeg']:
+            if not OPENAI_INSTALLED:
+                return "Error: OpenAI not installed for Vision processing."
+            # Use GPT-4o Vision for images
+            base64_image = base64.b64encode(uploaded_file.getvalue()).decode('utf-8')
+            client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+            response = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[
+                    {"role": "user", "content": [
+                        {"type": "text", "text": "Transcribe the text in this image exactly as it appears."},
+                        {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}}
+                    ]}
+                ]
+            )
+            return response.choices[0].message.content
+
+        else:
+            return "Error: Unsupported file type."
 
     @staticmethod
     def perform_clustering(df: pd.DataFrame, features: list, n_clusters: int = 3) -> pd.DataFrame:
