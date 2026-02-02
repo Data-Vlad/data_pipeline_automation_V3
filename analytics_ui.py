@@ -36,9 +36,59 @@ def run_query(query_str):
     with engine.connect() as conn:
         return pd.read_sql(query_str, conn)
 
+# --- Authentication & RBAC System ---
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+    st.session_state.user_role = None
+
+def login_screen():
+    st.title("🔐 Enterprise Analytics Hub")
+    st.markdown("Please sign in to access the secure data environment.")
+    
+    col1, col2 = st.columns([1, 2])
+    with col1:
+        with st.form("login_form"):
+            username = st.text_input("Username")
+            password = st.text_input("Password", type="password")
+            submitted = st.form_submit_button("Sign In")
+            
+            if submitted:
+                # In a real production app, validate against a DB table or SSO (LDAP/Okta)
+                if username == "admin" and password == "admin123":
+                    st.session_state.authenticated = True
+                    st.session_state.user_role = "Admin"
+                    st.success("Welcome, Administrator.")
+                    st.rerun()
+                elif username == "user" and password == "user123":
+                    st.session_state.authenticated = True
+                    st.session_state.user_role = "Viewer"
+                    st.success("Welcome, User.")
+                    st.rerun()
+                else:
+                    st.error("Invalid credentials. (Try admin/admin123)")
+
+if not st.session_state.authenticated:
+    login_screen()
+    st.stop() # Block access to the rest of the app
+
 # --- Sidebar ---
 st.sidebar.title("Analytics & AI Hub")
-page = st.sidebar.radio("Navigate", ["Dashboard", "Conversational Analytics", "Predictive Insights", "Clustering & Segmentation", "What-If Simulator", "AI Auto-Dashboards", "Data Explorer", "Data Steward", "Data Observability", "Configuration Manager"])
+page = st.sidebar.radio("Navigate", ["Dashboard", "Conversational Analytics", "Predictive Insights", "Clustering & Segmentation", "What-If Simulator", "AI Auto-Dashboards", "Data Explorer", "Data Steward", "AI Data Entry", "Data Observability", "Configuration Manager"])
+st.sidebar.caption(f"👤 Logged in as: **{st.session_state.user_role}**")
+
+# RBAC: Define accessible pages based on Role
+if st.session_state.user_role == "Admin":
+    available_pages = ["Dashboard", "Conversational Analytics", "Predictive Insights", "Clustering & Segmentation", "What-If Simulator", "AI Auto-Dashboards", "Data Explorer", "Data Steward", "AI Data Entry", "Data Observability", "Configuration Manager"]
+else:
+    # Viewers cannot access Data Steward (Write) or Config (Admin)
+    available_pages = ["Dashboard", "Conversational Analytics", "Predictive Insights", "Clustering & Segmentation", "What-If Simulator", "AI Auto-Dashboards", "Data Explorer", "Data Observability"]
+
+page = st.sidebar.radio("Navigate", available_pages)
+
+if st.sidebar.button("🚪 Logout"):
+    st.session_state.authenticated = False
+    st.session_state.user_role = None
+    st.rerun()
 
 # --- Dashboard Page ---
 if page == "Dashboard":
@@ -369,6 +419,71 @@ elif page == "Data Steward":
                 st.rerun()
             except Exception as e:
                 st.error(f"Error saving data: {e}")
+
+# --- AI Data Entry Page ---
+elif page == "AI Data Entry":
+    st.title("⚡ AI Data Entry Assistant")
+    st.markdown("Paste unstructured text (emails, chat logs, notes) and let AI map it to your database schema.")
+
+    # Table Selection
+    tables_df = run_query("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND (TABLE_NAME LIKE 'stg_%' OR TABLE_NAME LIKE 'dim_%')")
+    target_table = st.selectbox("Select Target Table", tables_df['TABLE_NAME'])
+    
+    if target_table:
+        # Get Schema for Context
+        schema_df = run_query(f"SELECT COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME = '{target_table}'")
+        schema_context = schema_df.to_csv(index=False)
+        
+        # Input
+        input_text = st.text_area("Paste Text Here", height=200, placeholder="E.g., 'Received shipment of 500 units of Widget A on 2023-10-25. Vendor: Acme Corp.'")
+        
+        if st.button("✨ Extract & Map Data"):
+            if input_text:
+                with st.spinner("AI is analyzing and mapping data..."):
+                    try:
+                        extracted_df = MLEngine.parse_unstructured_data(input_text, target_table, schema_context)
+                        st.session_state['extracted_data'] = extracted_df
+                        st.success("Extraction Complete! Review the data below.")
+                    except Exception as e:
+                        st.error(f"Extraction Failed: {e}")
+            else:
+                st.warning("Please enter some text.")
+
+        # Review & Save
+        if 'extracted_data' in st.session_state:
+            st.subheader("Review Extracted Data")
+            edited_df = st.data_editor(st.session_state['extracted_data'], num_rows="dynamic", use_container_width=True)
+            
+            # Primary Key Selection for Merge
+            pk_col = st.selectbox("Select Primary Key (for De-duplication)", run_query(f"SELECT TOP 0 * FROM {target_table}").columns)
+
+            if st.button("💾 Commit to Database"):
+                try:
+                    with engine.begin() as conn:
+                        # 1. Create Temp Table
+                        edited_df.to_sql("#Staging_AI_Import", conn, if_exists='replace', index=False)
+                        
+                        # 2. Construct MERGE Statement (Upsert)
+                        set_clause = ", ".join([f"T.{col} = S.{col}" for col in edited_df.columns if col != pk_col])
+                        cols = ", ".join(edited_df.columns)
+                        vals = ", ".join([f"S.{col}" for col in edited_df.columns])
+                        
+                        merge_sql = f"""
+                        MERGE INTO {target_table} AS T
+                        USING #Staging_AI_Import AS S
+                        ON T.{pk_col} = S.{pk_col}
+                        WHEN MATCHED THEN
+                            UPDATE SET {set_clause}
+                        WHEN NOT MATCHED THEN
+                            INSERT ({cols}) VALUES ({vals});
+                        """
+                        conn.execute(text(merge_sql))
+                        
+                    st.success(f"Successfully imported data into `{target_table}`!")
+                    del st.session_state['extracted_data'] # Clear state after save
+                    st.rerun()
+                except Exception as e:
+                    st.error(f"Error saving data: {e}")
 
 # --- Data Observability Page ---
 elif page == "Data Observability":
