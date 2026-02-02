@@ -7,6 +7,11 @@ from dotenv import load_dotenv
 import plotly.express as px
 import plotly.graph_objects as go
 import time
+try:
+    import openai
+    OPENAI_INSTALLED = True
+except ImportError:
+    OPENAI_INSTALLED = False
 
 # Add project root to path to import core modules
 sys.path.append(os.path.dirname(__file__))
@@ -75,6 +80,11 @@ elif page == "Conversational Analytics":
     st.title("💬 Conversational Analytics")
     st.markdown("Ask questions in plain English to generate insights, SQL, and visualizations.")
 
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key or not OPENAI_INSTALLED:
+        st.warning("⚠️ OpenAI API Key not found or library missing. Please set `OPENAI_API_KEY` in .env and install `openai`.")
+        st.stop()
+
     # Initialize chat history
     if "messages" not in st.session_state:
         st.session_state.messages = []
@@ -90,15 +100,37 @@ elif page == "Conversational Analytics":
         st.chat_message("user").markdown(prompt)
         st.session_state.messages.append({"role": "user", "content": prompt})
 
-        # Simulate AI Response (In a real app, this would call an LLM)
         with st.chat_message("assistant"):
             with st.spinner("Translating natural language to SQL..."):
-                time.sleep(1.5) # Simulate processing time
-            
-            response = f"Based on your query **'{prompt}'**, I've analyzed the `sales_fact` and `dim_location` tables.\n\n**Insight**: Sales in Texas dropped by **15%** week-over-week. This correlates with a supply chain alert in the `inventory_logs` for the Houston distribution center."
-            st.markdown(response)
-            st.code("SELECT SUM(amount) FROM sales_fact s JOIN dim_location l ON s.loc_id = l.id WHERE l.state = 'TX' AND s.date >= DATEADD(day, -7, GETDATE())", language="sql")
-            st.session_state.messages.append({"role": "assistant", "content": response})
+                try:
+                    # 1. Get Schema Context
+                    schema_df = run_query("SELECT TABLE_NAME, COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME NOT LIKE 'sys%'")
+                    schema_context = schema_df.to_csv(index=False)
+
+                    # 2. Call OpenAI
+                    client = openai.OpenAI(api_key=api_key)
+                    completion = client.chat.completions.create(
+                        model="gpt-3.5-turbo",
+                        messages=[
+                            {"role": "system", "content": f"You are a SQL Server expert. Given the following schema, write a valid SQL Server query to answer the user's question. Return ONLY the SQL query, no markdown.\n\nSchema:\n{schema_context}"},
+                            {"role": "user", "content": prompt}
+                        ]
+                    )
+                    sql_query = completion.choices[0].message.content.strip().replace("```sql", "").replace("```", "")
+                    
+                    # 3. Execute Query
+                    result_df = run_query(sql_query)
+                    
+                    st.markdown(f"**Generated SQL:**")
+                    st.code(sql_query, language="sql")
+                    
+                    st.markdown("**Result:**")
+                    st.dataframe(result_df)
+                    
+                    st.session_state.messages.append({"role": "assistant", "content": f"Executed SQL: `{sql_query}`"})
+                except Exception as e:
+                    st.error(f"AI Error: {e}")
+                    st.session_state.messages.append({"role": "assistant", "content": f"Error: {e}"})
 
 # --- Predictive Insights Page ---
 elif page == "Predictive Insights":
@@ -212,13 +244,24 @@ elif page == "AI Auto-Dashboards":
     selected_table = st.selectbox("Choose a table to analyze", tables_df['TABLE_NAME'])
 
     if selected_table:
-        # Fetch sample data (enough to detect patterns)
-        df = run_query(f"SELECT TOP 2000 * FROM {selected_table}")
+        # Smart Aggregation: Get columns first
+        cols_df = run_query(f"SELECT TOP 0 * FROM {selected_table}")
+        all_cols = cols_df.columns.tolist()
         
-        if df.empty:
-            st.warning("Table is empty.")
-        else:
-            # Ask the ML Engine for a recommendation
+        # Heuristic: Find Date and Numeric columns
+        numeric_cols = cols_df.select_dtypes(include=['float', 'int']).columns.tolist()
+        date_cols = [c for c in all_cols if 'date' in c.lower() or 'time' in c.lower()]
+
+        if date_cols and numeric_cols:
+            # Perform Aggregation in SQL for Scalability
+            date_col = date_cols[0]
+            val_col = numeric_cols[0]
+            
+            st.info(f"Running optimized aggregation on `{selected_table}`...")
+            agg_query = f"SELECT {date_col}, SUM({val_col}) as {val_col} FROM {selected_table} GROUP BY {date_col} ORDER BY {date_col}"
+            df = run_query(agg_query)
+            
+            # Pass aggregated data to ML Engine
             rec = MLEngine.recommend_visualization(df)
             
             st.subheader(rec.get('title', 'Analysis'))
@@ -254,6 +297,13 @@ elif page == "AI Auto-Dashboards":
             
             else:
                 st.dataframe(df)
+        else:
+            # Fallback for non-timeseries: Fetch sample
+            df = run_query(f"SELECT TOP 1000 * FROM {selected_table}")
+            if not df.empty:
+                rec = MLEngine.recommend_visualization(df)
+                st.write(f"Visualizing sample data ({len(df)} rows)")
+                st.dataframe(df)
 
 # --- Data Explorer Page ---
 elif page == "Data Explorer":
@@ -284,6 +334,7 @@ elif page == "Data Steward":
     tables_df = run_query("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND (TABLE_NAME LIKE 'stg_%' OR TABLE_NAME LIKE 'dim_%')")
     
     selected_table = st.selectbox("Select Table to Edit", tables_df['TABLE_NAME'])
+    pk_col = st.selectbox("Select Primary Key Column (Required for Safe Saving)", run_query(f"SELECT TOP 0 * FROM {selected_table}").columns)
 
     if selected_table:
         # Fetch data (Limit to 1000 rows for UI performance)
@@ -295,15 +346,28 @@ elif page == "Data Steward":
         # The Data Editor: Automatically generates a form/grid based on the dataframe structure
         edited_df = st.data_editor(df, num_rows="dynamic", use_container_width=True, key=f"editor_{selected_table}")
 
-        if st.button("💾 Save Changes"):
+        if st.button("💾 Safe Save (Merge)"):
             try:
                 with engine.begin() as conn:
-                    # Strategy: Clear table and re-insert. 
-                    # We use DELETE instead of DROP to preserve the SQL Schema (column types, keys).
-                    conn.execute(text(f"DELETE FROM {selected_table}"))
+                    # 1. Create Temp Table
+                    edited_df.to_sql("#Staging_Edit", conn, if_exists='replace', index=False)
                     
-                    # Insert the edited data
-                    edited_df.to_sql(selected_table, conn, if_exists='append', index=False, chunksize=500)
+                    # 2. Construct MERGE Statement (Upsert)
+                    # This updates existing rows and inserts new ones, without deleting the rest of the table.
+                    set_clause = ", ".join([f"T.{col} = S.{col}" for col in df.columns if col != pk_col])
+                    cols = ", ".join(df.columns)
+                    vals = ", ".join([f"S.{col}" for col in df.columns])
+                    
+                    merge_sql = f"""
+                    MERGE INTO {selected_table} AS T
+                    USING #Staging_Edit AS S
+                    ON T.{pk_col} = S.{pk_col}
+                    WHEN MATCHED THEN
+                        UPDATE SET {set_clause}
+                    WHEN NOT MATCHED THEN
+                        INSERT ({cols}) VALUES ({vals});
+                    """
+                    conn.execute(text(merge_sql))
                     
                 st.success(f"Successfully updated `{selected_table}`!")
                 st.rerun()
@@ -370,7 +434,7 @@ elif page == "Configuration Manager":
         date_col = st.text_input("Date Column Name (e.g., sale_date)")
         value_col = st.text_input("Value Column Name (e.g., total_amount)")
         model_type = st.selectbox("Model Type", ["anomaly_detection", "forecast"])
-        webhook_url = st.text_input("Alert Webhook URL (Optional - Slack/Teams)")
+        webhook_url = st.text_input("Alert Webhook URL (Optional - Slack/Teams)", type="password")
         
         submitted = st.form_submit_button("Activate Analytics")
         

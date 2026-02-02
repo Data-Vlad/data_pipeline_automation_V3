@@ -8,6 +8,12 @@ try:
     PROPHET_INSTALLED = True
 except ImportError:
     PROPHET_INSTALLED = False
+
+try:
+    from statsmodels.tsa.holtwinters import ExponentialSmoothing
+    STATSMODELS_INSTALLED = True
+except ImportError:
+    STATSMODELS_INSTALLED = False
     
 class MLEngine:
     """
@@ -78,17 +84,31 @@ class MLEngine:
             forecast_df['model_type'] = 'forecast'
             return forecast_df[['prediction_date', 'predicted_value', 'model_type']]
         else:
-            # Fallback to Linear Regression if Prophet is not installed
-            if context: context.log.warning("Prophet library not found. Falling back to simple Linear Regression.")
-            result_df = MLEngine._linear_regression_forecast(df.rename(columns={'ds': date_col, 'y': value_col}), date_col, value_col, periods)
+            # Fallback to Holt-Winters or Linear Regression if Prophet is not installed
+            if context: context.log.warning("Prophet library not found. Falling back to heuristic forecasting.")
+            result_df = MLEngine._heuristic_forecast(df.rename(columns={'ds': date_col, 'y': value_col}), date_col, value_col, periods)
             result_df['model_type'] = 'forecast'
             return result_df
         
     
     @staticmethod
-    def _linear_regression_forecast(df: pd.DataFrame, date_col: str, value_col: str, periods: int = 30) -> pd.DataFrame:
-        """Internal method for simple linear trend forecast."""
+    def _heuristic_forecast(df: pd.DataFrame, date_col: str, value_col: str, periods: int = 30) -> pd.DataFrame:
+        """Internal method for forecasting using Holt-Winters (if available) or Linear Regression."""
         df = df.sort_values(by=date_col).copy()
+        
+        # Try Holt-Winters first (Better for seasonality)
+        if STATSMODELS_INSTALLED and len(df) > 10:
+            try:
+                # Infer frequency
+                df = df.set_index(date_col)
+                model = ExponentialSmoothing(df[value_col], trend='add', seasonal='add', seasonal_periods=min(len(df)//2, 12)).fit()
+                future_predictions = model.forecast(periods)
+                future_df = pd.DataFrame({'prediction_date': future_predictions.index, 'predicted_value': future_predictions.values})
+                return future_df
+            except Exception:
+                pass # Fallback to Linear Regression on failure
+
+        # Fallback: Linear Regression
         df['timestamp_numeric'] = pd.to_datetime(df[date_col]).map(pd.Timestamp.timestamp)
         X = df[['timestamp_numeric']].values
         y = df[value_col].values
