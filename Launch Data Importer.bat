@@ -23,6 +23,7 @@ set "DAGSTER_HOME_DIR=%SCRIPT_DIR%dagster_home"
 
 :: Clean up old log files
 if exist "%ERROR_LOG%" del "%ERROR_LOG%"
+if exist "simple_ui.log" del "simple_ui.log"
 
 
 :: ============================================================================
@@ -121,9 +122,18 @@ if exist "%PYTHON_EXE%" (
 
 if not exist "%PYTHON_EXE%" (
     call :log WARNING "Virtual environment not found. Creating it now..."
+
+    :: Ensure a clean slate if the folder exists but python.exe is missing
+    if exist "%VENV_DIR%" (
+        call :log INFO "Removing incomplete virtual environment directory..."
+        rd /s /q "%VENV_DIR%"
+    )
+
     python -m venv "%VENV_DIR%" >"%ERROR_LOG%" 2>&1
    if %errorlevel% neq 0 (
         echo.
+        echo   [DEBUG] Python version:
+        python --version
         type "%ERROR_LOG%"
         call :handle_error "Failed to create the Python virtual environment."
     )
@@ -274,7 +284,7 @@ set "UI_CMD=%PYTHONW_EXE% %UI_SCRIPT% --server %DB_SERVER% --database %DB_DATABA
 :: ----------------------------------------------------------------------------
 
 :: Start the UI process in the background FIRST.
-start "Data Importer UI" /B %UI_CMD% >nul 2>&1
+start "Data Importer UI" %UI_CMD%
 
 :: --- Wait for the server to be ready before opening the browser ---
 :: This loop actively checks if the port is open, avoiding the "Connection Refused" error.
