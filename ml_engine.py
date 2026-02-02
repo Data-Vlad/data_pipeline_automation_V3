@@ -4,6 +4,7 @@ from sklearn.ensemble import IsolationForest
 from sklearn.linear_model import LinearRegression
 from sklearn.cluster import KMeans
 import re
+import json
 try:
     from prophet import Prophet
     PROPHET_INSTALLED = True
@@ -46,6 +47,52 @@ class MLEngine:
         df['is_anomaly'] = df['anomaly_score'].apply(lambda x: 1 if x == -1 else 0)
         
         return df
+
+    @staticmethod
+    def parse_unstructured_data(unstructured_text: str, target_table: str, schema_context: str) -> pd.DataFrame:
+        """
+        Uses OpenAI to parse unstructured text into a structured DataFrame matching the target table schema.
+        """
+        if not OPENAI_INSTALLED or not os.getenv("OPENAI_API_KEY"):
+            raise ImportError("OpenAI library or API Key is missing.")
+
+        client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        
+        prompt = f"""
+        You are an AI Data Entry Clerk. 
+        Target Table: {target_table}
+        Schema (Columns and Types):
+        {schema_context}
+
+        Task: Extract data from the text below and map it to the target table columns.
+        - Return a JSON array of objects.
+        - Use 'null' for missing fields.
+        - Ensure data types match the schema (e.g. dates in YYYY-MM-DD).
+        - Do not include any markdown formatting, just the raw JSON string.
+
+        Input Text:
+        {unstructured_text}
+        """
+
+        completion = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0
+        )
+
+        response_text = completion.choices[0].message.content.strip()
+        
+        # Clean up potential markdown code blocks
+        response_text = response_text.replace("```json", "").replace("```", "")
+
+        try:
+            data = json.loads(response_text)
+            # Ensure it's a list
+            if isinstance(data, dict):
+                data = [data]
+            return pd.DataFrame(data)
+        except json.JSONDecodeError:
+            raise ValueError(f"Failed to parse AI response as JSON: {response_text}")
 
     @staticmethod
     def perform_clustering(df: pd.DataFrame, features: list, n_clusters: int = 3) -> pd.DataFrame:
