@@ -1,0 +1,1142 @@
+2026-01-29 14:58:00 - INFO     - ============================================================
+2026-01-29 14:58:00 - INFO     - Server  : Starting Data Importer UI on http://localhost:3000
+2026-01-29 14:58:00 - INFO     - --- Application Initialization Started ---
+2026-01-29 14:58:00 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-01-29 14:58:00 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-01-29 14:58:00 - INFO     - INIT(2/3): Testing database connection...
+2026-01-29 14:58:00 - INFO     - DB      : Creating temporary engine to test connection...
+2026-01-29 14:58:00 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\simple_ui.log
+2026-01-29 14:58:00 - INFO     - Server  : Initialization is running in the background...
+2026-01-29 14:58:00 - INFO     - Serving on http://0.0.0.0:3000
+2026-01-29 14:58:00 - INFO     - DB      : Connection test successful.
+2026-01-29 14:58:00 - INFO     - INIT(2/3): Database connection test successful.
+2026-01-29 14:58:00 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-01-29 14:58:00 - INFO     - [3/3] Dagster workspace file found.
+2026-01-29 14:58:00 - INFO     - --- Application Initialization Succeeded ---
+2026-01-29 14:58:00 - INFO     - ============================================================
+2026-01-29 14:58:01 - INFO     - --> GET /
+2026-01-29 14:58:01 - INFO     - <-- GET / - 200 OK
+2026-01-29 14:58:02 - INFO     - --> GET /api/pipelines
+2026-01-29 14:58:02 - INFO     - API     : Fetching pipeline configurations from database...
+2026-01-29 14:58:02 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-01-29 14:58:02 - INFO     - DB      : Database engine initialized successfully.
+2026-01-29 14:58:02 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-01-29 14:58:02 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-01-29 14:58:02 - INFO     - --> GET /favicon.ico
+2026-01-29 14:58:02 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-01-29 15:03:52 - INFO     - ============================================================
+2026-01-29 15:03:52 - INFO     - Server  : Starting Data Importer UI on http://localhost:3000
+2026-01-29 15:03:52 - INFO     - --- Application Initialization Started ---
+2026-01-29 15:03:52 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\simple_ui.log
+2026-01-29 15:03:52 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-01-29 15:03:52 - INFO     - Server  : Initialization is running in the background...
+2026-01-29 15:03:52 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-01-29 15:03:52 - INFO     - INIT(2/3): Testing database connection...
+2026-01-29 15:03:52 - INFO     - DB      : Creating temporary engine to test connection...
+2026-01-29 15:03:52 - INFO     - Serving on http://0.0.0.0:3000
+2026-01-29 15:03:52 - INFO     - DB      : Connection test successful.
+2026-01-29 15:03:52 - INFO     - INIT(2/3): Database connection test successful.
+2026-01-29 15:03:52 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-01-29 15:03:52 - INFO     - [3/3] Dagster workspace file found.
+2026-01-29 15:03:52 - INFO     - --- Application Initialization Succeeded ---
+2026-01-29 15:03:52 - INFO     - ============================================================
+2026-01-29 15:03:53 - INFO     - --> GET /
+2026-01-29 15:03:53 - INFO     - <-- GET / - 200 OK
+2026-01-29 15:03:53 - INFO     - --> GET /api/pipelines
+2026-01-29 15:03:53 - INFO     - API     : Fetching pipeline configurations from database...
+2026-01-29 15:03:53 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-01-29 15:03:53 - INFO     - DB      : Database engine initialized successfully.
+2026-01-29 15:03:53 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-01-29 15:03:53 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-01-29 15:03:53 - INFO     - --> GET /favicon.ico
+2026-01-29 15:03:53 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-01-29 15:08:40 - INFO     - ============================================================
+2026-01-29 15:08:40 - INFO     - Server  : Starting Data Importer UI on http://localhost:3000
+2026-01-29 15:08:40 - INFO     - --- Application Initialization Started ---
+2026-01-29 15:08:40 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-01-29 15:08:40 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-01-29 15:08:40 - INFO     - INIT(2/3): Testing database connection...
+2026-01-29 15:08:40 - INFO     - DB      : Creating temporary engine to test connection...
+2026-01-29 15:08:40 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\simple_ui.log
+2026-01-29 15:08:40 - INFO     - Server  : Initialization is running in the background...
+2026-01-29 15:08:40 - INFO     - Serving on http://0.0.0.0:3000
+2026-01-29 15:08:40 - INFO     - DB      : Connection test successful.
+2026-01-29 15:08:40 - INFO     - INIT(2/3): Database connection test successful.
+2026-01-29 15:08:40 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-01-29 15:08:40 - INFO     - [3/3] Dagster workspace file found.
+2026-01-29 15:08:40 - INFO     - --- Application Initialization Succeeded ---
+2026-01-29 15:08:40 - INFO     - ============================================================
+2026-01-29 15:08:41 - INFO     - --> GET /
+2026-01-29 15:08:41 - INFO     - <-- GET / - 200 OK
+2026-01-29 15:08:41 - INFO     - --> GET /api/pipelines
+2026-01-29 15:08:41 - INFO     - API     : Fetching pipeline configurations from database...
+2026-01-29 15:08:41 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-01-29 15:08:41 - INFO     - DB      : Database engine initialized successfully.
+2026-01-29 15:08:41 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-01-29 15:08:41 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-01-29 15:08:41 - INFO     - --> GET /favicon.ico
+2026-01-29 15:08:41 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-01-29 15:16:09 - INFO     - ============================================================
+2026-01-29 15:16:09 - INFO     - Server  : Starting Data Importer UI on http://localhost:3000
+2026-01-29 15:16:09 - INFO     - --- Application Initialization Started ---
+2026-01-29 15:16:09 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\simple_ui.log
+2026-01-29 15:16:09 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-01-29 15:16:09 - INFO     - Server  : Initialization is running in the background...
+2026-01-29 15:16:09 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-01-29 15:16:09 - INFO     - INIT(2/3): Testing database connection...
+2026-01-29 15:16:09 - INFO     - DB      : Creating temporary engine to test connection...
+2026-01-29 15:16:09 - INFO     - Serving on http://0.0.0.0:3000
+2026-01-29 15:16:09 - INFO     - DB      : Connection test successful.
+2026-01-29 15:16:09 - INFO     - INIT(2/3): Database connection test successful.
+2026-01-29 15:16:09 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-01-29 15:16:09 - INFO     - [3/3] Dagster workspace file found.
+2026-01-29 15:16:09 - INFO     - --- Application Initialization Succeeded ---
+2026-01-29 15:16:09 - INFO     - ============================================================
+2026-01-29 15:16:10 - INFO     - --> GET /
+2026-01-29 15:16:10 - INFO     - <-- GET / - 200 OK
+2026-01-29 15:16:10 - INFO     - --> GET /api/pipelines
+2026-01-29 15:16:10 - INFO     - API     : Fetching pipeline configurations from database...
+2026-01-29 15:16:10 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-01-29 15:16:10 - INFO     - DB      : Database engine initialized successfully.
+2026-01-29 15:16:10 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-01-29 15:16:10 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-01-29 15:16:10 - INFO     - --> GET /favicon.ico
+2026-01-29 15:16:10 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-01-29 15:21:27 - INFO     - ============================================================
+2026-01-29 15:21:27 - INFO     - Server  : Starting Data Importer UI on http://localhost:3000
+2026-01-29 15:21:27 - INFO     - --- Application Initialization Started ---
+2026-01-29 15:21:27 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\simple_ui.log
+2026-01-29 15:21:27 - INFO     - Server  : Initialization is running in the background...
+2026-01-29 15:21:27 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-01-29 15:21:27 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-01-29 15:21:27 - INFO     - INIT(2/3): Testing database connection...
+2026-01-29 15:21:27 - INFO     - DB      : Creating temporary engine to test connection...
+2026-01-29 15:21:27 - INFO     - Serving on http://0.0.0.0:3000
+2026-01-29 15:21:27 - INFO     - DB      : Connection test successful.
+2026-01-29 15:21:27 - INFO     - INIT(2/3): Database connection test successful.
+2026-01-29 15:21:27 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-01-29 15:21:27 - INFO     - [3/3] Dagster workspace file found.
+2026-01-29 15:21:27 - INFO     - --- Application Initialization Succeeded ---
+2026-01-29 15:21:27 - INFO     - ============================================================
+2026-01-29 15:21:28 - INFO     - --> GET /
+2026-01-29 15:21:28 - INFO     - <-- GET / - 200 OK
+2026-01-29 15:21:28 - INFO     - --> GET /api/pipelines
+2026-01-29 15:21:28 - INFO     - API     : Fetching pipeline configurations from database...
+2026-01-29 15:21:28 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-01-29 15:21:28 - INFO     - --> GET /favicon.ico
+2026-01-29 15:21:28 - INFO     - DB      : Database engine initialized successfully.
+2026-01-29 15:21:28 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-01-29 15:21:28 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-01-29 15:21:28 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-01-29 15:29:33 - INFO     - ============================================================
+2026-01-29 15:29:33 - INFO     - Server  : Starting Data Importer UI on http://localhost:3000
+2026-01-29 15:29:33 - INFO     - --- Application Initialization Started ---
+2026-01-29 15:29:33 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\simple_ui.log
+2026-01-29 15:29:33 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-01-29 15:29:33 - INFO     - Server  : Initialization is running in the background...
+2026-01-29 15:29:33 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-01-29 15:29:33 - INFO     - INIT(2/3): Testing database connection...
+2026-01-29 15:29:33 - INFO     - DB      : Creating temporary engine to test connection...
+2026-01-29 15:29:33 - INFO     - Serving on http://0.0.0.0:3000
+2026-01-29 15:29:33 - INFO     - DB      : Connection test successful.
+2026-01-29 15:29:33 - INFO     - INIT(2/3): Database connection test successful.
+2026-01-29 15:29:33 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-01-29 15:29:33 - INFO     - [3/3] Dagster workspace file found.
+2026-01-29 15:29:33 - INFO     - --- Application Initialization Succeeded ---
+2026-01-29 15:29:33 - INFO     - ============================================================
+2026-01-29 15:29:35 - INFO     - --> GET /
+2026-01-29 15:29:35 - INFO     - <-- GET / - 200 OK
+2026-01-29 15:29:35 - INFO     - --> GET /api/pipelines
+2026-01-29 15:29:35 - INFO     - API     : Fetching pipeline configurations from database...
+2026-01-29 15:29:35 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-01-29 15:29:35 - INFO     - DB      : Database engine initialized successfully.
+2026-01-29 15:29:35 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-01-29 15:29:35 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-01-29 15:29:35 - INFO     - --> GET /favicon.ico
+2026-01-29 15:29:35 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-01-29 15:30:02 - INFO     - --> GET /
+2026-01-29 15:30:02 - INFO     - <-- GET / - 200 OK
+2026-01-29 15:30:02 - INFO     - --> GET /api/pipelines
+2026-01-29 15:30:02 - INFO     - API     : Fetching pipeline configurations from database...
+2026-01-29 15:30:02 - INFO     - --> GET /favicon.ico
+2026-01-29 15:30:02 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-01-29 15:30:02 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-01-29 15:30:02 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-01-29 15:30:03 - INFO     - --> GET /
+2026-01-29 15:30:03 - INFO     - <-- GET / - 200 OK
+2026-01-29 15:30:03 - INFO     - --> GET /api/pipelines
+2026-01-29 15:30:03 - INFO     - API     : Fetching pipeline configurations from database...
+2026-01-29 15:30:03 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-01-29 15:30:03 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-01-29 15:30:03 - INFO     - --> GET /favicon.ico
+2026-01-29 15:30:03 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-01-29 15:30:03 - INFO     - --> GET /
+2026-01-29 15:30:03 - INFO     - <-- GET / - 200 OK
+2026-01-29 15:30:03 - INFO     - --> GET /api/pipelines
+2026-01-29 15:30:03 - INFO     - API     : Fetching pipeline configurations from database...
+2026-01-29 15:30:03 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-01-29 15:30:03 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-01-29 15:30:03 - INFO     - --> GET /favicon.ico
+2026-01-29 15:30:03 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-01-29 15:30:04 - INFO     - --> GET /
+2026-01-29 15:30:04 - INFO     - <-- GET / - 200 OK
+2026-01-29 15:30:04 - INFO     - --> GET /api/pipelines
+2026-01-29 15:30:04 - INFO     - API     : Fetching pipeline configurations from database...
+2026-01-29 15:30:04 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-01-29 15:30:04 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-01-29 15:30:04 - INFO     - --> GET /favicon.ico
+2026-01-29 15:30:04 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-01-29 15:33:07 - INFO     - ============================================================
+2026-01-29 15:33:07 - INFO     - Server  : Starting Data Importer UI on http://localhost:3000
+2026-01-29 15:33:07 - INFO     - --- Application Initialization Started ---
+2026-01-29 15:33:07 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-01-29 15:33:07 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-01-29 15:33:07 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\simple_ui.log
+2026-01-29 15:33:07 - INFO     - INIT(2/3): Testing database connection...
+2026-01-29 15:33:07 - INFO     - Server  : Initialization is running in the background...
+2026-01-29 15:33:07 - INFO     - DB      : Creating temporary engine to test connection...
+2026-01-29 15:33:07 - INFO     - Serving on http://0.0.0.0:3000
+2026-01-29 15:33:07 - INFO     - DB      : Connection test successful.
+2026-01-29 15:33:07 - INFO     - INIT(2/3): Database connection test successful.
+2026-01-29 15:33:07 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-01-29 15:33:07 - INFO     - [3/3] Dagster workspace file found.
+2026-01-29 15:33:07 - INFO     - --- Application Initialization Succeeded ---
+2026-01-29 15:33:07 - INFO     - ============================================================
+2026-01-29 15:33:08 - INFO     - --> GET /
+2026-01-29 15:33:08 - INFO     - <-- GET / - 200 OK
+2026-01-29 15:33:08 - INFO     - --> GET /api/pipelines
+2026-01-29 15:33:08 - INFO     - API     : Fetching pipeline configurations from database...
+2026-01-29 15:33:08 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-01-29 15:33:08 - INFO     - DB      : Database engine initialized successfully.
+2026-01-29 15:33:08 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-01-29 15:33:08 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-01-29 15:33:08 - INFO     - --> GET /favicon.ico
+2026-01-29 15:33:08 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-01-29 15:33:15 - INFO     - --> GET /.well-known/appspecific/com.chrome.devtools.json
+2026-01-29 15:33:15 - WARNING  - 404 Not Found: http://localhost:3000/.well-known/appspecific/com.chrome.devtools.json
+2026-01-29 15:33:15 - INFO     - <-- GET /.well-known/appspecific/com.chrome.devtools.json - 404 NOT FOUND
+2026-01-29 15:33:23 - INFO     - --> GET /
+2026-01-29 15:33:23 - INFO     - <-- GET / - 200 OK
+2026-01-29 15:33:23 - INFO     - --> GET /api/pipelines
+2026-01-29 15:33:23 - INFO     - API     : Fetching pipeline configurations from database...
+2026-01-29 15:33:23 - INFO     - --> GET /.well-known/appspecific/com.chrome.devtools.json
+2026-01-29 15:33:23 - WARNING  - 404 Not Found: http://localhost:3000/.well-known/appspecific/com.chrome.devtools.json
+2026-01-29 15:33:23 - INFO     - <-- GET /.well-known/appspecific/com.chrome.devtools.json - 404 NOT FOUND
+2026-01-29 15:33:23 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-01-29 15:33:23 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-01-29 15:33:23 - INFO     - --> GET /favicon.ico
+2026-01-29 15:33:23 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-01-29 15:33:49 - INFO     - --> GET /
+2026-01-29 15:33:49 - INFO     - <-- GET / - 200 OK
+2026-01-29 15:33:49 - INFO     - --> GET /.well-known/appspecific/com.chrome.devtools.json
+2026-01-29 15:33:49 - INFO     - --> GET /api/pipelines
+2026-01-29 15:33:49 - WARNING  - 404 Not Found: http://localhost:3000/.well-known/appspecific/com.chrome.devtools.json
+2026-01-29 15:33:49 - INFO     - API     : Fetching pipeline configurations from database...
+2026-01-29 15:33:49 - INFO     - <-- GET /.well-known/appspecific/com.chrome.devtools.json - 404 NOT FOUND
+2026-01-29 15:33:49 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-01-29 15:33:49 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-01-29 15:33:49 - INFO     - --> GET /favicon.ico
+2026-01-29 15:33:49 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-01-29 15:37:59 - INFO     - ============================================================
+2026-01-29 15:37:59 - INFO     - Server  : Starting Data Importer UI on http://localhost:3000
+2026-01-29 15:37:59 - INFO     - --- Application Initialization Started ---
+2026-01-29 15:37:59 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\simple_ui.log
+2026-01-29 15:37:59 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-01-29 15:37:59 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-01-29 15:37:59 - INFO     - INIT(2/3): Testing database connection...
+2026-01-29 15:37:59 - INFO     - Server  : Initialization is running in the background...
+2026-01-29 15:37:59 - INFO     - DB      : Creating temporary engine to test connection...
+2026-01-29 15:37:59 - INFO     - Serving on http://0.0.0.0:3000
+2026-01-29 15:37:59 - INFO     - DB      : Connection test successful.
+2026-01-29 15:37:59 - INFO     - INIT(2/3): Database connection test successful.
+2026-01-29 15:37:59 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-01-29 15:37:59 - INFO     - [3/3] Dagster workspace file found.
+2026-01-29 15:37:59 - INFO     - --- Application Initialization Succeeded ---
+2026-01-29 15:37:59 - INFO     - ============================================================
+2026-01-29 15:38:01 - INFO     - --> GET /
+2026-01-29 15:38:01 - INFO     - <-- GET / - 200 OK
+2026-01-29 15:38:01 - INFO     - --> GET /api/pipelines
+2026-01-29 15:38:01 - INFO     - API     : Fetching pipeline configurations from database...
+2026-01-29 15:38:01 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-01-29 15:38:01 - INFO     - DB      : Database engine initialized successfully.
+2026-01-29 15:38:01 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-01-29 15:38:01 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-01-29 15:38:01 - INFO     - --> GET /favicon.ico
+2026-01-29 15:38:01 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-01-29 15:41:18 - INFO     - ============================================================
+2026-01-29 15:41:18 - INFO     - Server  : Starting Data Importer UI on http://localhost:3000
+2026-01-29 15:41:18 - INFO     - --- Application Initialization Started ---
+2026-01-29 15:41:18 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-01-29 15:41:18 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\simple_ui.log
+2026-01-29 15:41:18 - INFO     - Server  : Initialization is running in the background...
+2026-01-29 15:41:18 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-01-29 15:41:18 - INFO     - INIT(2/3): Testing database connection...
+2026-01-29 15:41:18 - INFO     - DB      : Creating temporary engine to test connection...
+2026-01-29 15:41:18 - INFO     - Serving on http://0.0.0.0:3000
+2026-01-29 15:41:19 - INFO     - DB      : Connection test successful.
+2026-01-29 15:41:19 - INFO     - INIT(2/3): Database connection test successful.
+2026-01-29 15:41:19 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-01-29 15:41:19 - INFO     - [3/3] Dagster workspace file found.
+2026-01-29 15:41:19 - INFO     - --- Application Initialization Succeeded ---
+2026-01-29 15:41:19 - INFO     - ============================================================
+2026-01-29 15:41:20 - INFO     - --> GET /
+2026-01-29 15:41:20 - INFO     - <-- GET / - 200 OK
+2026-01-29 15:41:20 - INFO     - --> GET /api/pipelines
+2026-01-29 15:41:20 - INFO     - API     : Fetching pipeline configurations from database...
+2026-01-29 15:41:20 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-01-29 15:41:20 - INFO     - DB      : Database engine initialized successfully.
+2026-01-29 15:41:20 - INFO     - --> GET /favicon.ico
+2026-01-29 15:41:20 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-01-29 15:41:20 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-01-29 15:41:20 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-01-29 15:41:28 - INFO     - --> GET /
+2026-01-29 15:41:28 - INFO     - <-- GET / - 200 OK
+2026-01-29 15:41:28 - INFO     - --> GET /api/pipelines
+2026-01-29 15:41:28 - INFO     - API     : Fetching pipeline configurations from database...
+2026-01-29 15:41:28 - INFO     - --> GET /favicon.ico
+2026-01-29 15:41:28 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-01-29 15:41:28 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-01-29 15:41:28 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-01-29 15:43:42 - INFO     - ============================================================
+2026-01-29 15:43:42 - INFO     - Server  : Starting Data Importer UI on http://localhost:3000
+2026-01-29 15:43:42 - INFO     - --- Application Initialization Started ---
+2026-01-29 15:43:42 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-01-29 15:43:42 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-01-29 15:43:42 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\simple_ui.log
+2026-01-29 15:43:42 - INFO     - Server  : Initialization is running in the background...
+2026-01-29 15:43:42 - INFO     - INIT(2/3): Testing database connection...
+2026-01-29 15:43:42 - INFO     - DB      : Creating temporary engine to test connection...
+2026-01-29 15:43:42 - INFO     - Serving on http://0.0.0.0:3000
+2026-01-29 15:43:42 - INFO     - DB      : Connection test successful.
+2026-01-29 15:43:42 - INFO     - INIT(2/3): Database connection test successful.
+2026-01-29 15:43:42 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-01-29 15:43:42 - INFO     - [3/3] Dagster workspace file found.
+2026-01-29 15:43:42 - INFO     - --- Application Initialization Succeeded ---
+2026-01-29 15:43:42 - INFO     - ============================================================
+2026-01-29 15:43:43 - INFO     - --> GET /
+2026-01-29 15:43:43 - INFO     - <-- GET / - 200 OK
+2026-01-29 15:43:43 - INFO     - --> GET /api/pipelines
+2026-01-29 15:43:43 - INFO     - API     : Fetching pipeline configurations from database...
+2026-01-29 15:43:43 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-01-29 15:43:43 - INFO     - DB      : Database engine initialized successfully.
+2026-01-29 15:43:43 - INFO     - --> GET /favicon.ico
+2026-01-29 15:43:43 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-01-29 15:43:43 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-01-29 15:43:43 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-01-29 15:50:20 - INFO     - ============================================================
+2026-01-29 15:50:20 - INFO     - Server  : Starting Data Importer UI on http://localhost:3000
+2026-01-29 15:50:20 - INFO     - --- Application Initialization Started ---
+2026-01-29 15:50:20 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\simple_ui.log
+2026-01-29 15:50:20 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-01-29 15:50:20 - INFO     - Server  : Initialization is running in the background...
+2026-01-29 15:50:20 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-01-29 15:50:20 - INFO     - INIT(2/3): Testing database connection...
+2026-01-29 15:50:20 - INFO     - DB      : Creating temporary engine to test connection...
+2026-01-29 15:50:20 - INFO     - Serving on http://0.0.0.0:3000
+2026-01-29 15:50:20 - INFO     - DB      : Connection test successful.
+2026-01-29 15:50:20 - INFO     - INIT(2/3): Database connection test successful.
+2026-01-29 15:50:20 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-01-29 15:50:20 - INFO     - [3/3] Dagster workspace file found.
+2026-01-29 15:50:20 - INFO     - --- Application Initialization Succeeded ---
+2026-01-29 15:50:20 - INFO     - ============================================================
+2026-01-29 15:50:22 - INFO     - --> GET /
+2026-01-29 15:50:22 - INFO     - <-- GET / - 200 OK
+2026-01-29 15:50:22 - INFO     - --> GET /api/pipelines
+2026-01-29 15:50:22 - INFO     - API     : Fetching pipeline configurations from database...
+2026-01-29 15:50:22 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-01-29 15:50:22 - INFO     - DB      : Database engine initialized successfully.
+2026-01-29 15:50:22 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-01-29 15:50:22 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-01-29 15:50:22 - INFO     - --> GET /favicon.ico
+2026-01-29 15:50:22 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-01-29 15:54:21 - INFO     - ============================================================
+2026-01-29 15:54:21 - INFO     - Server  : Starting Data Importer UI on http://localhost:3000
+2026-01-29 15:54:21 - INFO     - --- Application Initialization Started ---
+2026-01-29 15:54:21 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\simple_ui.log
+2026-01-29 15:54:21 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-01-29 15:54:21 - INFO     - Server  : Initialization is running in the background...
+2026-01-29 15:54:21 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-01-29 15:54:21 - INFO     - INIT(2/3): Testing database connection...
+2026-01-29 15:54:21 - INFO     - DB      : Creating temporary engine to test connection...
+2026-01-29 15:54:21 - INFO     - Serving on http://0.0.0.0:3000
+2026-01-29 15:54:22 - INFO     - DB      : Connection test successful.
+2026-01-29 15:54:22 - INFO     - INIT(2/3): Database connection test successful.
+2026-01-29 15:54:22 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-01-29 15:54:22 - INFO     - [3/3] Dagster workspace file found.
+2026-01-29 15:54:22 - INFO     - --- Application Initialization Succeeded ---
+2026-01-29 15:54:22 - INFO     - ============================================================
+2026-01-29 15:54:23 - INFO     - --> GET /
+2026-01-29 15:54:23 - INFO     - <-- GET / - 200 OK
+2026-01-29 15:54:24 - INFO     - --> GET /api/pipelines
+2026-01-29 15:54:24 - INFO     - API     : Fetching pipeline configurations from database...
+2026-01-29 15:54:24 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-01-29 15:54:24 - INFO     - DB      : Database engine initialized successfully.
+2026-01-29 15:54:24 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-01-29 15:54:24 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-01-29 15:54:24 - INFO     - --> GET /favicon.ico
+2026-01-29 15:54:24 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-01-29 15:55:42 - INFO     - --> POST /api/run_imports
+2026-01-29 15:55:42 - INFO     - API     : Received request to run 1 imports: ['BKL_BUDGET_ALL_VER_1_3']
+2026-01-29 15:55:42 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:55:47 - INFO     - setup plugin alembic.autogenerate.schemas
+2026-01-29 15:55:47 - INFO     - setup plugin alembic.autogenerate.tables
+2026-01-29 15:55:47 - INFO     - setup plugin alembic.autogenerate.types
+2026-01-29 15:55:47 - INFO     - setup plugin alembic.autogenerate.constraints
+2026-01-29 15:55:47 - INFO     - setup plugin alembic.autogenerate.defaults
+2026-01-29 15:55:47 - INFO     - setup plugin alembic.autogenerate.comments
+2026-01-29 15:55:50 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:55:50 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:55:53 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:55:53 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:55:54 - INFO     - Running stamp_revision  -> 7e2f3204cf8e
+2026-01-29 15:55:54 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:55:54 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:55:55 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:55:55 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:55:56 - INFO     - Running stamp_revision  -> 7e2f3204cf8e
+2026-01-29 15:55:56 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:55:56 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:55:56 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:55:56 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:55:57 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:55:57 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:55:58 - INFO     - Running stamp_revision  -> 7e2f3204cf8e
+2026-01-29 15:56:26 - INFO     - API     : Using repository '__repository__' from location 'elt_project'
+2026-01-29 15:56:26 - INFO     - API     :  - Submitting tick for sensor 'sensor_BKL_BUDGET_ALL_VER_1_3'...
+2026-01-29 15:56:27 - INFO     - API     : Patching run_config. Renaming 'BKL_BUDGET_ALL_VER_1_3_extract_and_load_staging' to 'BKL_BUDGET_ALL_VER_1_3_ingest'.
+2026-01-29 15:56:27 - INFO     - API     :  - Run Config: {'ops': {'BKL_BUDGET_ALL_VER_1_3_ingest': {'config': {'source_file_path': 'C:\\\\Pipelines\\\\CUNYFirst_FSC\\BKL_BUDGET_ALL_VER_1_3-8663963.csv'}}}}
+2026-01-29 15:56:27 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:56:27 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:56:28 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:56:28 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:56:28 - INFO     - Running stamp_revision  -> 7e2f3204cf8e
+2026-01-29 15:56:28 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:56:28 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:56:29 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:56:29 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:56:35 - INFO     - API     :  - Successfully launched run '423e1d44-a532-4949-987a-9e59430374ee' for job 'BKL_BUDGET_ALL_VER_1_3_job'.
+2026-01-29 15:56:35 - INFO     - <-- POST /api/run_imports - 200 OK
+2026-01-29 15:56:38 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:56:38 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:56:38 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:56:38 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:56:39 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:56:39 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:56:39 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:56:41 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:56:41 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:56:41 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:56:41 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:56:42 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:56:42 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:56:42 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:56:44 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:56:44 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:56:44 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:56:44 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:56:45 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:56:45 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:56:47 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:56:47 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:56:47 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:56:47 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:56:47 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:56:49 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:56:49 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:56:50 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:56:50 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:56:50 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:56:50 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:56:50 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:56:51 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:56:51 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:56:51 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:56:53 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:56:53 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:56:53 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:56:53 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:56:54 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:56:54 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:56:54 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:56:56 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:56:56 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:56:56 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:56:56 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:56:57 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:56:57 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:56:57 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:56:59 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:56:59 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:56:59 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:56:59 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:00 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:00 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:00 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:57:02 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:57:02 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:57:02 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:02 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:03 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:03 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:03 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:57:05 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:57:05 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:57:05 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:05 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:06 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:06 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:06 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:57:08 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:57:08 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:57:08 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:08 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:09 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:09 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:09 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:57:11 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:57:11 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:57:11 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:11 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:12 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:12 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:12 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:57:14 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:57:14 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:57:14 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:14 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:15 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:15 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:15 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:57:17 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:57:17 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:57:17 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:17 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:18 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:18 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:20 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:57:20 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:57:20 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:57:20 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:20 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:21 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:21 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:21 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:57:23 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:57:23 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:57:23 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:23 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:24 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:24 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:24 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:57:27 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:57:27 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:57:27 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:27 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:28 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:28 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:28 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:57:29 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:57:29 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:57:29 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:29 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:30 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:30 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:30 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:57:32 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:57:32 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:57:32 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:32 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:33 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:33 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:33 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:57:35 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:57:35 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:57:35 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:35 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:36 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:36 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:36 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:57:38 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:57:38 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:57:38 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:38 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:40 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:40 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:40 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:57:41 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:57:41 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:57:41 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:41 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:42 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:42 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:42 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:57:44 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:57:44 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:57:44 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:44 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:45 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:45 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:45 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:57:47 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:57:47 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:57:47 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:47 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:48 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:48 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:48 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:57:51 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:57:51 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:57:51 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:51 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:52 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:52 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:53 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:57:53 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:57:53 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:57:53 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:53 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:54 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:54 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:54 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:57:56 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:57:56 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:57:56 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:56 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:57 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:57 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:57:57 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:57:59 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:57:59 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:57:59 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:57:59 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:58:00 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:58:00 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:58:00 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:58:04 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:58:04 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:58:04 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:58:04 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:58:04 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:58:04 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:58:05 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:58:06 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:58:06 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:58:06 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:58:06 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:58:06 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:58:06 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:58:06 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:58:09 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:58:09 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:58:09 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:58:09 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:58:09 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:58:09 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:58:09 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:58:12 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:58:12 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:58:12 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:58:12 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:58:12 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:58:12 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:58:12 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:58:15 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:58:15 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:58:15 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:58:15 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:58:15 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:58:15 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:58:15 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:58:18 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:58:18 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:58:18 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:58:18 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:58:18 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:58:18 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:58:18 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:58:22 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:58:22 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:58:22 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:58:22 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:58:22 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:58:22 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:58:22 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:58:24 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:58:24 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:58:24 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:58:24 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:58:24 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:58:24 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:58:24 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:58:29 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:58:29 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:58:29 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:58:29 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:58:30 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:58:30 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:58:30 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:58:30 - INFO     - --> GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee
+2026-01-29 15:58:30 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 15:58:30 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:58:30 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:58:30 - INFO     - Context impl SQLiteImpl.
+2026-01-29 15:58:30 - INFO     - Will assume non-transactional DDL.
+2026-01-29 15:58:31 - INFO     - <-- GET /api/run_status/423e1d44-a532-4949-987a-9e59430374ee - 200 OK
+2026-01-29 15:59:00 - ERROR - generic_selenium_scraper - Scraping Runtime Error for 'BKL_BUDGET_ALL_VER_1_3':
+SCRAPER ACTION FAILED at index 6:
+{
+    "type": "navigate",
+    "url": "https://fscm.cunyfirst.cuny.edu/psp/cnyfsprd/EMPLOYEE/ERP/c/QUERY_MANAGER.SCHED_QUERY.GBL?FolderPath=PORTAL_ROOT_OBJECT.PT_REPORTING_TOOLS.PT_QUERY.PT_SCHED_QUERY_GBL&IsFolder=false&IgnoreParamTempl=FolderPath%2cIsFolder"
+}
+Error: ('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))
+
+Stack Trace:
+Traceback (most recent call last):
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\urllib3\connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\urllib3\connection.py", line 571, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 1423, in getresponse
+    response.begin()
+  File "C:\Users\Staff\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 331, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 292, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\AppData\Local\Programs\Python\Python312\Lib\socket.py", line 707, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "C:\Users/Staff/Dropbox/Projects/Work/data_pipeline_automation_V2\elt_project\elt_project\assets\custom_parsers.py", line 284, in _process_actions
+    driver.get(action["url"])
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\selenium\webdriver\remote\webdriver.py", line 356, in get
+    self.execute(Command.GET, {"url": url})
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\selenium\webdriver\remote\webdriver.py", line 345, in execute
+    response = self.command_executor.execute(driver_command, params)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\selenium\webdriver\remote\remote_connection.py", line 302, in execute
+    return self._request(command_info[0], url, body=data)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\selenium\webdriver\remote\remote_connection.py", line 322, in _request
+    response = self._conn.request(method, url, body=body, headers=headers)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\urllib3\_request_methods.py", line 143, in request
+    return self.request_encode_body(
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\urllib3\_request_methods.py", line 278, in request_encode_body
+    return self.urlopen(method, url, **extra_kw)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\urllib3\poolmanager.py", line 457, in urlopen
+    response = conn.urlopen(method, u.request_uri, **kw)
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\urllib3\connectionpool.py", line 841, in urlopen
+    retries = retries.increment(
+              ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\urllib3\util\retry.py", line 490, in increment
+    raise reraise(type(error), error, _stacktrace)
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\urllib3\util\util.py", line 38, in reraise
+    raise value.with_traceback(tb)
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\urllib3\connectionpool.py", line 787, in urlopen
+    response = self._make_request(
+               ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\urllib3\connectionpool.py", line 534, in _make_request
+    response = conn.getresponse()
+               ^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\urllib3\connection.py", line 571, in getresponse
+    httplib_response = super().getresponse()
+                       ^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 1423, in getresponse
+    response.begin()
+  File "C:\Users\Staff\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 331, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\AppData\Local\Programs\Python\Python312\Lib\http\client.py", line 292, in _read_status
+    line = str(self.fp.readline(_MAXLINE + 1), "iso-8859-1")
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Staff\AppData\Local\Programs\Python\Python312\Lib\socket.py", line 707, in readinto
+    return self._sock.recv_into(b)
+           ^^^^^^^^^^^^^^^^^^^^^^^
+urllib3.exceptions.ProtocolError: ('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users/Staff/Dropbox/Projects/Work/data_pipeline_automation_V2\elt_project\elt_project\assets\custom_parsers.py", line 447, in generic_selenium_scraper
+    _process_actions(driver, config.get("actions", []), scraped_data_accumulator)
+  File "C:\Users/Staff/Dropbox/Projects/Work/data_pipeline_automation_V2\elt_project\elt_project\assets\custom_parsers.py", line 333, in _process_actions
+    raise RuntimeError(msg) from e
+RuntimeError: SCRAPER ACTION FAILED at index 6:
+{
+    "type": "navigate",
+    "url": "https://fscm.cunyfirst.cuny.edu/psp/cnyfsprd/EMPLOYEE/ERP/c/QUERY_MANAGER.SCHED_QUERY.GBL?FolderPath=PORTAL_ROOT_OBJECT.PT_REPORTING_TOOLS.PT_QUERY.PT_SCHED_QUERY_GBL&IsFolder=false&IgnoreParamTempl=FolderPath%2cIsFolder"
+}
+Error: ('Connection aborted.', ConnectionResetError(10054, 'An existing connection was forcibly closed by the remote host', None, 10054, None))
+
+2026-01-29 16:02:04 - INFO     - ============================================================
+2026-01-29 16:02:04 - INFO     - Server  : Starting Data Importer UI on http://localhost:3000
+2026-01-29 16:02:04 - INFO     - --- Application Initialization Started ---
+2026-01-29 16:02:04 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\simple_ui.log
+2026-01-29 16:02:04 - INFO     - Server  : Initialization is running in the background...
+2026-01-29 16:02:04 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-01-29 16:02:04 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-01-29 16:02:04 - INFO     - INIT(2/3): Testing database connection...
+2026-01-29 16:02:04 - INFO     - DB      : Creating temporary engine to test connection...
+2026-01-29 16:02:04 - INFO     - Serving on http://0.0.0.0:3000
+2026-01-29 16:02:04 - INFO     - DB      : Connection test successful.
+2026-01-29 16:02:04 - INFO     - INIT(2/3): Database connection test successful.
+2026-01-29 16:02:04 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-01-29 16:02:04 - INFO     - [3/3] Dagster workspace file found.
+2026-01-29 16:02:04 - INFO     - --- Application Initialization Succeeded ---
+2026-01-29 16:02:04 - INFO     - ============================================================
+2026-01-29 16:02:06 - INFO     - --> GET /
+2026-01-29 16:02:06 - INFO     - <-- GET / - 200 OK
+2026-01-29 16:02:06 - INFO     - --> GET /api/pipelines
+2026-01-29 16:02:06 - INFO     - API     : Fetching pipeline configurations from database...
+2026-01-29 16:02:06 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-01-29 16:02:06 - INFO     - DB      : Database engine initialized successfully.
+2026-01-29 16:02:06 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-01-29 16:02:06 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-01-29 16:02:06 - INFO     - --> GET /favicon.ico
+2026-01-29 16:02:06 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-01-29 16:04:18 - INFO     - --> POST /api/run_imports
+2026-01-29 16:04:18 - INFO     - API     : Received request to run 1 imports: ['BKL_BUDGET_ALL_VER_1_3']
+2026-01-29 16:04:18 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 16:04:21 - INFO     - setup plugin alembic.autogenerate.schemas
+2026-01-29 16:04:21 - INFO     - setup plugin alembic.autogenerate.tables
+2026-01-29 16:04:21 - INFO     - setup plugin alembic.autogenerate.types
+2026-01-29 16:04:21 - INFO     - setup plugin alembic.autogenerate.constraints
+2026-01-29 16:04:21 - INFO     - setup plugin alembic.autogenerate.defaults
+2026-01-29 16:04:21 - INFO     - setup plugin alembic.autogenerate.comments
+2026-01-29 16:04:23 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:04:23 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:04:25 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:04:25 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:04:25 - INFO     - Running stamp_revision  -> 7e2f3204cf8e
+2026-01-29 16:04:25 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:04:25 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:04:26 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:04:26 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:04:26 - INFO     - Running stamp_revision  -> 7e2f3204cf8e
+2026-01-29 16:04:26 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:04:26 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:04:26 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:04:26 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:04:27 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:04:27 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:04:27 - INFO     - Running stamp_revision  -> 7e2f3204cf8e
+2026-01-29 16:04:49 - INFO     - API     : Using repository '__repository__' from location 'elt_project'
+2026-01-29 16:04:49 - INFO     - API     :  - Submitting tick for sensor 'sensor_BKL_BUDGET_ALL_VER_1_3'...
+2026-01-29 16:04:49 - INFO     - API     : Patching run_config. Renaming 'BKL_BUDGET_ALL_VER_1_3_extract_and_load_staging' to 'BKL_BUDGET_ALL_VER_1_3_ingest'.
+2026-01-29 16:04:49 - INFO     - API     :  - Run Config: {'ops': {'BKL_BUDGET_ALL_VER_1_3_ingest': {'config': {'source_file_path': 'C:\\\\Pipelines\\\\CUNYFirst_FSC\\BKL_BUDGET_ALL_VER_1_3-8663963.csv'}}}}
+2026-01-29 16:04:49 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:04:49 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:04:50 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:04:50 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:04:50 - INFO     - Running stamp_revision  -> 7e2f3204cf8e
+2026-01-29 16:04:50 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:04:50 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:04:51 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:04:51 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:04:55 - INFO     - API     :  - Successfully launched run 'ffe2cf6f-0a74-4037-9b5d-0019a993688a' for job 'BKL_BUDGET_ALL_VER_1_3_job'.
+2026-01-29 16:04:55 - INFO     - <-- POST /api/run_imports - 200 OK
+2026-01-29 16:04:58 - INFO     - --> GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a
+2026-01-29 16:04:58 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 16:04:58 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:04:58 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:04:58 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:04:58 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:04:59 - INFO     - <-- GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a - 200 OK
+2026-01-29 16:05:01 - INFO     - --> GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a
+2026-01-29 16:05:01 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 16:05:01 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:01 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:01 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:01 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:02 - INFO     - <-- GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a - 200 OK
+2026-01-29 16:05:04 - INFO     - --> GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a
+2026-01-29 16:05:04 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 16:05:04 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:04 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:05 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:05 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:05 - INFO     - <-- GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a - 200 OK
+2026-01-29 16:05:07 - INFO     - --> GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a
+2026-01-29 16:05:07 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 16:05:07 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:07 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:08 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:08 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:08 - INFO     - <-- GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a - 200 OK
+2026-01-29 16:05:10 - INFO     - --> GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a
+2026-01-29 16:05:10 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 16:05:10 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:10 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:11 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:11 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:11 - INFO     - <-- GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a - 200 OK
+2026-01-29 16:05:13 - INFO     - --> GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a
+2026-01-29 16:05:13 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 16:05:13 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:13 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:14 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:14 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:14 - INFO     - <-- GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a - 200 OK
+2026-01-29 16:05:16 - INFO     - --> GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a
+2026-01-29 16:05:16 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 16:05:16 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:16 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:17 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:17 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:18 - INFO     - <-- GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a - 200 OK
+2026-01-29 16:05:19 - INFO     - --> GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a
+2026-01-29 16:05:19 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 16:05:20 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:20 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:22 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:22 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:23 - INFO     - <-- GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a - 200 OK
+2026-01-29 16:05:23 - INFO     - --> GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a
+2026-01-29 16:05:23 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 16:05:23 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:23 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:23 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:23 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:24 - INFO     - <-- GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a - 200 OK
+2026-01-29 16:05:25 - INFO     - --> GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a
+2026-01-29 16:05:25 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 16:05:25 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:25 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:26 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:26 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:26 - INFO     - <-- GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a - 200 OK
+2026-01-29 16:05:28 - INFO     - --> GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a
+2026-01-29 16:05:28 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 16:05:28 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:28 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:29 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:29 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:29 - INFO     - <-- GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a - 200 OK
+2026-01-29 16:05:31 - INFO     - --> GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a
+2026-01-29 16:05:31 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 16:05:31 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:31 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:32 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:32 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:32 - INFO     - <-- GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a - 200 OK
+2026-01-29 16:05:34 - INFO     - --> GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a
+2026-01-29 16:05:34 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 16:05:34 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:34 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:35 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:35 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:35 - INFO     - <-- GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a - 200 OK
+2026-01-29 16:05:37 - INFO     - --> GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a
+2026-01-29 16:05:37 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 16:05:37 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:37 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:38 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:38 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:39 - INFO     - <-- GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a - 200 OK
+2026-01-29 16:05:40 - INFO     - --> GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a
+2026-01-29 16:05:40 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 16:05:40 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:40 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:40 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:40 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:41 - INFO     - <-- GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a - 200 OK
+2026-01-29 16:05:43 - INFO     - --> GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a
+2026-01-29 16:05:43 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 16:05:43 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:43 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:44 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:44 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:44 - INFO     - <-- GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a - 200 OK
+2026-01-29 16:05:46 - INFO     - --> GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a
+2026-01-29 16:05:46 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 16:05:46 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:46 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:47 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:47 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:47 - INFO     - <-- GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a - 200 OK
+2026-01-29 16:05:49 - INFO     - --> GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a
+2026-01-29 16:05:49 - WARNING  - No dagster instance configuration file (dagster.yaml) found at C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. Defaulting to loading and storing all metadata with C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home. If this is the desired behavior, create an empty dagster.yaml file in C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\dagster_home.
+2026-01-29 16:05:49 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:49 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:50 - INFO     - Context impl SQLiteImpl.
+2026-01-29 16:05:50 - INFO     - Will assume non-transactional DDL.
+2026-01-29 16:05:50 - INFO     - <-- GET /api/run_status/ffe2cf6f-0a74-4037-9b5d-0019a993688a - 200 OK
+2026-01-29 16:06:23 - ERROR - generic_selenium_scraper - Scraping Runtime Error for 'BKL_BUDGET_ALL_VER_1_3':
+SCRAPER ACTION FAILED at index 6:
+{
+    "type": "navigate",
+    "url": "https://fscm.cunyfirst.cuny.edu/psp/cnyfsprd/EMPLOYEE/ERP/c/QUERY_MANAGER.SCHED_QUERY.GBL?FolderPath=PORTAL_ROOT_OBJECT.PT_REPORTING_TOOLS.PT_QUERY.PT_SCHED_QUERY_GBL&IsFolder=false&IgnoreParamTempl=FolderPath%2cIsFolder"
+}
+Error: Message: invalid session id: session deleted as the browser has closed the connection
+from disconnected: not connected to DevTools
+  (Session info: chrome=144.0.7559.109)
+Stacktrace:
+Symbols not available. Dumping unresolved backtrace:
+	0xf78543
+	0xf78584
+	0xd6b4e0
+	0xd5a46e
+	0xd78fc8
+	0xddf05c
+	0xdf4e59
+	0xdd7fb6
+	0xda96f9
+	0xdaa4b4
+	0x11cd034
+	0x11c82c9
+	0x11e6460
+	0xf91a68
+	0xf9988d
+	0xf80df8
+	0xf80fc2
+	0xf6ab3a
+	0x75835d49
+	0x7737d5db
+	0x7737d561
+
+
+Stack Trace:
+Traceback (most recent call last):
+  File "C:\Users/Staff/Dropbox/Projects/Work/data_pipeline_automation_V2\elt_project\elt_project\assets\custom_parsers.py", line 284, in _process_actions
+    driver.get(action["url"])
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\selenium\webdriver\remote\webdriver.py", line 356, in get
+    self.execute(Command.GET, {"url": url})
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\selenium\webdriver\remote\webdriver.py", line 347, in execute
+    self.error_handler.check_response(response)
+  File "C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\venv\Lib\site-packages\selenium\webdriver\remote\errorhandler.py", line 229, in check_response
+    raise exception_class(message, screen, stacktrace)
+selenium.common.exceptions.InvalidSessionIdException: Message: invalid session id: session deleted as the browser has closed the connection
+from disconnected: not connected to DevTools
+  (Session info: chrome=144.0.7559.109)
+Stacktrace:
+Symbols not available. Dumping unresolved backtrace:
+	0xf78543
+	0xf78584
+	0xd6b4e0
+	0xd5a46e
+	0xd78fc8
+	0xddf05c
+	0xdf4e59
+	0xdd7fb6
+	0xda96f9
+	0xdaa4b4
+	0x11cd034
+	0x11c82c9
+	0x11e6460
+	0xf91a68
+	0xf9988d
+	0xf80df8
+	0xf80fc2
+	0xf6ab3a
+	0x75835d49
+	0x7737d5db
+	0x7737d561
+
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "C:\Users/Staff/Dropbox/Projects/Work/data_pipeline_automation_V2\elt_project\elt_project\assets\custom_parsers.py", line 447, in generic_selenium_scraper
+    _process_actions(driver, config.get("actions", []), scraped_data_accumulator)
+  File "C:\Users/Staff/Dropbox/Projects/Work/data_pipeline_automation_V2\elt_project\elt_project\assets\custom_parsers.py", line 333, in _process_actions
+    raise RuntimeError(msg) from e
+RuntimeError: SCRAPER ACTION FAILED at index 6:
+{
+    "type": "navigate",
+    "url": "https://fscm.cunyfirst.cuny.edu/psp/cnyfsprd/EMPLOYEE/ERP/c/QUERY_MANAGER.SCHED_QUERY.GBL?FolderPath=PORTAL_ROOT_OBJECT.PT_REPORTING_TOOLS.PT_QUERY.PT_SCHED_QUERY_GBL&IsFolder=false&IgnoreParamTempl=FolderPath%2cIsFolder"
+}
+Error: Message: invalid session id: session deleted as the browser has closed the connection
+from disconnected: not connected to DevTools
+  (Session info: chrome=144.0.7559.109)
+Stacktrace:
+Symbols not available. Dumping unresolved backtrace:
+	0xf78543
+	0xf78584
+	0xd6b4e0
+	0xd5a46e
+	0xd78fc8
+	0xddf05c
+	0xdf4e59
+	0xdd7fb6
+	0xda96f9
+	0xdaa4b4
+	0x11cd034
+	0x11c82c9
+	0x11e6460
+	0xf91a68
+	0xf9988d
+	0xf80df8
+	0xf80fc2
+	0xf6ab3a
+	0x75835d49
+	0x7737d5db
+	0x7737d561
+
+
+2026-01-29 16:06:47 - INFO     - ============================================================
+2026-01-29 16:06:47 - INFO     - Server  : Starting Data Importer UI on http://localhost:3000
+2026-01-29 16:06:47 - INFO     - --- Application Initialization Started ---
+2026-01-29 16:06:47 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\simple_ui.log
+2026-01-29 16:06:47 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-01-29 16:06:47 - INFO     - Server  : Initialization is running in the background...
+2026-01-29 16:06:47 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-01-29 16:06:47 - INFO     - INIT(2/3): Testing database connection...
+2026-01-29 16:06:47 - INFO     - DB      : Creating temporary engine to test connection...
+2026-01-29 16:06:47 - INFO     - Serving on http://0.0.0.0:3000
+2026-01-29 16:06:47 - INFO     - DB      : Connection test successful.
+2026-01-29 16:06:47 - INFO     - INIT(2/3): Database connection test successful.
+2026-01-29 16:06:47 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-01-29 16:06:47 - INFO     - [3/3] Dagster workspace file found.
+2026-01-29 16:06:47 - INFO     - --- Application Initialization Succeeded ---
+2026-01-29 16:06:47 - INFO     - ============================================================
+2026-01-29 16:06:48 - INFO     - --> GET /
+2026-01-29 16:06:48 - INFO     - <-- GET / - 200 OK
+2026-01-29 16:06:48 - INFO     - --> GET /api/pipelines
+2026-01-29 16:06:48 - INFO     - API     : Fetching pipeline configurations from database...
+2026-01-29 16:06:48 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-01-29 16:06:48 - INFO     - DB      : Database engine initialized successfully.
+2026-01-29 16:06:48 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-01-29 16:06:48 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-01-29 16:06:48 - INFO     - --> GET /favicon.ico
+2026-01-29 16:06:48 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-01-29 16:11:21 - INFO     - ============================================================
+2026-01-29 16:11:21 - INFO     - Server  : Starting Data Importer UI on http://localhost:3000
+2026-01-29 16:11:21 - INFO     - --- Application Initialization Started ---
+2026-01-29 16:11:21 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-01-29 16:11:21 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-01-29 16:11:21 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2\simple_ui.log
+2026-01-29 16:11:21 - INFO     - INIT(2/3): Testing database connection...
+2026-01-29 16:11:21 - INFO     - Server  : Initialization is running in the background...
+2026-01-29 16:11:21 - INFO     - DB      : Creating temporary engine to test connection...
+2026-01-29 16:11:21 - INFO     - Serving on http://0.0.0.0:3000
+2026-01-29 16:11:21 - INFO     - DB      : Connection test successful.
+2026-01-29 16:11:21 - INFO     - INIT(2/3): Database connection test successful.
+2026-01-29 16:11:21 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-01-29 16:11:21 - INFO     - [3/3] Dagster workspace file found.
+2026-01-29 16:11:21 - INFO     - --- Application Initialization Succeeded ---
+2026-01-29 16:11:21 - INFO     - ============================================================
+2026-01-29 16:11:23 - INFO     - --> GET /
+2026-01-29 16:11:23 - INFO     - <-- GET / - 200 OK
+2026-01-29 16:11:23 - INFO     - --> GET /api/pipelines
+2026-01-29 16:11:23 - INFO     - API     : Fetching pipeline configurations from database...
+2026-01-29 16:11:23 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-01-29 16:11:23 - INFO     - DB      : Database engine initialized successfully.
+2026-01-29 16:11:23 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-01-29 16:11:23 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-01-29 16:11:23 - INFO     - --> GET /favicon.ico
+2026-01-29 16:11:23 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
