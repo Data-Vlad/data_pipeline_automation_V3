@@ -3,6 +3,7 @@ import numpy as np
 from sklearn.ensemble import IsolationForest
 from sklearn.linear_model import LinearRegression
 from sklearn.cluster import KMeans
+import re
 try:
     from prophet import Prophet
     PROPHET_INSTALLED = True
@@ -159,6 +160,15 @@ class MLEngine:
         """
 
     @staticmethod
+    def validate_sql_safety(sql: str) -> bool:
+        """Checks SQL for forbidden DDL/DML keywords to prevent injection/accidental deletion."""
+        forbidden_patterns = [r"\bDROP\b", r"\bDELETE\b", r"\bUPDATE\b", r"\bINSERT\b", r"\bALTER\b", r"\bTRUNCATE\b", r"\bEXEC\b", r"\bGRANT\b", r"\bREVOKE\b"]
+        for pattern in forbidden_patterns:
+            if re.search(pattern, sql, re.IGNORECASE):
+                return False
+        return True
+
+    @staticmethod
     def generate_sql_from_question(question: str, schema_context: str) -> str:
         """Translates natural language to SQL using OpenAI."""
         if not OPENAI_INSTALLED or not os.getenv("OPENAI_API_KEY"):
@@ -172,7 +182,13 @@ class MLEngine:
                 {"role": "user", "content": question}
             ]
         )
-        return completion.choices[0].message.content.strip().replace("```sql", "").replace("```", "")
+        
+        sql = completion.choices[0].message.content.strip().replace("```sql", "").replace("```", "")
+        
+        if not MLEngine.validate_sql_safety(sql):
+            raise ValueError("Security Alert: The generated SQL contained forbidden keywords (e.g., DROP, DELETE). Execution blocked.")
+            
+        return sql
 
     @staticmethod
     def recommend_visualization(df: pd.DataFrame) -> dict:
