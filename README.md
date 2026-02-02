@@ -903,6 +903,14 @@ CREATE TABLE analytics_predictions (
     *   **Critical**: Does NOT use `DELETE` + `INSERT`.
     *   **Implementation**: Uses a **SQL MERGE** strategy. It loads changes to a temp table (`#Staging_Edit`) and performs an atomic Upsert based on the Primary Key. This ensures data integrity even if the app crashes mid-operation.
 
+#### 4. ⚡ AI Data Entry Assistant
+*   **Function**: Automates manual data entry by converting unstructured text into structured database rows.
+*   **Workflow**:
+    1.  User selects a target table (e.g., `stg_invoices`).
+    2.  User pastes text (e.g., an email body: "Invoice #999 from Vendor X for $500").
+    3.  AI maps the text to the table schema.
+    4.  User reviews the grid and clicks "Commit" to safely merge data into SQL.
+
 ### 7.4. Developer Guide: How to Extend
 
 #### Adding a New ML Model
