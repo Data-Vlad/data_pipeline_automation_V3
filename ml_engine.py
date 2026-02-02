@@ -5,8 +5,6 @@ from sklearn.linear_model import LinearRegression
 from sklearn.cluster import KMeans
 import re
 import json
-import io
-import base64
 try:
     from prophet import Prophet
     PROPHET_INSTALLED = True
@@ -24,12 +22,6 @@ try:
     OPENAI_INSTALLED = True
 except ImportError:
     OPENAI_INSTALLED = False
-
-try:
-    import pypdf
-    PYPDF_INSTALLED = True
-except ImportError:
-    PYPDF_INSTALLED = False
     
 class MLEngine:
     """
@@ -57,103 +49,63 @@ class MLEngine:
         return df
 
     @staticmethod
-    def parse_unstructured_data(unstructured_text: str, target_table: str, schema_context: str) -> pd.DataFrame:
+    def analyze_root_cause(df: pd.DataFrame, date_col: str, value_col: str, target_date, compare_date) -> list:
         """
-        Uses OpenAI to parse unstructured text into a structured DataFrame matching the target table schema.
+        Identifies which categorical segments contributed most to the change in value_col between two dates.
+        Returns a list of insights (dictionaries).
         """
-        if not OPENAI_INSTALLED or not os.getenv("OPENAI_API_KEY"):
-            raise ImportError("OpenAI library or API Key is missing.")
-
-        client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        insights = []
         
-        prompt = f"""
-        You are an AI Data Entry Clerk. 
-        Target Table: {target_table}
-        Schema (Columns and Types):
-        {schema_context}
-
-        Task: Extract data from the text below and map it to the target table columns.
-        - Return a JSON array of objects.
-        - Use 'null' for missing fields.
-        - Ensure data types match the schema (e.g. dates in YYYY-MM-DD).
-        - Do not include any markdown formatting, just the raw JSON string.
-
-        Input Text:
-        {unstructured_text}
-        """
-
-        completion = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": prompt}],
-            temperature=0
-        )
-
-        response_text = completion.choices[0].message.content.strip()
+        # Ensure dates are comparable
+        df[date_col] = pd.to_datetime(df[date_col])
+        target_date = pd.to_datetime(target_date)
+        compare_date = pd.to_datetime(compare_date)
         
-        # Clean up potential markdown code blocks
-        response_text = response_text.replace("```json", "").replace("```", "")
-
-        try:
-            data = json.loads(response_text)
-            # Ensure it's a list
-            if isinstance(data, dict):
-                data = [data]
-            return pd.DataFrame(data)
-        except json.JSONDecodeError:
-            raise ValueError(f"Failed to parse AI response as JSON: {response_text}")
-
-    @staticmethod
-    def extract_content_from_file(uploaded_file) -> str:
-        """
-        Extracts text content from various file types (PDF, CSV, Excel, Image).
-        """
-        file_type = uploaded_file.name.split('.')[-1].lower()
+        # Filter data for the two periods
+        target_data = df[df[date_col] == target_date]
+        compare_data = df[df[date_col] == compare_date]
         
-        if file_type == 'pdf':
-            if not PYPDF_INSTALLED:
-                return "Error: `pypdf` library not installed. Cannot parse PDF."
-            try:
-                reader = pypdf.PdfReader(uploaded_file)
-                text = ""
-                for page in reader.pages:
-                    text += page.extract_text() + "\n"
-                return text
-            except Exception as e:
-                return f"Error reading PDF: {e}"
+        if target_data.empty or compare_data.empty:
+            return [{"dimension": "N/A", "segment": "N/A", "impact": 0, "reason": "Insufficient data for comparison."}]
 
-        elif file_type in ['csv', 'txt']:
-            try:
-                # Assume utf-8 for simplicity
-                return uploaded_file.getvalue().decode("utf-8")
-            except:
-                return str(uploaded_file.read())
+        total_target = target_data[value_col].sum()
+        total_compare = compare_data[value_col].sum()
+        total_delta = total_target - total_compare
 
-        elif file_type in ['xlsx', 'xls']:
-            try:
-                df = pd.read_excel(uploaded_file)
-                return df.to_string()
-            except Exception as e:
-                return f"Error reading Excel: {e}"
-
-        elif file_type in ['png', 'jpg', 'jpeg']:
-            if not OPENAI_INSTALLED:
-                return "Error: OpenAI not installed for Vision processing."
-            # Use GPT-4o Vision for images
-            base64_image = base64.b64encode(uploaded_file.getvalue()).decode('utf-8')
-            client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-            response = client.chat.completions.create(
-                model="gpt-4o",
-                messages=[
-                    {"role": "user", "content": [
-                        {"type": "text", "text": "Transcribe the text in this image exactly as it appears."},
-                        {"type": "image_url", "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"}}
-                    ]}
-                ]
-            )
-            return response.choices[0].message.content
-
-        else:
-            return "Error: Unsupported file type."
+        # Identify categorical columns (Dimensions)
+        cat_cols = df.select_dtypes(include=['object', 'category']).columns.tolist()
+        
+        for dim in cat_cols:
+            # Group by dimension to find drivers
+            t_grp = target_data.groupby(dim)[value_col].sum()
+            c_grp = compare_data.groupby(dim)[value_col].sum()
+            
+            # Align indexes
+            all_segments = t_grp.index.union(c_grp.index)
+            t_grp = t_grp.reindex(all_segments, fill_value=0)
+            c_grp = c_grp.reindex(all_segments, fill_value=0)
+            
+            deltas = t_grp - c_grp
+            
+            # Find top contributors (absolute impact)
+            sorted_deltas = deltas.abs().sort_values(ascending=False).head(3)
+            
+            for segment, _ in sorted_deltas.items():
+                delta = deltas[segment]
+                # Only report significant drivers (> 5% of total change or if total change is small)
+                if abs(total_delta) < 1e-9 or abs(delta) / abs(total_delta) > 0.05:
+                    insights.append({
+                        "dimension": dim,
+                        "segment": segment,
+                        "impact": delta,
+                        "prev_value": c_grp[segment],
+                        "curr_value": t_grp[segment],
+                        "contribution_pct": (delta / total_delta) * 100 if total_delta != 0 else 0
+                    })
+        
+        # Sort by absolute impact
+        insights.sort(key=lambda x: abs(x['impact']), reverse=True)
+        return insights
 
     @staticmethod
     def perform_clustering(df: pd.DataFrame, features: list, n_clusters: int = 3) -> pd.DataFrame:
