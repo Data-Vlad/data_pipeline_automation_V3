@@ -328,12 +328,21 @@ def get_pipelines():
             # Convert the grouped data into a list format for the JSON response.
             # Filter out any pipeline groups that have no imports at all.
             pipelines = [
-                {"pipeline_name": pipeline_name, **data} 
+                {
+                    "pipeline_name": pipeline_name,
+                    "load_imports": data["load_imports"],
+                    "etl_imports": data["load_imports"], # Alias for frontend compatibility
+                    "ingest_imports": data["ingest_imports"],
+                    "ingestion_imports": data["ingest_imports"], # Alias for frontend compatibility
+                    "imports": [item["import_name"] for item in data["ingest_imports"] + data["load_imports"]],
+                    "monitored_directory": data["monitored_directory"]
+                }
                 for pipeline_name, data in pipeline_groups.items()
                 if data["load_imports"] or data["ingest_imports"]
             ]
             
             logger.info(f"API     : Successfully fetched and processed {len(pipelines)} pipelines.")
+            # The frontend error "pipelines.forEach is not a function" indicates it expects a raw list.
             return jsonify(pipelines)
 
         except Exception as e:
