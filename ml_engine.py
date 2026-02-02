@@ -14,6 +14,12 @@ try:
     STATSMODELS_INSTALLED = True
 except ImportError:
     STATSMODELS_INSTALLED = False
+
+try:
+    import openai
+    OPENAI_INSTALLED = True
+except ImportError:
+    OPENAI_INSTALLED = False
     
 class MLEngine:
     """
@@ -122,15 +128,51 @@ class MLEngine:
         return future_df
 
     @staticmethod
-    def generate_insights(df: pd.DataFrame, value_col: str) -> str:
+    def generate_data_story(metrics_dict: dict, context_str: str = "") -> str:
         """
-        Generates a natural language summary of the data (Mock AI).
+        Generates a natural language summary of the data using OpenAI if available, 
+        otherwise falls back to a heuristic template.
         """
-        mean_val = df[value_col].mean()
-        max_val = df[value_col].max()
-        trend = "increasing" if df[value_col].iloc[-1] > df[value_col].iloc[0] else "decreasing"
+        if OPENAI_INSTALLED and os.getenv("OPENAI_API_KEY"):
+            try:
+                client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+                prompt = f"""
+                You are a Data Analyst. Write a brief, professional executive summary based on these metrics:
+                {metrics_dict}
+                Context: {context_str}
+                Keep it under 4 bullet points. Focus on the 'So What?'.
+                """
+                completion = client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=[{"role": "user", "content": prompt}]
+                )
+                return completion.choices[0].message.content.strip()
+            except Exception as e:
+                return f"AI Generation Failed: {e}. Falling back to standard report."
         
-        return f"The average value is {mean_val:.2f} with a peak of {max_val:.2f}. The overall trend appears to be {trend}."
+        # Fallback Heuristic
+        return f"""
+        **Executive Summary (Automated)**:
+        *   **Success Rate**: {metrics_dict.get('success_rate', 0):.1f}%
+        *   **Anomalies**: {metrics_dict.get('anomalies', 0)} detected events requiring attention.
+        *   **Volume**: Processed {metrics_dict.get('total_runs', 0)} pipeline runs.
+        """
+
+    @staticmethod
+    def generate_sql_from_question(question: str, schema_context: str) -> str:
+        """Translates natural language to SQL using OpenAI."""
+        if not OPENAI_INSTALLED or not os.getenv("OPENAI_API_KEY"):
+            raise ImportError("OpenAI library or API Key is missing.")
+            
+        client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        completion = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": f"You are a SQL Server expert. Return ONLY a valid SQL Server query (no markdown) to answer the question based on this schema:\n{schema_context}"},
+                {"role": "user", "content": question}
+            ]
+        )
+        return completion.choices[0].message.content.strip().replace("```sql", "").replace("```", "")
 
     @staticmethod
     def recommend_visualization(df: pd.DataFrame) -> dict:
