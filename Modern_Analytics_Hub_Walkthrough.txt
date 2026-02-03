@@ -305,6 +305,9 @@ This section provides a technical deep-dive into the AI and Analytics concepts
 implemented in this framework. Use this to understand the "How" and "Why" behind 
 the features.
 
+Each section includes "Color Visualizations" (using Emojis and Layouts) to 
+make the abstract concepts concrete.
+
 --------------------------------------------------------------------------------
 1. LARGE LANGUAGE MODELS (LLMs) & GENERATIVE AI
 --------------------------------------------------------------------------------
@@ -325,21 +328,24 @@ the features.
         (Input + Output).
 *   **In this Demo**: Used in `generate_data_story` with a low temperature for factual 
     summarization of logs.
-*   **Visual Concept**:
-    ```
-    [Input: "The cat sat"]
-           |
-    (Tokenization: [102, 554, 998])
-           |
-    +---------------------+
-    |  Transformer Layers | <--- Trained on Internet Data
-    | (Self-Attention)    |      (Learns patterns/grammar)
-    +---------------------+
-           |
-    (Probabilities: "on": 80%, "in": 10%)
-           |
-    [Output: "on"]
-    ```
+
+    **VISUALIZATION 1: THE LLM BRAIN 🧠**
+    *Caption: How an LLM turns text into numbers, "thinks", and predicts the next word.*
+    
+    [USER INPUT] "The cat sat"
+          ⬇️
+    🔤 Tokenization:  [102] [554] [998]  (Converts words to IDs)
+          ⬇️
+    🔢 Embeddings:    [0.1, -0.5, 0.8...] (Maps IDs to Vector Space)
+          ⬇️
+    🧠 TRANSFORMER LAYERS (The "Neural Network")
+       ├── 🔴 Self-Attention (Understanding Context: "sat" relates to "cat")
+       ├── 🟠 Feed-Forward Networks (Accessing World Knowledge)
+       └── 🟡 Normalization (Stabilizing the math)
+          ⬇️
+    🎲 Probabilities: 🟦 "on" (80%) | ⬜ "in" (15%) | 🟥 "up" (5%)
+          ⬇️
+    ✨ OUTPUT: "on"
 
 --------------------------------------------------------------------------------
 2. TEXT-TO-SQL
@@ -358,19 +364,24 @@ the features.
         destructive commands (`DROP`, `DELETE`, `TRUNCATE`) before execution.
 *   **Implementation**: `MLEngine.generate_sql_from_question`. It constructs a 
     prompt containing `INFORMATION_SCHEMA` data and enforces a read-only policy.
-*   **Visual Concept**:
-    ```
-    User: "Show sales"      Schema: [Table: Sales, Cols: Date, Amt]
-           |                       |
-           +-----------+-----------+
-                       |
-                 [ LLM Prompt ]
-                       |
-                 [ Generated SQL ]
-           "SELECT sum(Amt) FROM Sales"
-                       |
-                (Security Check) -> [ Database Execution ] -> [ Result: $10k ]
-    ```
+
+    **VISUALIZATION 2: THE TEXT-TO-SQL PIPELINE 🔄**
+    *Caption: The secure flow of data from a user question to a database result.*
+
+    👤 User: "Show sales for last month"
+          ⬇️
+    🤖 LLM Agent (Receives: Schema 🗂️ + Question ❓)
+       (Note: No actual data rows are sent here, only table names!)
+          ⬇️
+    📝 Generates SQL: "SELECT sum(amount) FROM sales WHERE date > ..."
+          ⬇️
+    🛡️ Security Gate (The "Bouncer")
+       ├── 🚫 Checks for: DROP, DELETE, TRUNCATE
+       └── ✅ Status: SAFE
+          ⬇️
+    🛢️ Database Engine (Executes Query)
+          ⬇️
+    📊 Result: [ $50,000 ] ➡️ Displayed to User
 
 --------------------------------------------------------------------------------
 3. AGENTIC AI (Autonomous Agents)
@@ -388,21 +399,24 @@ the features.
     LLM can invoke (e.g., `generate_sql`, `generate_data_story`).
 *   **Why it matters**: Standard LLMs are passive (Input -> Output). Agents are active; 
     they can perform multi-step workflows to solve open-ended problems.
-*   **Visual Concept**:
-    ```
-    Goal: "Fix the data error"
-           |
-    +----->[ AGENT BRAIN (LLM) ]<-------+
-    |      1. THOUGHT: "I need to find the error first."
-    |      2. PLAN: "Run data scan tool."
-    |      3. ACTION: Call Tool `scan_data()`
-    |                                   |
-    |      (Observation)                |
-    +------ "Found typo in row 5" <-----+
-           |
-           4. THOUGHT: "Now I need to fix it."
-           5. ACTION: Call Tool `fix_data(row=5)`
-    ```
+
+    **VISUALIZATION 3: THE AGENTIC LOOP (ReAct) 🔄**
+    *Caption: How an autonomous agent thinks, plans, and acts to solve problems.*
+
+    🎯 GOAL: "Analyze the sales drop"
+          ⬇️
+    🧠 AGENT BRAIN (Thinking...)
+       ├── 💭 THOUGHT: "I don't have the data yet."
+       ├── 📋 PLAN: "I need to query the database first."
+       └── 🛠️ ACTION: Call Tool [SQL_Generator]
+             ⬇️
+          🔄 LOOP (The Agent waits for the tool)
+             ⬇️
+       👀 OBSERVATION: "Sales dropped 20% last week."
+       ├── 💭 THOUGHT: "That's bad. I need to know why. Let's check feedback."
+       └── 🛠️ ACTION: Call Tool [Semantic_Search]
+             ⬇️
+    🏁 FINAL ANSWER: "Sales dropped due to a server outage reported in feedback."
 
 --------------------------------------------------------------------------------
 4. RAG (RETRIEVAL-AUGMENTED GENERATION) & VECTOR SEARCH
@@ -420,20 +434,22 @@ the features.
     between two vectors. A score of 1.0 means identical meaning; 0 means unrelated.
 *   **Implementation**: `MLEngine.perform_semantic_search` calculates the cosine 
     similarity between the User Query vector and the Database Row vectors.
-*   **Visual Concept**:
-    ```
-    User Query: "Server crash?"
-           |
-    [ Embedding Model ] ---> [ 0.1, 0.9, ... ] (Vector)
-                                   |
-                            [ Vector Database ]
-                            (Compare vs stored docs)
-                                   |
-    +------------------------------+
-    | Match: "Log: Error 500 detected"
-    |
-    +-> [ LLM Prompt: Context + Query ] -> "The logs show an Error 500..."
-    ```
+
+    **VISUALIZATION 4: THE RAG ARCHITECTURE 📚**
+    *Caption: Injecting private knowledge into the LLM using Vector Search.*
+
+    ❓ User Query: "Why did the server crash?"
+          ⬇️
+    🔢 Embedding Model ➡️ [0.9, 0.2, 0.5...] (Converts query to numbers)
+          ⬇️
+    🔍 Vector Database (Semantic Search)
+       ├── 📄 Doc A: "Server Uptime 99%" (Distance: 0.8) ❌
+       └── 📄 Doc B: "Error 500 Log"     (Distance: 0.1) ✅ MATCH!
+          ⬇️
+    📥 Context Injection
+       Prompt: "Context: [Error 500 Log...] + Question: [Why crash?]"
+          ⬇️
+    🤖 LLM Response: "The logs indicate an Error 500 caused the crash."
 
 --------------------------------------------------------------------------------
 5. MULTI-MODAL AI
@@ -449,18 +465,18 @@ the features.
     understands **layout** and **context** (e.g., distinguishing a "Total" field 
     from a "Subtotal" based on position and font weight).
 *   **In this Demo**: We use GPT-4o to extract JSON from invoice images.
-*   **Visual Concept**:
-    ```
-    [ Image: Invoice ]      [ Text: "Extract Total" ]
-           |                        |
-    [ Patch 1 ][ Patch 2 ]          |
-           |                        |
-    [ Visual Encoder ]      [ Text Encoder ]
-           |                        |
-           +-----------+------------+
-                       |
-               [ Cross-Attention ] -> [ Output: "$500.00" ]
-    ```
+
+    **VISUALIZATION 5: VISION TRANSFORMER (ViT) 👁️**
+    *Caption: How AI reads an invoice image.*
+
+    🖼️ IMAGE (Invoice.jpg)       📝 TEXT PROMPT ("Extract Total")
+          ⬇️                            ⬇️
+    👁️ Vision Encoder (Pixels)    🔤 Text Encoder (Tokens)
+          ↘️                    ↙️
+             🔗 CROSS-ATTENTION LAYER
+             (Aligns the word "Total" with the pixels showing "$500")
+                      ⬇️
+             ✨ JSON OUTPUT: { "total": 500.00 }
 
 --------------------------------------------------------------------------------
 6. PRESCRIPTIVE ANALYTICS & OPTIMIZATION
@@ -478,21 +494,24 @@ the features.
     3.  **Solver**: We use `scipy.optimize.minimize` (SLSQP algorithm) to mathematically 
         find the input values that yield the best output, subject to constraints 
         (e.g., Budget < $10k).
-*   **Visual Concept**:
-    ```
-    [ Inputs (Variables) ]
-    (Ad Spend, Price)
-           |
-           v
-    [ Predictive Model ]  <--- (Learned from History)
-    ( Sales = 2*Spend - 5*Price )
-           |
-           v
-    [ Optimizer / Solver ] <--- Goal: Maximize Sales
-           |                    Constraint: Spend < $1000
-           v
-    [ Recommendation ] -> "Set Spend = $999, Price = $10"
-    ```
+
+    **VISUALIZATION 6: THE OPTIMIZATION ENGINE ⚙️**
+    *Caption: Finding the perfect balance between profit and cost.*
+
+    📊 Historical Data (Sales, Spend, Price)
+          ⬇️
+    🤖 Digital Twin Model (y = mx + b)
+       "I can predict Sales if you give me Spend & Price"
+          ⬇️
+    🎯 Objective: MAXIMIZE Profit 💰
+    ⛔ Constraints: Budget < $10,000
+          ⬇️
+    🧮 SOLVER ALGORITHM (Iterates inputs...)
+       ├── Try 1: Spend $5k ➡️ Profit $8k
+       ├── Try 2: Spend $9k ➡️ Profit $12k
+       └── Try 3: Spend $15k 🚫 (Over Budget!)
+          ⬇️
+    ✅ OPTIMAL SOLUTION: "Spend exactly $9,999"
 
 --------------------------------------------------------------------------------
 7. ANOMALY DETECTION (Unsupervised Learning)
@@ -509,17 +528,67 @@ the features.
     Shorter paths = Higher Anomaly Score.
 *   **Contamination**: A hyperparameter defining the expected proportion of outliers 
     in the dataset (e.g., 0.05 or 5%).
-*   **Visual Concept**:
-    ```
-       [ Root Node ]
-       /           \
-    [Split A]     [Split B]
-     /     \       /     \
-   (..)   (..)   (..)   [Anomaly]
-   Normal Data          (Isolated quickly)
-   (Deep in tree)       (Short path length)
 
-   Path Length:
-   Normal  = High (Hard to isolate)
-   Anomaly = Low  (Easy to isolate)
-    ```
+    **VISUALIZATION 7: ISOLATION FOREST 🌲**
+    *Caption: Detecting outliers by trying to isolate points.*
+
+    🌳 RANDOM FOREST (Decision Trees)
+       ├── Point A (Normal Data):
+       │   Needs 10 random splits to isolate 🌿🌿🌿🌿🌿
+       │   (Deep in the tree = "Normal" 🟢)
+       │
+       └── Point B (Anomaly):
+           Isolated in just 2 splits! ✂️✂️
+           (Shallow in the tree = "Anomaly" 🔴)
+
+    📉 RESULT:
+       Point A Score: 0.2 (Safe)
+       Point B Score: 0.9 (ALERT!)
+
+--------------------------------------------------------------------------------
+8. DATA GOVERNANCE & QUALITY
+--------------------------------------------------------------------------------
+*   **Concept**: Automated gates that stop bad data before it enters the system.
+
+    **VISUALIZATION 8: THE QUALITY GATE 🚧**
+    *Caption: How the pipeline protects the warehouse from bad data.*
+
+    📂 New File (Sales.csv)
+          ⬇️
+    🛑 QUALITY GATE (Rules Engine)
+       ├── Rule 1: Sales > 0?      ✅ PASS
+       ├── Rule 2: Valid Region?   ❌ FAIL (Found "Nrth")
+       └── Rule 3: No Duplicates?  ✅ PASS
+          ⬇️
+    🚨 ACTION: BLOCK PIPELINE
+       (Log Error ➡️ Alert Steward ➡️ Halt Load)
+
+--------------------------------------------------------------------------------
+9. AUTOMATED ENRICHMENT
+--------------------------------------------------------------------------------
+*   **Concept**: Filling in missing data automatically using lookup tables.
+
+    **VISUALIZATION 9: THE ENRICHMENT JOIN 🔗**
+    *Caption: Self-healing data by filling gaps.*
+
+    📄 Raw Data (Staging)
+       [ SKU: "A-123" | Category: NULL ❌ ]
+          ⬇️
+    🔗 ENRICHMENT ENGINE (Joins with Master Data)
+       [ Lookup: "A-123" = "Electronics" ]
+          ⬇️
+    ✨ Enriched Data
+       [ SKU: "A-123" | Category: "Electronics" ✅ ]
+
+--------------------------------------------------------------------------------
+10. THE FULL MODERN DATA STACK
+--------------------------------------------------------------------------------
+*   **Concept**: The end-to-end flow of the entire solution.
+
+    **VISUALIZATION 10: ARCHITECTURE OVERVIEW 🏗️**
+    *Caption: From raw files to AI insights.*
+
+    🌐 SOURCES         ⚙️ INGESTION         🛢️ WAREHOUSE         🧠 AI HUB
+    (Files, API)      (Dagster ELT)        (SQL Server)         (Streamlit)
+       📄 📄              🔄 🧹                💾 📊                🤖 💬
+    [Raw Data]  ➡️  [Clean & Load]  ➡️  [Store & Model]  ➡️  [Visualize & Predict]
