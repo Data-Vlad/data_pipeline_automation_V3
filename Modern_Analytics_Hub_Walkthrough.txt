@@ -305,290 +305,459 @@ This section provides a technical deep-dive into the AI and Analytics concepts
 implemented in this framework. Use this to understand the "How" and "Why" behind 
 the features.
 
-Each section includes "Color Visualizations" (using Emojis and Layouts) to 
-make the abstract concepts concrete.
+Each section includes clear ASCII visualizations and simplified explanations 
+to make abstract concepts easy to understand.
 
 --------------------------------------------------------------------------------
 1. LARGE LANGUAGE MODELS (LLMs) & GENERATIVE AI
 --------------------------------------------------------------------------------
-*   **Technical Definition**: LLMs are probabilistic models based on the **Transformer** 
-    architecture (specifically the Decoder-only stack in GPT models). They are trained 
-    on vast corpora to predict the next token (sub-word unit) in a sequence.
-*   **Mechanism**:
-    1.  **Tokenization**: Input text is converted into numerical tokens.
-    2.  **Embeddings**: Tokens are mapped to vectors in a high-dimensional space.
-    3.  **Self-Attention**: The model weighs the importance of different words in the 
-        context window relative to each other (e.g., linking "bank" to "river" vs "money").
-    4.  **Probabilistic Output**: The model outputs a probability distribution (logits) 
-        over the vocabulary for the next token.
-*   **Key Parameters**:
-    *   **Temperature**: Controls randomness. Low (0.1) makes the model deterministic 
-        and focused (good for SQL/Code). High (0.8) makes it creative (good for stories).
-    *   **Context Window**: The maximum number of tokens the model can process at once 
-        (Input + Output).
-*   **In this Demo**: Used in `generate_data_story` with a low temperature for factual 
-    summarization of logs.
+*   **Concept**: Imagine a super-advanced auto-complete on your phone. It doesn't 
+    just guess the next word based on the last word; it looks at the entire book 
+    you've written so far to guess the next word perfectly.
 
-    **VISUALIZATION 1: THE LLM BRAIN 🧠**
-    *Caption: How an LLM turns text into numbers, "thinks", and predicts the next word.*
-    
-    [USER INPUT] "The cat sat"
-          ⬇️
-    🔤 Tokenization:  [102] [554] [998]  (Converts words to IDs)
-          ⬇️
-    🔢 Embeddings:    [0.1, -0.5, 0.8...] (Maps IDs to Vector Space)
-          ⬇️
-    🧠 TRANSFORMER LAYERS (The "Neural Network")
-       ├── 🔴 Self-Attention (Understanding Context: "sat" relates to "cat")
-       ├── 🟠 Feed-Forward Networks (Accessing World Knowledge)
-       └── 🟡 Normalization (Stabilizing the math)
-          ⬇️
-    🎲 Probabilities: 🟦 "on" (80%) | ⬜ "in" (15%) | 🟥 "up" (5%)
-          ⬇️
-    ✨ OUTPUT: "on"
+*   **Key Components Simplified**:
+    1.  **Tokenization (The Word Chopper)**: Computers can't read words. They only 
+        read numbers. This step chops words into number chunks.
+    2.  **Embeddings (The Map of Meaning)**: Every word is turned into a list of 
+        coordinates (like GPS). Words with similar meanings (Dog, Puppy) are close 
+        together on the map.
+    3.  **Self-Attention (The Spotlight)**: When reading a sentence, the model 
+        shines a "spotlight" on other relevant words to understand context.
+        *   *Example*: In "The bank of the river", when the model reads "bank", 
+            it shines a spotlight on "river" to know it's not a money bank.
+    4.  **Feed-Forward Networks (The Filing Cabinet)**: After understanding the 
+        context, the model looks up facts and patterns in its internal memory 
+        (its "filing cabinet") to process the information.
+
+    **VISUALIZATION 1.1: TOKENIZATION (Text to Numbers)**
+    *Caption: The computer converts language into a format it can process.*
+
+    [Input Text]: "The cat sat"
+          |
+          v
+    +-----------------------------------+
+    | TOKENIZER (The Chopper)           |
+    | "The" -> 101                      |
+    | "cat" -> 754                      |
+    | "sat" -> 882                      |
+    +-----------------------------------+
+          |
+          v
+    [Output IDs]: [101, 754, 882]
+
+    **VISUALIZATION 1.2: EMBEDDINGS (Numbers to Meaning)**
+    *Caption: Mapping words to a 3D space (simplified).*
+
+    [ID: 754 ("cat")]
+          |
+          v
+    +-----------------------------------+
+    | EMBEDDING LAYER                   |
+    | Coordinates: [0.9, 0.1, -0.5]     | <--- "Furry", "Small", "Pet"
+    +-----------------------------------+
+
+    **VISUALIZATION 1.3: SELF-ATTENTION (The Spotlight)**
+    *Caption: How the model connects related words.*
+
+    Sentence: "The animal didn't cross the street because it was too tired."
+
+    Focus Word: [it]
+          |
+          +-----> Looks at "animal" (Strong Connection: 90%)
+          |
+          +-----> Looks at "street" (Weak Connection: 5%)
+          |
+          +-----> Looks at "tired"  (Medium Connection: 40%)
+
+    *Result*: The model knows "it" refers to the "animal", not the "street".
+
+    **VISUALIZATION 1.4: FEED-FORWARD (The Processing)**
+    *Caption: Thinking about the information.*
+
+    [Contextualized Word Info]
+          |
+          v
+    +-----------------------------------+
+    | FEED-FORWARD NETWORK              |
+    | (Internal Knowledge Bank)         |
+    | 1. Check grammar rules.           |
+    | 2. Check facts about animals.     |
+    | 3. Prepare next prediction.       |
+    +-----------------------------------+
+          |
+          v
+    [Processed Info]
+
+    **VISUALIZATION 1.5: PROBABILITIES (The Dice Roll)**
+    *Caption: Predicting the next word.*
+
+    Context: "The cat sat on the..."
+          |
+          v
+    +-----------------------+
+    | PREDICTION SCORES     |
+    | "mat"   : 80%         | <--- Most Likely
+    | "floor" : 15%         |
+    | "moon"  : 0.01%       |
+    +-----------------------+
+
+    **VISUALIZATION 1.6: TEMPERATURE (The Randomness Dial)**
+    *Caption: Controlling creativity.*
+
+    [Scores]: Mat(80%), Floor(15%)
+
+    Temp = 0.1 (Low/Focused)      Temp = 0.9 (High/Creative)
+    +----------------------+      +----------------------+
+    | Picks "Mat" (100%)   |      | Picks "Floor" (Chance)|
+    |                      |      |                      |
+    | Result: Predictable  |      | Result: Surprising   |
+    | Use for: SQL, Code   |      | Use for: Stories     |
+    +----------------------+      +----------------------+
+
+    **VISUALIZATION 1.7: CONTEXT WINDOW (Short-Term Memory)**
+    *Caption: The sliding window of memory.*
+
+    [ Memory Capacity: 4 Blocks ]
+
+    Time 1: [Hi] [My] [Name] [Is]
+    Time 2: [My] [Name] [Is] [Bob]  <--- "Hi" fell off the edge!
+
+    *Result*: If the conversation is too long, the AI forgets the beginning.
+
+    **VISUALIZATION 1.8: HALLUCINATION (The Guess)**
+    *Caption: When the AI doesn't know, it guesses confidently.*
+
+    Question: "Who is the CEO of FakeCorp?"
+          |
+    [Database Check]: Empty (No knowledge)
+          |
+    [Pattern Match]: "CEOs are often named John."
+          |
+    [Output]: "John Smith is the CEO." (False!)
+
+    **VISUALIZATION 1.9: PROMPT ENGINEERING (The Instructions)**
+    *Caption: How we talk to the model.*
+
+    +--------------------------------------------------+
+    | SYSTEM: "You are a helpful SQL expert."          | <--- Persona
+    +--------------------------------------------------+
+    | USER:   "Show me sales."                         | <--- Task
+    +--------------------------------------------------+
+    | CONTEXT: "Table: Sales(Date, Amount)"            | <--- Knowledge
+    +--------------------------------------------------+
+    | OUTPUT:  "SELECT * FROM Sales"                   |
+    +--------------------------------------------------+
 
 --------------------------------------------------------------------------------
 2. TEXT-TO-SQL
 --------------------------------------------------------------------------------
-*   **Concept**: A specialized application of LLMs where the output is constrained 
-    to valid SQL syntax based on a provided schema.
-*   **Architecture**:
-    *   **Input**: User Question + Database Schema (DDL or list of columns).
-    *   **System Prompt**: Instructions to act as a SQL expert, use specific dialects 
-        (T-SQL), and avoid hallucinations.
-    *   **Output**: Executable SQL string.
-*   **Security & Governance (Critical)**:
-    *   **Schema Only**: We NEVER send actual row data to the LLM, only metadata 
-        (Table names, Column names, Types). This preserves data privacy.
-    *   **Validation**: The generated SQL is parsed (using Regex or AST) to block 
-        destructive commands (`DROP`, `DELETE`, `TRUNCATE`) before execution.
-*   **Implementation**: `MLEngine.generate_sql_from_question`. It constructs a 
-    prompt containing `INFORMATION_SCHEMA` data and enforces a read-only policy.
+*   **Concept**: Translating human language ("Show me sales") into database 
+    language ("SELECT * FROM...").
 
-    **VISUALIZATION 2: THE TEXT-TO-SQL PIPELINE 🔄**
-    *Caption: The secure flow of data from a user question to a database result.*
+    **VISUALIZATION 2.1: THE PIPELINE**
+    *Caption: From question to answer.*
 
-    👤 User: "Show sales for last month"
-          ⬇️
-    🤖 LLM Agent (Receives: Schema 🗂️ + Question ❓)
-       (Note: No actual data rows are sent here, only table names!)
-          ⬇️
-    📝 Generates SQL: "SELECT sum(amount) FROM sales WHERE date > ..."
-          ⬇️
-    🛡️ Security Gate (The "Bouncer")
-       ├── 🚫 Checks for: DROP, DELETE, TRUNCATE
-       └── ✅ Status: SAFE
-          ⬇️
-    🛢️ Database Engine (Executes Query)
-          ⬇️
-    📊 Result: [ $50,000 ] ➡️ Displayed to User
+    [User Question] --> [Prompt Builder] --> [LLM] --> [SQL Code] --> [Database]
+
+    **VISUALIZATION 2.2: SCHEMA INJECTION (The Map)**
+    *Caption: Giving the AI a map of the database without giving it the data.*
+
+    Database:
+    [Table: Users | Columns: ID, Name, Email]
+
+    Prompt to AI:
+    "I have a table named 'Users' with columns 'ID', 'Name', 'Email'.
+     Write a query to count them."
+
+    *Note*: We did NOT send the actual names or emails. Just the structure.
+
+    **VISUALIZATION 2.3: THE VALIDATOR (The Security Guard)**
+    *Caption: Stopping dangerous commands.*
+
+    [Generated SQL]
+          |
+          v
+    +---------------------------+
+    | SECURITY CHECK            |
+    | Contains 'DROP'?   [NO]   |
+    | Contains 'DELETE'? [NO]   |
+    | Contains 'SELECT'? [YES]  |
+    +---------------------------+
+          |
+          v
+    [Execute Query]
+
+    **VISUALIZATION 2.4: AMBIGUITY RESOLUTION**
+    *Caption: Guessing intent.*
+
+    User: "Sales by year"
+    DB:   Has [OrderDate] and [ShipDate].
+
+    AI Thought Process:
+    "Usually 'Sales' implies when the order happened, not when it shipped."
+    -> Selects [OrderDate].
+
+    **VISUALIZATION 2.5: SELF-CORRECTION**
+    *Caption: Trying again when things fail.*
+
+    Attempt 1: "SELECT date FROM sales"
+    Error:     "Column 'date' does not exist."
+          |
+          v
+    [Feedback Loop to AI]
+    "You made a mistake. The column is named 'OrderDate'."
+          |
+          v
+    Attempt 2: "SELECT OrderDate FROM sales" (Success!)
 
 --------------------------------------------------------------------------------
 3. AGENTIC AI (Autonomous Agents)
 --------------------------------------------------------------------------------
-*   **Definition**: An Agent is an LLM loop equipped with **Tools** (functions) and 
-    **Reasoning** capabilities (ReAct Pattern: Reason + Act).
-*   **The ReAct Loop**:
-    1.  **Thought**: The LLM analyzes the user goal and current state.
-    2.  **Plan**: It determines the next step (e.g., "I need data").
-    3.  **Action**: It selects a Tool (e.g., `run_sql_query`) and generates arguments.
-    4.  **Observation**: The system executes the tool and feeds the output (DataFrame) 
-        back to the LLM.
-    5.  **Synthesis**: The LLM uses the observation to answer the user or plan the next step.
-*   **Tools**: In our code, "Tools" are just Python functions wrapped in a way the 
-    LLM can invoke (e.g., `generate_sql`, `generate_data_story`).
-*   **Why it matters**: Standard LLMs are passive (Input -> Output). Agents are active; 
-    they can perform multi-step workflows to solve open-ended problems.
+*   **Concept**: An AI that can use tools (like a calculator, database, or search 
+    engine) to solve multi-step problems.
 
-    **VISUALIZATION 3: THE AGENTIC LOOP (ReAct) 🔄**
-    *Caption: How an autonomous agent thinks, plans, and acts to solve problems.*
+    **VISUALIZATION 3.1: THE ReAct LOOP**
+    *Caption: Reason -> Act -> Observe.*
 
-    🎯 GOAL: "Analyze the sales drop"
-          ⬇️
-    🧠 AGENT BRAIN (Thinking...)
-       ├── 💭 THOUGHT: "I don't have the data yet."
-       ├── 📋 PLAN: "I need to query the database first."
-       └── 🛠️ ACTION: Call Tool [SQL_Generator]
-             ⬇️
-          🔄 LOOP (The Agent waits for the tool)
-             ⬇️
-       👀 OBSERVATION: "Sales dropped 20% last week."
-       ├── 💭 THOUGHT: "That's bad. I need to know why. Let's check feedback."
-       └── 🛠️ ACTION: Call Tool [Semantic_Search]
-             ⬇️
-    🏁 FINAL ANSWER: "Sales dropped due to a server outage reported in feedback."
+    +-------------------------------------------------------+
+    | GOAL: "Find the error and fix it."                    |
+    +-------------------------------------------------------+
+              |
+    +---------v---------+      +------------------------+
+    | 1. THOUGHT        |      | 2. ACTION              |
+    | "I need to see    |----->| Call Tool:             |
+    |  the logs first." |      | read_logs()            |
+    +-------------------+      +-----------+------------+
+                                           |
+    +-------------------+      +-----------v------------+
+    | 4. THOUGHT        |      | 3. OBSERVATION         |
+    | "I see an error.  |<-----| "Error: Null Value     |
+    |  I will fix it."  |      |  at row 5."            |
+    +-------------------+      +------------------------+
+
+    **VISUALIZATION 3.2: TOOL SELECTION (The Toolbox)**
+    *Caption: Choosing the right tool for the job.*
+
+    User: "What is 50 * 23?"  --> [Calculator Tool]
+    User: "Who is the CEO?"   --> [Search Tool]
+    User: "Show me sales."    --> [Database Tool]
+
+    **VISUALIZATION 3.3: PLANNING (The Checklist)**
+    *Caption: Breaking a big goal into small steps.*
+
+    Goal: "Write a report on sales."
+    1. [ ] Query database for sales numbers.
+    2. [ ] Calculate growth percentage.
+    3. [ ] Summarize findings in text.
 
 --------------------------------------------------------------------------------
 4. RAG (RETRIEVAL-AUGMENTED GENERATION) & VECTOR SEARCH
 --------------------------------------------------------------------------------
-*   **Problem**: LLMs have a knowledge cutoff and don't know your private data.
-*   **Solution (RAG)**: Retrieve relevant private data and inject it into the LLM's 
-    context window at query time.
-*   **Vector Embeddings**:
-    *   We use an Embedding Model (e.g., `text-embedding-3-small`) to convert text 
-        into **Dense Vectors** (arrays of floating-point numbers, e.g., 1536 dimensions).
-    *   **Semantic Meaning**: In this vector space, concepts that are semantically 
-        similar ("Dog" and "Puppy", or "Error 500" and "Crash") are located close 
-        together geometrically.
-*   **Cosine Similarity**: The mathematical operation used to measure the distance 
-    between two vectors. A score of 1.0 means identical meaning; 0 means unrelated.
-*   **Implementation**: `MLEngine.perform_semantic_search` calculates the cosine 
-    similarity between the User Query vector and the Database Row vectors.
+*   **Concept**: Giving the AI an "Open Book Exam". Instead of memorizing everything, 
+    it looks up the answer in your documents before answering.
 
-    **VISUALIZATION 4: THE RAG ARCHITECTURE 📚**
-    *Caption: Injecting private knowledge into the LLM using Vector Search.*
+    **VISUALIZATION 4.1: RAG ARCHITECTURE**
+    *Caption: The flow of information.*
 
-    ❓ User Query: "Why did the server crash?"
-          ⬇️
-    🔢 Embedding Model ➡️ [0.9, 0.2, 0.5...] (Converts query to numbers)
-          ⬇️
-    🔍 Vector Database (Semantic Search)
-       ├── 📄 Doc A: "Server Uptime 99%" (Distance: 0.8) ❌
-       └── 📄 Doc B: "Error 500 Log"     (Distance: 0.1) ✅ MATCH!
-          ⬇️
-    📥 Context Injection
-       Prompt: "Context: [Error 500 Log...] + Question: [Why crash?]"
-          ⬇️
-    🤖 LLM Response: "The logs indicate an Error 500 caused the crash."
+    [User Question]
+          |
+          v
+    [Search Database] --> [Find Relevant Documents]
+          |
+          v
+    [Combine Question + Documents]
+          |
+          v
+    [Send to LLM] --> [Answer based on Documents]
+
+    **VISUALIZATION 4.2: VECTOR SPACE (The Map of Meaning)**
+    *Caption: How computers know "Dog" is close to "Puppy".*
+
+       |
+       |       (King)
+       |          ^
+       |          |
+       |       (Man) ----> (Woman)
+       |
+       |                   (Queen)
+       +----------------------------
+
+    *Math*: King - Man + Woman = Queen.
+
+    **VISUALIZATION 4.3: SEMANTIC VS KEYWORD**
+    *Caption: Understanding meaning vs matching letters.*
+
+    Query: "My screen is cracked."
+
+    Keyword Search:
+    - Looks for word "cracked".
+    - Misses: "Display shattered".
+
+    Semantic Search (Vectors):
+    - Looks for concept "Broken Screen".
+    - Finds: "Display shattered" (Because they are close on the map).
 
 --------------------------------------------------------------------------------
 5. MULTI-MODAL AI
 --------------------------------------------------------------------------------
-*   **Definition**: Models capable of processing and correlating information from 
-    multiple modalities (Text, Images, Audio).
-*   **Vision Transformers (ViT)**:
-    *   Images are sliced into patches (e.g., 16x16 pixels).
-    *   These patches are flattened and linearly projected into embeddings, similar 
-        to word tokens.
-    *   The Transformer processes these visual tokens alongside text tokens.
-*   **Use Case**: OCR on steroids. Instead of just reading text characters, the model 
-    understands **layout** and **context** (e.g., distinguishing a "Total" field 
-    from a "Subtotal" based on position and font weight).
-*   **In this Demo**: We use GPT-4o to extract JSON from invoice images.
+*   **Concept**: AI that can see, hear, and read.
 
-    **VISUALIZATION 5: VISION TRANSFORMER (ViT) 👁️**
-    *Caption: How AI reads an invoice image.*
+    **VISUALIZATION 5.1: IMAGE PATCHING**
+    *Caption: Breaking an image into words.*
 
-    🖼️ IMAGE (Invoice.jpg)       📝 TEXT PROMPT ("Extract Total")
-          ⬇️                            ⬇️
-    👁️ Vision Encoder (Pixels)    🔤 Text Encoder (Tokens)
-          ↘️                    ↙️
-             🔗 CROSS-ATTENTION LAYER
-             (Aligns the word "Total" with the pixels showing "$500")
-                      ⬇️
-             ✨ JSON OUTPUT: { "total": 500.00 }
+    [ IMAGE ]  -->  [ 1 ] [ 2 ] [ 3 ]
+                    [ 4 ] [ 5 ] [ 6 ]
+                    [ 7 ] [ 8 ] [ 9 ]
+
+    The AI treats each square (patch) like a word in a sentence.
+
+    **VISUALIZATION 5.2: CROSS-ATTENTION**
+    *Caption: Connecting text to image.*
+
+    Text: "Find the dog."
+    Image: [Tree] [Grass] [Dog] [Sky]
+
+    Attention:
+    "Find" --> [Dog] (High Match)
+    "Find" --> [Tree] (Low Match)
+
+    **VISUALIZATION 5.3: SPATIAL AWARENESS**
+    *Caption: Knowing where things are.*
+
+    Invoice:
+    +------------------+
+    | Total:           |
+    |           $500   |
+    +------------------+
+
+    Traditional OCR: Reads "Total: $500" (Maybe).
+    Vision AI: Sees "$500" is to the right of "Total:" and links them.
 
 --------------------------------------------------------------------------------
 6. PRESCRIPTIVE ANALYTICS & OPTIMIZATION
 --------------------------------------------------------------------------------
-*   **Hierarchy of Analytics**:
-    1.  **Descriptive**: What happened? (Dashboards)
-    2.  **Predictive**: What will happen? (Forecasting)
-    3.  **Prescriptive**: How can we make it happen? (Optimization)
-*   **Technical Implementation**:
-    1.  **Digital Twin**: We train a regression model ($y = mx + b$) to approximate 
-        the business process. This model predicts the Target (Sales) based on Inputs 
-        (Marketing Spend, Price).
-    2.  **Objective Function**: We define a mathematical function to maximize (Profit) 
-        or minimize (Cost).
-    3.  **Solver**: We use `scipy.optimize.minimize` (SLSQP algorithm) to mathematically 
-        find the input values that yield the best output, subject to constraints 
-        (e.g., Budget < $10k).
+*   **Concept**: The GPS for business. It doesn't just tell you where you are 
+    (Descriptive) or where you are going (Predictive), it tells you which turn 
+    to take (Prescriptive).
 
-    **VISUALIZATION 6: THE OPTIMIZATION ENGINE ⚙️**
-    *Caption: Finding the perfect balance between profit and cost.*
+    **VISUALIZATION 6.1: THE OPTIMIZATION LOOP**
+    *Caption: Climbing the hill to the highest profit.*
 
-    📊 Historical Data (Sales, Spend, Price)
-          ⬇️
-    🤖 Digital Twin Model (y = mx + b)
-       "I can predict Sales if you give me Spend & Price"
-          ⬇️
-    🎯 Objective: MAXIMIZE Profit 💰
-    ⛔ Constraints: Budget < $10,000
-          ⬇️
-    🧮 SOLVER ALGORITHM (Iterates inputs...)
-       ├── Try 1: Spend $5k ➡️ Profit $8k
-       ├── Try 2: Spend $9k ➡️ Profit $12k
-       └── Try 3: Spend $15k 🚫 (Over Budget!)
-          ⬇️
-    ✅ OPTIMAL SOLUTION: "Spend exactly $9,999"
+          (Profit Peak)
+               / \
+              /   \
+             /     \
+    (Start) *       \
+             \       \
+
+    Step 1: Check slope. Go up? Yes.
+    Step 2: Check slope. Go up? Yes.
+    Step 3: Slope is flat. Stop. You are at the top.
+
+    **VISUALIZATION 6.2: DIGITAL TWIN**
+    *Caption: A simulator of your business.*
+
+    [Inputs: Price, Marketing] --> [MATH MODEL] --> [Output: Predicted Sales]
+
+    We use this simulator to test 1,000 combinations in a second.
+
+    **VISUALIZATION 6.3: SENSITIVITY**
+    *Caption: How fragile is the plan?*
+
+    Plan A: Profit $100. (If costs rise 1%, Profit drops to $0). -> RISKY.
+    Plan B: Profit $90.  (If costs rise 1%, Profit drops to $89). -> SAFE.
 
 --------------------------------------------------------------------------------
 7. ANOMALY DETECTION (Unsupervised Learning)
 --------------------------------------------------------------------------------
-*   **Algorithm**: **Isolation Forest**.
-*   **Concept**: Anomalies are "few and different".
-*   **How it works**:
-    *   The algorithm builds an ensemble of random decision trees.
-    *   At each node, it randomly selects a feature and a split value.
-    *   **Normal points** are clustered together and require many splits to isolate.
-    *   **Anomalies** are far apart and are isolated very quickly (short path length 
-        from root to leaf).
-*   **Scoring**: The average path length across all trees determines the anomaly score. 
-    Shorter paths = Higher Anomaly Score.
-*   **Contamination**: A hyperparameter defining the expected proportion of outliers 
-    in the dataset (e.g., 0.05 or 5%).
+*   **Concept**: Finding the needle in the haystack.
 
-    **VISUALIZATION 7: ISOLATION FOREST 🌲**
-    *Caption: Detecting outliers by trying to isolate points.*
+    **VISUALIZATION 7.1: ISOLATION FOREST**
+    *Caption: It's easier to cut a lone piece of cake than a piece in the middle.*
 
-    🌳 RANDOM FOREST (Decision Trees)
-       ├── Point A (Normal Data):
-       │   Needs 10 random splits to isolate 🌿🌿🌿🌿🌿
-       │   (Deep in the tree = "Normal" 🟢)
-       │
-       └── Point B (Anomaly):
-           Isolated in just 2 splits! ✂️✂️
-           (Shallow in the tree = "Anomaly" 🔴)
+    Data:  [ . . . . . . ]           [ . ] <--- Anomaly
 
-    📉 RESULT:
-       Point A Score: 0.2 (Safe)
-       Point B Score: 0.9 (ALERT!)
+    Cut 1: [ . . . . . . ] |         [ . ]
+
+    Result: The anomaly is isolated in 1 cut.
+            The normal points need many cuts to separate.
+            Short cuts = Anomaly.
+
+    **VISUALIZATION 7.2: TIME SERIES DECOMPOSITION**
+    *Caption: Taking apart the signal.*
+
+    [Total Sales]
+         =
+    [Trend (Going up)]
+         +
+    [Seasonality (High on weekends)]
+         +
+    [Noise (Random bumps)]
+
+    If the Noise is huge, it's an anomaly.
 
 --------------------------------------------------------------------------------
 8. DATA GOVERNANCE & QUALITY
 --------------------------------------------------------------------------------
-*   **Concept**: Automated gates that stop bad data before it enters the system.
+*   **Concept**: The bouncer at the club. If your ID (data) isn't valid, you don't 
+    get in.
 
-    **VISUALIZATION 8: THE QUALITY GATE 🚧**
-    *Caption: How the pipeline protects the warehouse from bad data.*
+    **VISUALIZATION 8.1: THE QUALITY GATE**
+    *Caption: Stopping bad data.*
 
-    📂 New File (Sales.csv)
-          ⬇️
-    🛑 QUALITY GATE (Rules Engine)
-       ├── Rule 1: Sales > 0?      ✅ PASS
-       ├── Rule 2: Valid Region?   ❌ FAIL (Found "Nrth")
-       └── Rule 3: No Duplicates?  ✅ PASS
-          ⬇️
-    🚨 ACTION: BLOCK PIPELINE
-       (Log Error ➡️ Alert Steward ➡️ Halt Load)
+    [Data Stream] --> [Check: Sales > 0?] --> [Check: Valid Date?] --> [Database]
+                             |                        |
+                             v                        v
+                           [Fail]                   [Fail]
+                             |
+                             v
+                       [Reject File]
+
+    **VISUALIZATION 8.2: SCHEMA DRIFT**
+    *Caption: Handling changes.*
+
+    Expected: [Name, Age]
+    Received: [Name, Age, Phone]
+
+    Action: Alert! Structure changed.
 
 --------------------------------------------------------------------------------
 9. AUTOMATED ENRICHMENT
 --------------------------------------------------------------------------------
-*   **Concept**: Filling in missing data automatically using lookup tables.
+*   **Concept**: Auto-complete for data.
 
-    **VISUALIZATION 9: THE ENRICHMENT JOIN 🔗**
-    *Caption: Self-healing data by filling gaps.*
+    **VISUALIZATION 9.1: THE JOIN**
+    *Caption: Filling in the blanks.*
 
-    📄 Raw Data (Staging)
-       [ SKU: "A-123" | Category: NULL ❌ ]
-          ⬇️
-    🔗 ENRICHMENT ENGINE (Joins with Master Data)
-       [ Lookup: "A-123" = "Electronics" ]
-          ⬇️
-    ✨ Enriched Data
-       [ SKU: "A-123" | Category: "Electronics" ✅ ]
+    Table A (Sales): [Item: "iPhone", Category: ???]
+    Table B (Master):[Item: "iPhone", Category: "Phone"]
+
+    Result:          [Item: "iPhone", Category: "Phone"]
+
+    **VISUALIZATION 9.2: FUZZY MATCH**
+    *Caption: Handling typos.*
+
+    Input: "Aplle"
+    Master List: ["Apple", "Banana", "Pear"]
+
+    Compare "Aplle" vs "Apple" -> 90% Match.
+    Action: Auto-correct to "Apple".
 
 --------------------------------------------------------------------------------
 10. THE FULL MODERN DATA STACK
 --------------------------------------------------------------------------------
-*   **Concept**: The end-to-end flow of the entire solution.
+*   **Concept**: How it all fits together.
 
-    **VISUALIZATION 10: ARCHITECTURE OVERVIEW 🏗️**
-    *Caption: From raw files to AI insights.*
+    **VISUALIZATION 10.1: FULL STACK**
+    *Caption: From raw file to dashboard.*
 
-    🌐 SOURCES         ⚙️ INGESTION         🛢️ WAREHOUSE         🧠 AI HUB
-    (Files, API)      (Dagster ELT)        (SQL Server)         (Streamlit)
-       📄 📄              🔄 🧹                💾 📊                🤖 💬
-    [Raw Data]  ➡️  [Clean & Load]  ➡️  [Store & Model]  ➡️  [Visualize & Predict]
+    [Raw File]
+        |
+        v
+    [Ingestion Engine (Dagster)]
+        |
+        v
+    [Data Warehouse (SQL Server)] <---> [AI Engine (Python)]
+        |
+        v
+    [Dashboard (Streamlit)]
