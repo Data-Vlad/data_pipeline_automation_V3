@@ -502,6 +502,24 @@ to make abstract concepts easy to understand.
 
     *Fix*: RLHF (Teaching it to be better than its data).
 
+    **VISUALIZATION 1.15: QUANTIZATION (Compression)**
+    *Caption: Making the model smaller and faster.*
+
+    [ FP16 Model (High Res) ]  -->  [ INT4 Model (Low Res) ]
+    Size: 10 GB                     Size: 2 GB
+    Speed: Slow                     Speed: Fast
+
+    Like compressing a 4K image to a JPEG. You lose a tiny bit of detail, 
+    but it runs on a laptop instead of a server farm.
+
+    **VISUALIZATION 1.16: TOKENS VS WORDS (The Exchange Rate)**
+    *Caption: Why 1,000 tokens isn't 1,000 words.*
+
+    Word:   "Hamburger"
+    Tokens: [Ham] [bur] [ger] (3 Tokens)
+
+    *Rule of Thumb*: 1,000 Tokens ≈ 750 Words.
+
 --------------------------------------------------------------------------------
 2. TEXT-TO-SQL
 --------------------------------------------------------------------------------
@@ -622,6 +640,26 @@ to make abstract concepts easy to understand.
           |
     [Revision]: "Sales dropped, but we don't know why yet."
 
+    **VISUALIZATION 3.6: MULTI-AGENT SYSTEMS (The Team)**
+    *Caption: Specialists working together.*
+
+    [ Manager Agent ]
+          |
+          +---> [ Researcher Agent ] (Googles facts)
+          |
+          +---> [ Coder Agent ]      (Writes Python)
+          |
+          +---> [ Writer Agent ]     (Compiles Report)
+
+    **VISUALIZATION 3.7: HUMAN-IN-THE-LOOP (The Safety Switch)**
+    *Caption: Asking for permission.*
+
+    Agent: "I found a bug. I will DELETE the database to fix it."
+          |
+    [ STOP! ] <--- Human Approval Required.
+          |
+    Human: "No! Just log the error."
+
 --------------------------------------------------------------------------------
 4. RAG (RETRIEVAL-AUGMENTED GENERATION) & VECTOR SEARCH
 --------------------------------------------------------------------------------
@@ -678,6 +716,16 @@ to make abstract concepts easy to understand.
     With Vector Index (HNSW):
     Start at top layer -> Zoom in to relevant neighborhood -> Find neighbors.
     (Like finding a city on a globe, then a street, then a house).
+
+    **VISUALIZATION 4.5: CHUNKING (The Scissors)**
+    *Caption: Breaking big books into bite-sized pieces.*
+
+    [ 100-Page PDF ]
+          |
+          v
+    [ Chunk 1 ] [ Chunk 2 ] ... [ Chunk 500 ]
+
+    We embed and search the *Chunks*, not the whole book.
 
 --------------------------------------------------------------------------------
 5. MULTI-MODAL AI
