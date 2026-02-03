@@ -99,15 +99,21 @@ SCENARIO 3: AGENTIC ANALYST (Autonomous AI Agent)
     `Analyze the sales trend for the last 3 months, identify any significant drops, and check customer feedback for those periods to explain why.`
 3.  **Action**: Click **Launch Agent**.
 4.  **The Reveal**:
-    - **Planning**: Show the "Agent is planning..." expander. It breaks the goal into steps (Data Retrieval -> Analysis).
-    - **Execution**:
-        - It generates SQL to get sales data.
-        - It analyzes the data.
-        - It generates a final report explaining the drop (referencing the "server error" feedback injected in the demo data).
+    - **Planning (Chain-of-Thought)**: Show the "Agent is planning..." expander. It breaks the goal into steps (Data Retrieval -> Analysis).
+        - *Learning Point*: This simulates "Chain of Thought" reasoning, where the LLM breaks a complex problem into sub-tasks before acting.
+    - **Execution (Tool Use)**:
+        - **Tool 1 (SQL Generator)**: It generates SQL to get sales data.
+        - **Tool 2 (Data Analyzer)**: It calculates metrics from the retrieved dataframe.
+        - **Tool 3 (Storyteller)**: It generates a final report explaining the drop (referencing the "server error" feedback injected in the demo data).
     - *Talking Point*: "This isn't just a chatbot. It's an agent. It formulated a plan, queried the database, found the anomaly, and then correlated it with customer feedback to give me a complete answer."
     - *Code Reference*:
-        - UI: `analytics_ui.py` (Agentic Analyst page)
-        - Logic: `ml_engine.py` (Tools: `generate_sql`, `generate_data_story`)
+        - UI Implementation: `analytics_ui.py` (Lines ~185-246)
+            - *Planning Simulation*: Lines ~201-207
+            - *Context Retrieval*: Lines ~212-214
+            - *Tool Execution*: Lines ~217-240
+        - AI Logic: `ml_engine.py`
+            - *Text-to-SQL Tool*: Lines ~238-257 (`generate_sql_from_question`)
+            - *Insight Generator Tool*: Lines ~198-226 (`generate_data_story`)
 
 ================================================================================
 SCENARIO 4: DIAGNOSTIC AI (Root Cause Analysis)
