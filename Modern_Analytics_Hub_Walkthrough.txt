@@ -73,6 +73,15 @@ SCENARIO 1: THE EXECUTIVE OVERVIEW (Generative AI / LLM)
     - *Code Reference*:
         - UI: `analytics_ui.py` (Lines ~112-117)
         - Logic: `ml_engine.py` (Lines ~198-226, `generate_data_story`)
+    - *Technical Flow*:
+      ```mermaid
+      graph LR
+          A[Raw Logs & Anomalies] -->|Fetch Last 24h| B(Data Aggregator)
+          B -->|Context Context| C{LLM Agent}
+          C -->|Prompt: Summarize as Exec| D[GPT-4]
+          D -->|Generated Text| E[Executive Summary]
+          E -->|Render| F[Streamlit UI]
+      ```
 
 ================================================================================
 SCENARIO 2: CONVERSATIONAL ANALYTICS (LLM-Powered Text-to-SQL)
@@ -88,6 +97,22 @@ SCENARIO 2: CONVERSATIONAL ANALYTICS (LLM-Powered Text-to-SQL)
     - *Code Reference*:
         - UI: `analytics_ui.py` (Lines ~153-167)
         - Logic: `ml_engine.py` (Lines ~238-257, `generate_sql_from_question`)
+    - *Technical Flow*:
+      ```mermaid
+      sequenceDiagram
+          participant User
+          participant UI
+          participant LLM
+          participant Validator
+          participant DB
+          User->>UI: "Sales last month?"
+          UI->>LLM: Prompt + Schema
+          LLM->>UI: SELECT sum(sales)...
+          UI->>Validator: Check for DROP/DELETE
+          Validator->>DB: Execute Safe SQL
+          DB-->>UI: Result DataFrame
+          UI-->>User: Display Table
+      ```
 
 ================================================================================
 SCENARIO 3: AGENTIC ANALYST (Autonomous AI Agent)
@@ -114,6 +139,21 @@ SCENARIO 3: AGENTIC ANALYST (Autonomous AI Agent)
         - AI Logic: `ml_engine.py`
             - *Text-to-SQL Tool*: Lines ~238-257 (`generate_sql_from_question`)
             - *Insight Generator Tool*: Lines ~198-226 (`generate_data_story`)
+    - *Technical Flow*:
+      ```mermaid
+      stateDiagram-v2
+          [*] --> GoalReceived
+          GoalReceived --> Planning: Decompose Goal
+          Planning --> ToolSelection: Identify Needs
+          ToolSelection --> ExecuteSQL: Need Data?
+          ToolSelection --> ExecutePython: Need Analysis?
+          ExecuteSQL --> Observation
+          ExecutePython --> Observation
+          Observation --> Reasoning: Analyze Result
+          Reasoning --> ToolSelection: More steps needed?
+          Reasoning --> FinalAnswer: Goal Met
+          FinalAnswer --> [*]
+      ```
 
 ================================================================================
 SCENARIO 4: DIAGNOSTIC AI (Root Cause Analysis)
@@ -132,6 +172,16 @@ SCENARIO 4: DIAGNOSTIC AI (Root Cause Analysis)
     - *Code Reference*:
         - UI: `analytics_ui.py` (Lines ~261)
         - Logic: `ml_engine.py` (Lines ~60-115, `analyze_root_cause`)
+    - *Technical Flow*:
+      ```mermaid
+      graph TD
+          A[Target Metric Drop] -->|Input| B[Driver Analysis Engine]
+          B -->|Iterate| C[Dimensions: Region, Product, etc.]
+          C -->|Calculate| D[Impact Score]
+          D -->|Sort| E[Ranked Drivers]
+          E -->|Top Driver| F[Region=North, Cat=Electronics]
+          F -->|Output| G[UI Visualization]
+      ```
 
 ================================================================================
 SCENARIO 5: SEMANTIC INTELLIGENCE (LLM RAG / Vector Search)
@@ -152,6 +202,15 @@ SCENARIO 5: SEMANTIC INTELLIGENCE (LLM RAG / Vector Search)
     - *Code Reference*:
         - UI: `analytics_ui.py` (Lines ~351)
         - Logic: `ml_engine.py` (Lines ~359-395, `perform_semantic_search`)
+    - *Technical Flow*:
+      ```mermaid
+      graph LR
+          A[User Query] -->|Embedding Model| B[Query Vector]
+          C[Database Rows] -->|Embedding Model| D[Vector Store]
+          B -->|Cosine Similarity| D
+          D -->|Top K Matches| E[Semantic Results]
+          E -->|Context| F[LLM RAG Response]
+      ```
 
 ================================================================================
 SCENARIO 6: PRESCRIPTIVE ANALYTICS (Optimization)
@@ -172,6 +231,16 @@ SCENARIO 6: PRESCRIPTIVE ANALYTICS (Optimization)
     - *Code Reference*:
         - UI: `analytics_ui.py` (Lines ~320)
         - Logic: `ml_engine.py` (Lines ~306-357, `optimize_business_objective`)
+    - *Technical Flow*:
+      ```mermaid
+      graph TD
+          A[Historical Data] -->|Train| B[Regression Model]
+          C[User Constraints] -->|Define| D[Optimization Boundaries]
+          B -->|Input| E[SLSQP Solver]
+          D -->|Input| E
+          E -->|Iterate| E
+          E -->|Converge| F[Optimal Parameters]
+      ```
 
 ================================================================================
 SCENARIO 7: MULTI-MODAL ANALYSIS (Vision LLM)
@@ -190,6 +259,14 @@ SCENARIO 7: MULTI-MODAL ANALYSIS (Vision LLM)
     - *Code Reference*:
         - UI: `analytics_ui.py` (Lines ~406)
         - Logic: `ml_engine.py` (Lines ~432-483, `extract_structured_data`)
+    - *Technical Flow*:
+      ```mermaid
+      graph LR
+          A[Image Pixels] -->|Vision Encoder| B[Visual Tokens]
+          C[Text Prompt] -->|Text Encoder| D[Text Tokens]
+          B & D -->|Cross Attention| E[GPT-4o]
+          E -->|Generation| F[Structured JSON]
+      ```
 
 ================================================================================
 SCENARIO 8: AUTONOMOUS DATA REPAIR (Self-Healing)
@@ -209,6 +286,15 @@ SCENARIO 8: AUTONOMOUS DATA REPAIR (Self-Healing)
     - *Code Reference*:
         - UI: `analytics_ui.py` (Lines ~371)
         - Logic: `ml_engine.py` (Lines ~397-430, `suggest_data_repairs`)
+    - *Technical Flow*:
+      ```mermaid
+      graph TD
+          A[Staging Table] -->|Scan| B[Fuzzy Matcher]
+          B -->|Detect| C[Outlier: 'Nrth']
+          C -->|Compare| D[Master List: 'North']
+          D -->|Score > Threshold| E[Generate Fix Proposal]
+          E -->|User Approval| F[Execute UPDATE SQL]
+      ```
 
 ================================================================================
 SCENARIO 9: AI AUTO-DASHBOARDS (Instant Viz)
@@ -224,6 +310,15 @@ SCENARIO 9: AI AUTO-DASHBOARDS (Instant Viz)
     - *Code Reference*:
         - UI: `analytics_ui.py` (Lines ~468)
         - Logic: `ml_engine.py` (Lines ~259-304, `recommend_visualization`)
+    - *Technical Flow*:
+      ```mermaid
+      graph TD
+          A[Dataframe] -->|Analyze| B[Schema Detector]
+          B -->|Has Date & Float?| C[Time Series Logic]
+          B -->|Has Category & Float?| D[Bar Chart Logic]
+          B -->|Has Lat/Lon?| E[Map Logic]
+          C -->|Select| F[Plotly Line Chart]
+      ```
 
 ================================================================================
 SCENARIO 10: WHAT-IF SIMULATOR
@@ -241,6 +336,14 @@ SCENARIO 10: WHAT-IF SIMULATOR
     - *Code Reference*:
         - UI: `analytics_ui.py` (Lines ~440-450)
         - Logic: Inline simulation logic in `analytics_ui.py`.
+    - *Technical Flow*:
+      ```mermaid
+      graph LR
+          A[Baseline Data] --> B[Simulation Engine]
+          C[User Sliders] -->|Multipliers| B
+          B -->|Apply Delta| D[Simulated Dataset]
+          A & D -->|Overlay| E[Comparative Chart]
+      ```
 
 ================================================================================
 SCENARIO 11: PREDICTIVE INSIGHTS (Forecasting)
@@ -258,6 +361,14 @@ SCENARIO 11: PREDICTIVE INSIGHTS (Forecasting)
     - *Code Reference*:
         - UI: `analytics_ui.py` (Lines ~180-215)
         - Logic: `ml_engine.py` (Lines ~40-57 `detect_anomalies`, Lines ~134-165 `generate_forecast`)
+    - *Technical Flow*:
+      ```mermaid
+      graph TD
+          A[Time Series Data] -->|Split| B[Training Set]
+          B -->|Fit| C[Prophet Model]
+          C -->|Predict| D[Future DataFrame]
+          D -->|Confidence Interval| E[Forecast Visualization]
+      ```
 
 ================================================================================
 SCENARIO 12: DATA GOVERNANCE (Quality Gates)
@@ -278,6 +389,16 @@ SCENARIO 12: DATA GOVERNANCE (Quality Gates)
     - *Code Reference*:
         - Setup: `setup_demo_environment.py` (Lines ~180-210)
         - Logic: `02_setup_data_governance.sql` (Stored Procedure `sp_execute_data_quality_checks`)
+    - *Technical Flow*:
+      ```mermaid
+      graph TD
+          A[New File] -->|Load| B[Staging Table]
+          B -->|Trigger| C[Quality Check SP]
+          C -->|Query| D[Rules Table]
+          D -->|Validate| E{Pass/Fail?}
+          E -->|Fail| F[Halt Pipeline & Log]
+          E -->|Pass| G[Load to Destination]
+      ```
 
 ================================================================================
 SCENARIO 13: AUTOMATED ENRICHMENT
@@ -293,6 +414,14 @@ SCENARIO 13: AUTOMATED ENRICHMENT
     - *Code Reference*:
         - Setup: `setup_demo_environment.py` (Lines ~197-202)
         - Logic: `README.md` (Section: Automated Data Enrichment)
+    - *Technical Flow*:
+      ```mermaid
+      graph LR
+          A[Raw Data (Missing Cat)] -->|Join| B[Enrichment Engine]
+          C[Lookup Table (Product Master)] -->|Provide| B
+          B -->|Match SKU| D[Fill Missing Value]
+          D -->|Result| E[Enriched Staging Data]
+      ```
 
 ================================================================================
 END OF DEMO
@@ -305,123 +434,793 @@ This section provides a technical deep-dive into the AI and Analytics concepts
 implemented in this framework. Use this to understand the "How" and "Why" behind 
 the features.
 
+Each section includes detailed visualizations (Mermaid diagrams) to explain the 
+architecture, data flow, and logic.
+
 --------------------------------------------------------------------------------
 1. LARGE LANGUAGE MODELS (LLMs) & GENERATIVE AI
 --------------------------------------------------------------------------------
-*   **Technical Definition**: LLMs are probabilistic models based on the **Transformer** 
-    architecture (specifically the Decoder-only stack in GPT models). They are trained 
-    on vast corpora to predict the next token (sub-word unit) in a sequence.
-*   **Mechanism**:
-    1.  **Tokenization**: Input text is converted into numerical tokens.
-    2.  **Embeddings**: Tokens are mapped to vectors in a high-dimensional space.
-    3.  **Self-Attention**: The model weighs the importance of different words in the 
-        context window relative to each other (e.g., linking "bank" to "river" vs "money").
-    4.  **Probabilistic Output**: The model outputs a probability distribution (logits) 
-        over the vocabulary for the next token.
-*   **Key Parameters**:
-    *   **Temperature**: Controls randomness. Low (0.1) makes the model deterministic 
-        and focused (good for SQL/Code). High (0.8) makes it creative (good for stories).
-    *   **Context Window**: The maximum number of tokens the model can process at once 
-        (Input + Output).
-*   **In this Demo**: Used in `generate_data_story` with a low temperature for factual 
-    summarization of logs.
+
+### 1.1 Core Architecture: The Transformer
+LLMs like GPT-4 are based on the **Transformer** architecture, specifically the **Decoder-only** stack. Unlike Recurrent Neural Networks (RNNs) that process text sequentially, Transformers process the entire input sequence in parallel using **Self-Attention**.
+
+**Visualization 1: High-Level Transformer Architecture**
+```mermaid
+graph TD
+    Input[Input Text] --> Tokenizer
+    Tokenizer --> Embeddings[Embedding Layer]
+    Embeddings --> PosEnc[Positional Encoding]
+    PosEnc --> Block1[Transformer Block 1]
+    Block1 --> Block2[Transformer Block 2]
+    Block2 --> BlockN[Transformer Block N...]
+    BlockN --> Norm[Layer Normalization]
+    Norm --> Head[Linear Head]
+    Head --> Softmax
+    Softmax --> Output[Next Token Probability]
+```
+
+### 1.2 The Mechanism of "Thinking": Self-Attention
+Self-attention allows the model to weigh the relevance of every word to every other word in the sentence, regardless of distance. This is how it resolves ambiguity (e.g., knowing "bank" refers to a river bank because "water" appears later in the sentence).
+
+**Visualization 2: Self-Attention Mechanism**
+```mermaid
+graph LR
+    Word[Word: 'Bank'] --> Q[Query Vector]
+    Word --> K[Key Vector]
+    Word --> V[Value Vector]
+    Q -->|Dot Product| Score[Attention Score]
+    K -->|Dot Product| Score
+    Score -->|Softmax| Weight[Attention Weight]
+    Weight -->|Multiply| V
+    V --> Context[Context Vector]
+```
+
+### 1.3 Tokenization & Embeddings
+LLMs do not see text; they see numbers. Tokenization breaks text into sub-word units. Embeddings map these integers into dense, high-dimensional vectors (e.g., 1536 dimensions) where semantic meaning is encoded geometrically.
+
+**Visualization 3: From Text to Vector Space**
+```mermaid
+graph LR
+    Text["The cat sat"] -->|Tokenizer| Tokens[IDs: 464, 3797, 3388]
+    Tokens -->|Lookup| Matrix[Embedding Matrix]
+    Matrix --> Vectors["[0.1, -0.5, ...], [0.8, 0.1, ...], ..."]
+    Vectors --> Model[LLM Layers]
+```
+
+### 1.4 Generation: Predicting the Next Token
+The model is a "next token prediction engine". It outputs a probability distribution over its entire vocabulary (e.g., 50,000 tokens) for what comes next.
+
+**Visualization 4: Inference Loop**
+```mermaid
+sequenceDiagram
+    participant User
+    participant Model
+    User->>Model: "The sky is"
+    Model->>Model: Process Context
+    Model->>Model: Calculate Probabilities (Blue: 80%, Gray: 15%, Red: 5%)
+    Model->>User: "Blue"
+    User->>Model: "The sky is Blue" (New Context)
+    Model->>Model: Predict Next
+    Model->>User: "."
+```
+
+### 1.5 Controlling Output: Temperature
+Temperature is a hyperparameter that scales the logits before the Softmax layer.
+*   **Low Temp (<0.3)**: Sharpens the distribution. The model almost always picks the most likely token. (Used for SQL/Code).
+*   **High Temp (>0.7)**: Flattens the distribution. Less likely tokens have a chance to be picked. (Used for Creative Writing).
+
+**Visualization 5: Temperature Impact**
+```mermaid
+graph TD
+    Logits[Raw Logits] -->|Temp = 0.1| Sharp[Sharp Distribution]
+    Logits -->|Temp = 1.0| Flat[Flat Distribution]
+    Sharp -->|Sample| Deterministic[Output: 'Blue' (100%)]
+    Flat -->|Sample| Creative[Output: 'Gray' or 'Azure']
+```
+
+### 1.6 Context Window Management
+The Context Window is the model's "short-term memory". It includes the System Prompt, User History, and current input. If this exceeds the limit (e.g., 8k tokens), the model "forgets" the beginning.
+
+**Visualization 6: The Sliding Window**
+```mermaid
+graph LR
+    subgraph Memory
+    A[System Prompt] --- B[Chat History 1] --- C[Chat History 2] --- D[Current Query]
+    end
+    D --> LLM
+    style A fill:#f9f,stroke:#333
+    style D fill:#bbf,stroke:#333
+```
+
+### 1.7 Training Pipeline
+**Visualization 7: Pre-training vs Fine-Tuning**
+```mermaid
+graph TD
+    Internet[Internet Data] -->|Unsupervised Learning| Base[Base Model (GPT-4 Base)]
+    Base -->|SFT: Supervised Fine-Tuning| SFT[SFT Model]
+    SFT -->|RLHF: Reinforcement Learning| Chat[Chat Model (Assistant)]
+```
+
+### 1.8 Hallucination
+Hallucination occurs when the model predicts a token that is syntactically correct but factually wrong, often because the specific fact wasn't in its training data or context.
+
+**Visualization 8: Anatomy of a Hallucination**
+```mermaid
+graph LR
+    Query["Who is CEO of FakeCorp?"] --> LLM
+    LLM -->|Knowledge Gap| Gap[No Training Data]
+    Gap -->|Pattern Matching| Pattern["CEOs are usually named John/Jane"]
+    Pattern --> Output["John Doe"]
+    style Output fill:#f99,stroke:#333
+```
+
+### 1.9 Prompt Engineering
+**Visualization 9: The Prompt Stack**
+```mermaid
+classDiagram
+    class Prompt {
+        +System Instruction (Persona)
+        +Few-Shot Examples (Context)
+        +User Query (Task)
+        +Output Format (Constraint)
+    }
+```
+
+### 1.10 LLM vs Traditional Software
+**Visualization 10: Deterministic vs Probabilistic**
+```mermaid
+graph TD
+    subgraph Traditional
+    Input1[Input] --> Logic[If/Else Code] --> Output1[Exact Output]
+    end
+    subgraph AI
+    Input2[Input] --> Model[Probabilistic Model] --> Output2[Likely Output]
+    end
+```
 
 --------------------------------------------------------------------------------
 2. TEXT-TO-SQL
 --------------------------------------------------------------------------------
-*   **Concept**: A specialized application of LLMs where the output is constrained 
-    to valid SQL syntax based on a provided schema.
-*   **Architecture**:
-    *   **Input**: User Question + Database Schema (DDL or list of columns).
-    *   **System Prompt**: Instructions to act as a SQL expert, use specific dialects 
-        (T-SQL), and avoid hallucinations.
-    *   **Output**: Executable SQL string.
-*   **Security & Governance (Critical)**:
-    *   **Schema Only**: We NEVER send actual row data to the LLM, only metadata 
-        (Table names, Column names, Types). This preserves data privacy.
-    *   **Validation**: The generated SQL is parsed (using Regex or AST) to block 
-        destructive commands (`DROP`, `DELETE`, `TRUNCATE`) before execution.
-*   **Implementation**: See `MLEngine.generate_sql_from_question`. It constructs a 
-    prompt containing `INFORMATION_SCHEMA` data and enforces a read-only policy.
+
+### 2.1 The Concept
+Text-to-SQL is the process of converting natural language ("Show me sales") into structured query language (`SELECT * FROM...`). It bridges the gap between business users and databases.
+
+### 2.2 The Architecture
+**Visualization 1: Text-to-SQL Pipeline**
+```mermaid
+graph TD
+    User[User Question] --> PromptBuilder
+    Schema[DB Schema (DDL)] --> PromptBuilder
+    PromptBuilder -->|Context| LLM
+    LLM -->|Generate| SQL[Raw SQL]
+    SQL --> Validator[Security Validator]
+    Validator -->|Safe| DB[Database]
+    Validator -->|Unsafe| Error[Block Execution]
+    DB --> Result[Data]
+```
+
+### 2.3 Schema Linking
+The most critical step is telling the LLM about your database structure without sending the actual data. We inject `CREATE TABLE` statements or schema summaries into the prompt.
+
+**Visualization 2: Schema Injection**
+```mermaid
+graph LR
+    DB[(SQL Server)] -->|Query| InfoSchema[INFORMATION_SCHEMA]
+    InfoSchema -->|Extract| Metadata[Tables/Columns/Types]
+    Metadata -->|Format| Context[Prompt Context]
+    Context --> LLM
+```
+
+### 2.4 Security: The Validator
+We never trust LLM output blindly. A validation layer parses the SQL to ensure it is read-only.
+
+**Visualization 3: Security Gate**
+```mermaid
+graph TD
+    SQL["DROP TABLE Users;"] --> RegexCheck
+    RegexCheck{Contains DDL?}
+    RegexCheck -->|Yes| Block[Raise SecurityException]
+    RegexCheck -->|No| Execute
+```
+
+### 2.5 Handling Ambiguity
+**Visualization 4: Disambiguation Flow**
+```mermaid
+sequenceDiagram
+    User->>System: "Sales by year"
+    System->>LLM: "Which column is 'year'? [OrderDate, ShipDate]"
+    LLM->>System: "Assume OrderDate based on standard practice"
+    System->>DB: SELECT YEAR(OrderDate)...
+```
+
+### 2.6 Few-Shot Prompting
+To improve accuracy, we provide examples of valid SQL pairs in the prompt.
+
+**Visualization 5: Few-Shot Structure**
+```mermaid
+classDiagram
+    class Prompt {
+        +Instruction: "You are a SQL Expert"
+        +Example 1: "Q: Total users? A: SELECT count(*) FROM users"
+        +Example 2: "Q: Active users? A: SELECT count(*) FROM users WHERE status='active'"
+        +Current Task: "Q: New users?"
+    }
+```
+
+### 2.7 Self-Correction Loop
+If the generated SQL fails (e.g., syntax error), we feed the error back to the LLM to fix it.
+
+**Visualization 6: Error Recovery**
+```mermaid
+graph TD
+    LLM --> SQL
+    SQL --> DB
+    DB -->|Error: Invalid Column| Catch
+    Catch -->|Feedback: "Column 'x' does not exist"| LLM
+    LLM -->|Retry| SQL_Fixed
+```
+
+### 2.8 Dialect Specificity
+**Visualization 7: Dialect Adaptation**
+```mermaid
+graph LR
+    Prompt -->|Constraint: Use T-SQL| LLM
+    LLM --> Output["TOP 10" (T-SQL)]
+    Prompt2 -->|Constraint: Use PostgreSQL| LLM
+    LLM --> Output2["LIMIT 10" (Postgres)]
+```
+
+### 2.9 Complex Queries (Joins)
+**Visualization 8: Join Logic**
+```mermaid
+graph TD
+    Q["Sales by Customer Name"] --> LLM
+    LLM -->|Identify| T1[Table: Sales (CustomerID)]
+    LLM -->|Identify| T2[Table: Customers (CustomerID, Name)]
+    LLM -->|Synthesize| Join["JOIN ON T1.CustomerID = T2.CustomerID"]
+```
+
+### 2.10 Result Formatting
+**Visualization 9: Data to Language**
+```mermaid
+graph LR
+    DB -->|Result: [(2023, 1000)]| Formatter
+    Formatter -->|Prompt| LLM
+    LLM -->|Natural Language| Text["In 2023, the total was 1000."]
+```
 
 --------------------------------------------------------------------------------
 3. AGENTIC AI (Autonomous Agents)
 --------------------------------------------------------------------------------
-*   **Definition**: An Agent is an LLM loop equipped with **Tools** (functions) and 
-    **Reasoning** capabilities (ReAct Pattern: Reason + Act).
-*   **The ReAct Loop**:
-    1.  **Thought**: The LLM analyzes the user goal and current state.
-    2.  **Plan**: It determines the next step (e.g., "I need data").
-    3.  **Action**: It selects a Tool (e.g., `run_sql_query`) and generates arguments.
-    4.  **Observation**: The system executes the tool and feeds the output (DataFrame) 
-        back to the LLM.
-    5.  **Synthesis**: The LLM uses the observation to answer the user or plan the next step.
-*   **Tools**: In our code, "Tools" are just Python functions wrapped in a way the 
-    LLM can invoke (e.g., `generate_sql`, `generate_data_story`).
-*   **Why it matters**: Standard LLMs are passive (Input -> Output). Agents are active; 
-    they can perform multi-step workflows to solve open-ended problems.
+
+### 3.1 Definition
+An Agent is an AI system that can use **Tools** (functions) to interact with the world. It operates in a loop of Reasoning, Acting, and Observing (ReAct).
+
+### 3.2 The ReAct Loop
+**Visualization 1: The ReAct Cycle**
+```mermaid
+graph TD
+    Start[User Goal] --> Thought
+    Thought[Reasoning/Planning] --> Action[Select Tool]
+    Action --> Execution[Run Python Function]
+    Execution --> Observation[Get Output]
+    Observation --> Thought
+    Thought -->|Goal Achieved| Finish[Final Answer]
+```
+
+### 3.3 Tool Definition
+Tools are the "hands" of the agent. They are defined with a schema so the LLM knows how to call them.
+
+**Visualization 2: Tool Schema**
+```mermaid
+classDiagram
+    class Tool {
+        +Name: "run_sql"
+        +Description: "Executes SQL queries"
+        +Arguments: {query: string}
+    }
+    LLM -->|Calls| Tool
+```
+
+### 3.4 Planning (Chain of Thought)
+Before acting, the agent breaks down complex goals.
+
+**Visualization 3: Decomposition**
+```mermaid
+graph TD
+    Goal["Analyze sales drop"] --> Step1["Get Sales Data (SQL)"]
+    Step1 --> Step2["Calculate WoW Change (Python)"]
+    Step2 --> Step3["Summarize Findings (Text)"]
+```
+
+### 3.5 Memory Management
+Agents need memory to track their progress through the steps.
+
+**Visualization 4: Agent Memory**
+```mermaid
+graph LR
+    Step1 -->|Result| ShortTermMem[Scratchpad]
+    ShortTermMem -->|Context| Step2
+    Step2 -->|Result| ShortTermMem
+```
+
+### 3.6 Tool Selection Logic
+**Visualization 5: Router Pattern**
+```mermaid
+graph TD
+    Thought --> Router{What do I need?}
+    Router -->|Data?| SQLTool
+    Router -->|Math?| CalculatorTool
+    Router -->|Search?| WebSearchTool
+```
+
+### 3.7 Error Handling in Agents
+**Visualization 6: Resilience**
+```mermaid
+sequenceDiagram
+    Agent->>Tool: Execute(BadArgs)
+    Tool-->>Agent: Error: Invalid Argument
+    Agent->>Agent: "I made a mistake. I will correct args."
+    Agent->>Tool: Execute(CorrectArgs)
+```
+
+### 3.8 Multi-Agent Systems (Concept)
+**Visualization 7: Manager-Worker Topology**
+```mermaid
+graph TD
+    User --> ManagerAgent
+    ManagerAgent -->|Delegate SQL| CoderAgent
+    ManagerAgent -->|Delegate Analysis| AnalystAgent
+    CoderAgent -->|Result| ManagerAgent
+    AnalystAgent -->|Result| ManagerAgent
+    ManagerAgent --> User
+```
+
+### 3.9 Human-in-the-Loop
+**Visualization 8: Approval Gate**
+```mermaid
+graph LR
+    Agent -->|Propose Action: DELETE| Gate
+    Gate -->|Wait| Human
+    Human -->|Approve| Execute
+    Human -->|Reject| Agent
+```
+
+### 3.10 State Management
+**Visualization 9: State Machine**
+```mermaid
+stateDiagram-v2
+    [*] --> Idle
+    Idle --> Planning
+    Planning --> Acting
+    Acting --> Observing
+    Observing --> Planning
+    Observing --> Finished
+    Finished --> [*]
+```
 
 --------------------------------------------------------------------------------
 4. RAG (RETRIEVAL-AUGMENTED GENERATION) & VECTOR SEARCH
 --------------------------------------------------------------------------------
-*   **Problem**: LLMs have a knowledge cutoff and don't know your private data.
-*   **Solution (RAG)**: Retrieve relevant private data and inject it into the LLM's 
-    context window at query time.
-*   **Vector Embeddings**:
-    *   We use an Embedding Model (e.g., `text-embedding-3-small`) to convert text 
-        into **Dense Vectors** (arrays of floating-point numbers, e.g., 1536 dimensions).
-    *   **Semantic Meaning**: In this vector space, concepts that are semantically 
-        similar ("Dog" and "Puppy", or "Error 500" and "Crash") are located close 
-        together geometrically.
-*   **Cosine Similarity**: The mathematical operation used to measure the distance 
-    between two vectors. A score of 1.0 means identical meaning; 0 means unrelated.
-*   **Implementation**: `MLEngine.perform_semantic_search` calculates the cosine 
-    similarity between the User Query vector and the Database Row vectors.
+
+### 4.1 The Problem & Solution
+LLMs don't know your private data. RAG solves this by retrieving relevant data and feeding it to the LLM just-in-time.
+
+### 4.2 The Ingestion Pipeline
+Before searching, data must be indexed.
+
+**Visualization 1: Ingestion Flow**
+```mermaid
+graph LR
+    Doc[Document/Row] --> Chunk[Chunking]
+    Chunk --> Embed[Embedding Model]
+    Embed --> Vector[Vector: [0.1, 0.9...]]
+    Vector --> DB[(Vector Database)]
+```
+
+### 4.3 The Retrieval Pipeline
+**Visualization 2: Query Flow**
+```mermaid
+graph TD
+    Query[User Query] --> Embed[Embedding Model]
+    Embed --> Vec[Query Vector]
+    Vec --> Search[Vector Search (ANN)]
+    Search -->|Retrieve| Context[Top K Chunks]
+    Context --> Prompt
+    Prompt --> LLM
+    LLM --> Answer
+```
+
+### 4.4 Vector Space & Semantics
+Embeddings map text to geometric space. Similar concepts are close together.
+
+**Visualization 3: Vector Space**
+```mermaid
+graph TD
+    subgraph Space
+    A(King) --- B(Queen)
+    C(Man) --- D(Woman)
+    E(Apple) --- F(Banana)
+    end
+    style A fill:#f9f
+    style B fill:#f9f
+    style E fill:#bbf
+```
+
+### 4.5 Cosine Similarity
+We measure "closeness" using the angle between vectors.
+
+**Visualization 4: Similarity Metric**
+```mermaid
+graph LR
+    V1[Vector A]
+    V2[Vector B]
+    V1 -- Angle Theta -- V2
+    Metric["Similarity = cos(Theta)"]
+```
+
+### 4.6 Chunking Strategies
+How you split text matters.
+
+**Visualization 5: Chunking**
+```mermaid
+graph TD
+    Doc[Long Document] -->|Fixed Size| C1[Chunk 1 (500 chars)]
+    Doc -->|Semantic| C2[Chunk 2 (By Paragraph)]
+    C1 --> Overlap[Overlap Window]
+```
+
+### 4.7 Hybrid Search
+Combining keyword search (BM25) with Vector search for best results.
+
+**Visualization 6: Hybrid Search**
+```mermaid
+graph TD
+    Query --> Keyword[Keyword Search]
+    Query --> Vector[Vector Search]
+    Keyword --> R1[Results A]
+    Vector --> R2[Results B]
+    R1 & R2 --> Rerank[Reciprocal Rank Fusion]
+    Rerank --> Final[Top Results]
+```
+
+### 4.8 Metadata Filtering
+**Visualization 7: Pre-Filtering**
+```mermaid
+graph LR
+    Query["Sales in 2023"] --> Filter["WHERE year=2023"]
+    Filter --> Search[Vector Search]
+    Search --> Result[Relevant & Recent]
+```
+
+### 4.9 The Context Window Limit
+**Visualization 8: Context Stuffing**
+```mermaid
+graph TD
+    Retrieved[100 Documents] --> Reranker[Re-Ranker Model]
+    Reranker --> Top5[Top 5 Relevant]
+    Top5 --> LLM[LLM Context Window]
+```
+
+### 4.10 GraphRAG (Concept)
+Combining Knowledge Graphs with Vectors.
+
+**Visualization 9: GraphRAG**
+```mermaid
+graph LR
+    Node1[Entity: Apple] -- Relation: Competitor --> Node2[Entity: Microsoft]
+    Node1 --> Vector1
+    Node2 --> Vector2
+```
 
 --------------------------------------------------------------------------------
 5. MULTI-MODAL AI
 --------------------------------------------------------------------------------
-*   **Definition**: Models capable of processing and correlating information from 
-    multiple modalities (Text, Images, Audio).
-*   **Vision Transformers (ViT)**:
-    *   Images are sliced into patches (e.g., 16x16 pixels).
-    *   These patches are flattened and linearly projected into embeddings, similar 
-        to word tokens.
-    *   The Transformer processes these visual tokens alongside text tokens.
-*   **Use Case**: OCR on steroids. Instead of just reading text characters, the model 
-    understands **layout** and **context** (e.g., distinguishing a "Total" field 
-    from a "Subtotal" based on position and font weight).
-*   **In this Demo**: We use GPT-4o to extract JSON from invoice images.
+
+### 5.1 Definition
+Multi-modal models can process Text, Images, and Audio simultaneously.
+
+### 5.2 Vision Transformers (ViT)
+Images are treated like language. They are broken into "patches" (visual words).
+
+**Visualization 1: Image to Tokens**
+```mermaid
+graph LR
+    Image[Image 224x224] --> Grid[Grid 16x16]
+    Grid --> Patch[Patch Flattening]
+    Patch --> Projection[Linear Projection]
+    Projection --> Embed[Visual Embeddings]
+```
+
+### 5.3 Multi-Modal Architecture
+**Visualization 2: Fusion**
+```mermaid
+graph TD
+    Img[Image Input] --> VisEnc[Visual Encoder]
+    Txt[Text Input] --> TxtEnc[Text Encoder]
+    VisEnc --> Shared[Shared Transformer Layers]
+    TxtEnc --> Shared
+    Shared --> Output[Understanding]
+```
+
+### 5.4 OCR vs Vision LLM
+Traditional OCR reads text. Vision LLMs understand context.
+
+**Visualization 3: Comparison**
+```mermaid
+graph TD
+    subgraph OCR
+    Pixels --> Characters --> Words["Total: 500"]
+    end
+    subgraph VisionLLM
+    Pixels --> LayoutAnalysis --> Context["Bottom right is usually total"] --> Value[500]
+    end
+```
+
+### 5.5 Cross-Attention
+How text queries attend to image features.
+
+**Visualization 4: Cross-Attention**
+```mermaid
+graph LR
+    Q[Text Query (Q)] --> Attention
+    K[Image Features (K)] --> Attention
+    V[Image Features (V)] --> Attention
+    Attention --> Result[Weighted Image Features]
+```
+
+### 5.6 Use Case: Document Extraction
+**Visualization 5: Invoice Processing**
+```mermaid
+graph LR
+    Scan[Invoice.jpg] --> Model[GPT-4o]
+    Prompt["Extract JSON"] --> Model
+    Model --> JSON["{total: 100, date: '2023-01-01'}"]
+```
+
+### 5.7 Visual Question Answering (VQA)
+**Visualization 6: VQA Flow**
+```mermaid
+graph LR
+    Image --> Model
+    Question["Is the equipment damaged?"] --> Model
+    Model --> Answer["Yes, there is a dent."]
+```
+
+### 5.8 Token Space Alignment
+Aligning visual and text concepts in the same vector space.
+
+**Visualization 7: Alignment**
+```mermaid
+graph TD
+    ImgVec[Vector: Dog Image]
+    TxtVec[Vector: 'Dog' Text]
+    ImgVec <-->|Minimize Distance| TxtVec
+```
+
+### 5.9 Image Captioning
+**Visualization 8: Captioning**
+```mermaid
+graph LR
+    Image --> Encoder
+    Encoder --> Decoder
+    Decoder --> Text["A cat sitting on a mat"]
+```
+
+### 5.10 Zero-Shot Classification
+**Visualization 9: Zero-Shot**
+```mermaid
+graph TD
+    Image --> Model
+    Labels["Cat, Dog, Car"] --> Model
+    Model --> Prob[Dog: 99%]
+```
 
 --------------------------------------------------------------------------------
 6. PRESCRIPTIVE ANALYTICS & OPTIMIZATION
 --------------------------------------------------------------------------------
-*   **Hierarchy of Analytics**:
-    1.  **Descriptive**: What happened? (Dashboards)
-    2.  **Predictive**: What will happen? (Forecasting)
-    3.  **Prescriptive**: How can we make it happen? (Optimization)
-*   **Technical Implementation**:
-    1.  **Digital Twin**: We train a regression model ($y = mx + b$) to approximate 
-        the business process. This model predicts the Target (Sales) based on Inputs 
-        (Marketing Spend, Price).
-    2.  **Objective Function**: We define a mathematical function to maximize (Profit) 
-        or minimize (Cost).
-    3.  **Solver**: We use `scipy.optimize.minimize` (SLSQP algorithm) to mathematically 
-        find the input values that yield the best output, subject to constraints 
-        (e.g., Budget < $10k).
+
+### 6.1 The Analytics Hierarchy
+**Visualization 1: The Value Pyramid**
+```mermaid
+graph TD
+    A[Descriptive: What happened?] --> B[Diagnostic: Why?]
+    B --> C[Predictive: What will happen?]
+    C --> D[Prescriptive: How to make it happen?]
+    style D fill:#f96
+```
+
+### 6.2 The Optimization Loop
+**Visualization 2: Optimization Architecture**
+```mermaid
+graph LR
+    Data[Historical Data] --> Model[ML Model (Digital Twin)]
+    Model --> Solver[Mathematical Solver]
+    Constraints[Budget/Rules] --> Solver
+    Objective[Maximize Profit] --> Solver
+    Solver --> Recommendation[Optimal Inputs]
+```
+
+### 6.3 The Digital Twin
+We train a regression model to simulate the business.
+
+**Visualization 3: Digital Twin**
+```mermaid
+graph LR
+    Input[Price $10] --> BlackBox[Model: y = mx + b]
+    BlackBox --> Output[Sales: 100 Units]
+```
+
+### 6.4 The Solver (SLSQP)
+Sequential Least Squares Programming finds the peak of the curve.
+
+**Visualization 4: Hill Climbing**
+```mermaid
+graph TD
+    Start[Random Point] --> Check[Check Gradient]
+    Check --> Step[Step Uphill]
+    Step --> Check
+    Check -->|Gradient=0| Peak[Optimal Solution]
+```
+
+### 6.5 Constraints
+Defining the "Feasible Region".
+
+**Visualization 5: Feasible Region**
+```mermaid
+graph TD
+    Space[All Possible Prices] --> Constraint1[Price > Cost]
+    Constraint1 --> Constraint2[Price < Competitor]
+    Constraint2 --> Feasible[Valid Options]
+```
+
+### 6.6 Objective Function
+**Visualization 6: The Goal**
+```mermaid
+graph LR
+    Inputs --> Func["f(x) = Revenue - Cost"]
+    Func --> Maximize
+```
+
+### 6.7 Sensitivity Analysis
+How sensitive is the result to changes in inputs?
+
+**Visualization 7: Sensitivity**
+```mermaid
+graph LR
+    Input[Change Price +1%] --> Model
+    Model --> Output[Change Demand -5%]
+    Output --> Elasticity[High Elasticity]
+```
+
+### 6.8 Pareto Frontier
+Balancing conflicting goals (e.g., Profit vs Market Share).
+
+**Visualization 8: Trade-offs**
+```mermaid
+graph LR
+    PointA[High Profit, Low Share]
+    PointB[Low Profit, High Share]
+    PointA --- Frontier --- PointB
+    Frontier[Pareto Optimal]
+```
+
+### 6.9 Simulation vs Optimization
+**Visualization 9: Comparison**
+```mermaid
+graph TD
+    subgraph Simulation
+    User[User Sets Inputs] --> Result
+    end
+    subgraph Optimization
+    Computer[Computer Sets Inputs] --> BestResult
+    end
+```
+
+### 6.10 Business Impact
+**Visualization 10: ROI**
+```mermaid
+graph LR
+    Current[Current Strategy] -->|Optimization| New[New Strategy]
+    New -->|Delta| Value[+$1M Revenue]
+```
 
 --------------------------------------------------------------------------------
 7. ANOMALY DETECTION (Unsupervised Learning)
 --------------------------------------------------------------------------------
-*   **Algorithm**: **Isolation Forest**.
-*   **Concept**: Anomalies are "few and different".
-*   **How it works**:
-    *   The algorithm builds an ensemble of random decision trees.
-    *   At each node, it randomly selects a feature and a split value.
-    *   **Normal points** are clustered together and require many splits to isolate.
-    *   **Anomalies** are far apart and are isolated very quickly (short path length 
-        from root to leaf).
-*   **Scoring**: The average path length across all trees determines the anomaly score. 
-    Shorter paths = Higher Anomaly Score.
-*   **Contamination**: A hyperparameter defining the expected proportion of outliers 
-    in the dataset (e.g., 0.05 or 5%).
+
+### 7.1 The Concept
+Anomalies are data points that are "few and different". We use **Isolation Forest**, an unsupervised algorithm that isolates outliers rather than profiling normal points.
+
+### 7.2 Isolation Forest Logic
+It's easier to isolate an anomaly (randomly split the data) than a normal point.
+
+**Visualization 1: Isolation Tree**
+```mermaid
+graph TD
+    Root -->|Split 1| Left
+    Root -->|Split 1| Right
+    Right -->|Split 2| Anomaly[Anomaly Isolated (Depth 2)]
+    Left -->|Split 2| L2
+    L2 -->|Split 3| L3
+    L3 -->|Split 4| Normal[Normal Point (Depth 4)]
+```
+
+### 7.3 Path Length as Score
+**Visualization 2: Scoring**
+```mermaid
+graph LR
+    Point --> Tree1[Tree 1] --> D1[Depth 2]
+    Point --> Tree2[Tree 2] --> D2[Depth 3]
+    Point --> Tree3[Tree 3] --> D3[Depth 2]
+    D1 & D2 & D3 --> Average[Avg Depth = 2.3]
+    Average -->|Short Path| Score[High Anomaly Score]
+```
+
+### 7.4 Time Series Anomalies
+**Visualization 3: Decomposition**
+```mermaid
+graph TD
+    Raw[Raw Data] --> Trend
+    Raw --> Seasonality
+    Raw --> Residual[Noise/Residual]
+    Residual -->|Threshold| Anomaly
+```
+
+### 7.5 Z-Score (Statistical)
+**Visualization 4: Standard Deviation**
+```mermaid
+graph LR
+    Mean[Mean] -- +3 Sigma --> Upper[Upper Bound]
+    Mean -- -3 Sigma --> Lower[Lower Bound]
+    Point -->|Outside Bounds| Outlier
+```
+
+### 7.6 Density-Based (DBSCAN)
+**Visualization 5: Clustering**
+```mermaid
+graph TD
+    Cluster1((Dense Cluster))
+    Cluster2((Dense Cluster))
+    Point[Noise Point]
+    Point ---|Far Distance| Cluster1
+    Point ---|Far Distance| Cluster2
+```
+
+### 7.7 Autoencoders (Deep Learning)
+**Visualization 6: Reconstruction Error**
+```mermaid
+graph LR
+    Input --> Encoder --> Bottleneck --> Decoder --> Output
+    Input -- Compare --> Output
+    Output -->|High Error| Anomaly
+```
+
+### 7.8 False Positives vs Negatives
+**Visualization 7: Confusion Matrix**
+```mermaid
+graph TD
+    Actual[Actual Anomaly] -->|Detected| TP[True Positive (Good)]
+    Actual -->|Missed| FN[False Negative (Bad)]
+    Normal -->|Flagged| FP[False Positive (Annoying)]
+```
+
+### 7.9 Ensemble Methods
+**Visualization 8: Voting**
+```mermaid
+graph TD
+    Data --> ModelA[Isolation Forest]
+    Data --> ModelB[Local Outlier Factor]
+    ModelA --> Vote1[Yes]
+    ModelB --> Vote2[Yes]
+    Vote1 & Vote2 --> Consensus[Confirmed Anomaly]
+```
+
+### 7.10 Human Feedback Loop
+**Visualization 9: Active Learning**
+```mermaid
+graph LR
+    System -->|Alert| User
+    User -->|Label: Not Anomaly| System
+    System -->|Retrain| Model
+```
