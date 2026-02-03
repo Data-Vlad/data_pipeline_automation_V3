@@ -46,6 +46,7 @@ The solution consists of four main components running in concert:
 
 ### Analytics & AI
 *   **Conversational Analytics**: Ask questions in plain English ("Why did sales drop?") and get SQL-generated answers.
+*   **Agentic Analyst**: An autonomous agent that plans and executes multi-step analysis strategies to solve complex goals.
 *   **Predictive Insights**: Automated forecasting and anomaly detection using Machine Learning.
 *   **Semantic Search**: Search your data by meaning (RAG), not just keywords.
 *   **Auto-Dashboards**: The AI analyzes your table schema and automatically generates the best visualization.
@@ -115,6 +116,54 @@ DB_TRUST_SERVER_CERTIFICATE="yes"
     dagster dev
     ```
 2.  **Open the UI**: Navigate to `http://localhost:3000` in your web browser. You should see the assets and jobs that have been dynamically generated.
+
+---
+
+## Hosting & Remote Access (The Tunnel)
+
+**Recommended for Demos & Remote Work**
+
+Since this application relies on **Local Resources** (your local SQL Server and local file system), you cannot simply deploy it to the cloud without moving your database. The best way to share it or access it remotely is using a secure tunnel like **ngrok**.
+
+### Step 1: Install Ngrok
+1.  Go to ngrok.com and sign up (free).
+2.  Download and unzip `ngrok`.
+3.  Connect your account: `ngrok config add-authtoken <YOUR_TOKEN>`
+
+### Step 2: Start the Application
+Run `Launch Data Importer.bat` as usual. Ensure both the Importer (Port 3000) and Analytics (Port 8501) are running.
+
+### Step 3: Create the Tunnels
+Open two separate command prompts (CMD or PowerShell).
+
+**Terminal 1 (Analytics Hub):**
+```bash
+# This exposes the Streamlit app.
+# --basic-auth adds a password layer for security.
+ngrok http 8501 --basic-auth="admin:CollegePassword123"
+```
+*Copy the Forwarding URL (e.g., `https://1111-analytics.ngrok-free.app`).*
+
+**Terminal 2 (Data Importer):**
+```bash
+# This exposes the main UI.
+ngrok http 3000 --basic-auth="admin:CollegePassword123"
+```
+*Copy this Forwarding URL (e.g., `https://2222-importer.ngrok-free.app`).*
+
+### Step 4: Link the Apps
+1.  Open your `.env` file.
+2.  Update the `ANALYTICS_PUBLIC_URL` variable with the **Analytics URL** from Terminal 1.
+    ```ini
+    ANALYTICS_PUBLIC_URL=https://1111-analytics.ngrok-free.app
+    ```
+3.  **Restart** `Launch Data Importer.bat`.
+
+### Step 5: Share
+Send the **Data Importer URL** (from Terminal 2) to your users.
+*   They will be prompted for the ngrok password (`CollegePassword123`).
+*   They will see the login screen (`admin`/`admin123`).
+*   When they click "Go to Analytics", they will be seamlessly redirected to the Analytics tunnel.
 
 ## 4. How to Add a New Pipeline (The Easy Way)
 

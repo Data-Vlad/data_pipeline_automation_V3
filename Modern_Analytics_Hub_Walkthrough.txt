@@ -90,7 +90,27 @@ SCENARIO 2: CONVERSATIONAL ANALYTICS (LLM-Powered Text-to-SQL)
         - Logic: `ml_engine.py` (Lines ~238-257, `generate_sql_from_question`)
 
 ================================================================================
-SCENARIO 3: DIAGNOSTIC AI (Root Cause Analysis)
+SCENARIO 3: AGENTIC ANALYST (Autonomous AI Agent)
+================================================================================
+*Goal: Show the AI planning and executing a complex task autonomously.*
+
+1.  **Navigate to "Agentic Analyst"**.
+2.  **The Goal**: Enter a high-level goal:
+    `Analyze the sales trend for the last 3 months, identify any significant drops, and check customer feedback for those periods to explain why.`
+3.  **Action**: Click **Launch Agent**.
+4.  **The Reveal**:
+    - **Planning**: Show the "Agent is planning..." expander. It breaks the goal into steps (Data Retrieval -> Analysis).
+    - **Execution**:
+        - It generates SQL to get sales data.
+        - It analyzes the data.
+        - It generates a final report explaining the drop (referencing the "server error" feedback injected in the demo data).
+    - *Talking Point*: "This isn't just a chatbot. It's an agent. It formulated a plan, queried the database, found the anomaly, and then correlated it with customer feedback to give me a complete answer."
+    - *Code Reference*:
+        - UI: `analytics_ui.py` (Agentic Analyst page)
+        - Logic: `ml_engine.py` (Tools: `generate_sql`, `generate_data_story`)
+
+================================================================================
+SCENARIO 4: DIAGNOSTIC AI (Root Cause Analysis)
 ================================================================================
 *Goal: Solve a business mystery in seconds.*
 
@@ -108,7 +128,7 @@ SCENARIO 3: DIAGNOSTIC AI (Root Cause Analysis)
         - Logic: `ml_engine.py` (Lines ~60-115, `analyze_root_cause`)
 
 ================================================================================
-SCENARIO 4: SEMANTIC INTELLIGENCE (LLM RAG / Vector Search)
+SCENARIO 5: SEMANTIC INTELLIGENCE (LLM RAG / Vector Search)
 ================================================================================
 *Goal: Connect the quantitative drop to qualitative feedback.*
 
@@ -128,7 +148,7 @@ SCENARIO 4: SEMANTIC INTELLIGENCE (LLM RAG / Vector Search)
         - Logic: `ml_engine.py` (Lines ~359-395, `perform_semantic_search`)
 
 ================================================================================
-SCENARIO 5: PRESCRIPTIVE ANALYTICS (Optimization)
+SCENARIO 6: PRESCRIPTIVE ANALYTICS (Optimization)
 ================================================================================
 *Goal: Move from "What happened?" to "What should we do?".*
 
@@ -148,7 +168,7 @@ SCENARIO 5: PRESCRIPTIVE ANALYTICS (Optimization)
         - Logic: `ml_engine.py` (Lines ~306-357, `optimize_business_objective`)
 
 ================================================================================
-SCENARIO 6: MULTI-MODAL ANALYSIS (Vision LLM)
+SCENARIO 7: MULTI-MODAL ANALYSIS (Vision LLM)
 ================================================================================
 *Goal: Show the system handling unstructured, non-text data.*
 
@@ -166,7 +186,7 @@ SCENARIO 6: MULTI-MODAL ANALYSIS (Vision LLM)
         - Logic: `ml_engine.py` (Lines ~432-483, `extract_structured_data`)
 
 ================================================================================
-SCENARIO 7: AUTONOMOUS DATA REPAIR (Self-Healing)
+SCENARIO 8: AUTONOMOUS DATA REPAIR (Self-Healing)
 ================================================================================
 *Goal: Show AI maintaining data quality.*
 
@@ -185,7 +205,7 @@ SCENARIO 7: AUTONOMOUS DATA REPAIR (Self-Healing)
         - Logic: `ml_engine.py` (Lines ~397-430, `suggest_data_repairs`)
 
 ================================================================================
-SCENARIO 8: AI AUTO-DASHBOARDS (Instant Viz)
+SCENARIO 9: AI AUTO-DASHBOARDS (Instant Viz)
 ================================================================================
 *Goal: Zero-effort visualization.*
 
@@ -200,7 +220,7 @@ SCENARIO 8: AI AUTO-DASHBOARDS (Instant Viz)
         - Logic: `ml_engine.py` (Lines ~259-304, `recommend_visualization`)
 
 ================================================================================
-SCENARIO 9: WHAT-IF SIMULATOR
+SCENARIO 10: WHAT-IF SIMULATOR
 ================================================================================
 *Goal: Strategic planning.*
 
@@ -217,7 +237,7 @@ SCENARIO 9: WHAT-IF SIMULATOR
         - Logic: Inline simulation logic in `analytics_ui.py`.
 
 ================================================================================
-SCENARIO 10: PREDICTIVE INSIGHTS (Forecasting)
+SCENARIO 11: PREDICTIVE INSIGHTS (Forecasting)
 ================================================================================
 *Goal: Looking forward.*
 
@@ -234,7 +254,7 @@ SCENARIO 10: PREDICTIVE INSIGHTS (Forecasting)
         - Logic: `ml_engine.py` (Lines ~40-57 `detect_anomalies`, Lines ~134-165 `generate_forecast`)
 
 ================================================================================
-SCENARIO 11: DATA GOVERNANCE (Quality Gates)
+SCENARIO 12: DATA GOVERNANCE (Quality Gates)
 ================================================================================
 *Goal: Prove that the AI is trained on trusted data.*
 
@@ -254,7 +274,7 @@ SCENARIO 11: DATA GOVERNANCE (Quality Gates)
         - Logic: `02_setup_data_governance.sql` (Stored Procedure `sp_execute_data_quality_checks`)
 
 ================================================================================
-SCENARIO 12: AUTOMATED ENRICHMENT
+SCENARIO 13: AUTOMATED ENRICHMENT
 ================================================================================
 *Goal: Show how the system adds value to raw data automatically.*
 
