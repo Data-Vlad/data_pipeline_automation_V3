@@ -94,7 +94,7 @@ st.sidebar.caption(f"👤 Role: **{st.session_state.user_role}**")
 # RBAC: Define accessible pages based on Role
 # Since the role is defaulted to 'Admin', all pages are available.
 available_pages = [
-    "Dashboard", "Conversational Analytics", "Predictive Insights", "Root Cause Analysis", 
+    "Dashboard", "Conversational Analytics", "Agentic Analyst", "Predictive Insights", "Root Cause Analysis", 
     "Clustering & Segmentation", "Prescriptive Optimization", "Semantic Search", 
     "Multi-Modal Analysis", "Autonomous Data Repair", "What-If Simulator", 
     "AI Auto-Dashboards", "Data Explorer", "Data Steward", "Data Observability", 
@@ -180,6 +180,70 @@ elif page == "Conversational Analytics":
                 except Exception as e:
                     st.error(f"AI Error: {e}")
                     st.session_state.messages.append({"role": "assistant", "content": f"Error: {e}"})
+
+# --- Agentic Analyst Page ---
+elif page == "Agentic Analyst":
+    st.title("🕵️ Agentic Analyst")
+    st.markdown("An autonomous agent that plans and executes multi-step data analysis tasks to achieve high-level goals.")
+
+    if not os.getenv("OPENAI_API_KEY"):
+        st.warning("⚠️ OpenAI API Key not found. Please set `OPENAI_API_KEY` in .env.")
+        st.stop()
+
+    goal = st.text_area("Define your analysis goal:", placeholder="e.g., Analyze the sales trend for the last 3 months, identify any significant drops, and check customer feedback for those periods to explain why.", height=100)
+    
+    if st.button("🚀 Launch Agent"):
+        if not goal:
+            st.warning("Please define a goal for the agent.")
+        else:
+            st.info(f"**Goal:** {goal}")
+            
+            # Simulated Agent Planning Step
+            with st.status("🧠 Agent is planning...", expanded=True) as status:
+                st.write("Analyzing request intent...")
+                time.sleep(1)
+                st.write("Identifying relevant data tables...")
+                time.sleep(0.5)
+                st.write("Formulating execution strategy: `SQL Retrieval` -> `Data Summarization`")
+                status.update(label="Plan confirmed!", state="complete", expanded=False)
+            
+            # Execution Step
+            with st.spinner("🕵️ Agent is working..."):
+                try:
+                    # 1. Context Retrieval
+                    schema_df = run_query("SELECT TABLE_NAME, COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME NOT LIKE 'sys%'")
+                    schema_context = schema_df.to_csv(index=False)
+                    
+                    # 2. Tool Use: Text-to-SQL
+                    st.subheader("1. Data Retrieval")
+                    st.caption("Agent is generating SQL to fetch relevant data...")
+                    sql_query = MLEngine.generate_sql_from_question(goal, schema_context)
+                    st.code(sql_query, language="sql")
+                    
+                    df = run_query(sql_query)
+                    st.dataframe(df, use_container_width=True)
+                    
+                    # 3. Tool Use: Insight Generation
+                    st.subheader("2. Analysis & Insights")
+                    if not df.empty:
+                        st.caption("Agent is analyzing the retrieved data...")
+                        
+                        # Heuristic to get some metrics for the story
+                        metrics = {}
+                        if len(df) > 0:
+                            numeric_cols = df.select_dtypes(include=['number']).columns
+                            for col in numeric_cols:
+                                metrics[f"avg_{col}"] = df[col].mean()
+                                metrics[f"total_{col}"] = df[col].sum()
+                            metrics["row_count"] = len(df)
+                        
+                        story = MLEngine.generate_data_story(metrics, context_str=f"Analysis for goal: {goal}")
+                        st.markdown(f"### 📋 Final Report\n{story}")
+                    else:
+                        st.warning("The agent completed the query but found no matching data to analyze.")
+                        
+                except Exception as e:
+                    st.error(f"Agent encountered an error during execution: {e}")
 
 # --- Predictive Insights Page ---
 elif page == "Predictive Insights":
