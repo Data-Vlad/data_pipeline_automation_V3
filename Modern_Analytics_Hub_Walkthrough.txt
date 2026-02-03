@@ -803,11 +803,60 @@ to make abstract concepts easy to understand.
     The further you look, the wider the cone gets.
 
 --------------------------------------------------------------------------------
-12. THE FULL MODERN DATA STACK
+12. DIAGNOSTIC ANALYTICS (Root Cause Analysis)
+--------------------------------------------------------------------------------
+*   **Concept**: Answering "Why did it happen?". Instead of manually checking 
+    every region, product, and channel to see which one caused the drop, the 
+    algorithm scans all of them instantly to find the biggest "Driver".
+
+    **VISUALIZATION 12.1: THE DRILL-DOWN**
+    *Caption: Finding the culprit.*
+
+    [ Total Sales Drop: -$1,000 ]
+             |
+             +--- Region: North (-$900)  <--- MAJOR DRIVER 🚨
+             |      |
+             |      +--- Product: Widgets (-$850) <--- ROOT CAUSE 🎯
+             |      +--- Product: Gadgets (-$50)
+             |
+             +--- Region: South (-$100)
+
+    **VISUALIZATION 12.2: CONTRIBUTION ANALYSIS**
+    *Caption: Who pulled the number down?*
+
+    Start: $10,000
+    + Region A:  +$200
+    + Region B:  +$100
+    - Region C:  -$1,500  <--- The problem is here.
+    End:   $8,800
+
+--------------------------------------------------------------------------------
+13. SIMULATION (What-If Analysis)
+--------------------------------------------------------------------------------
+*   **Concept**: Creating parallel universes. Unlike forecasting (which tells you 
+    what *will* happen), simulation tells you what *could* happen if you make 
+    specific choices.
+
+    **VISUALIZATION 13.1: PARALLEL UNIVERSES**
+    *Caption: Testing decisions before making them.*
+
+    Current Reality: [ Price: $10 ] --> [ Revenue: $100 ]
+
+    Simulation A:    [ Price: $12 ] --> [ Revenue: $110 ] (Better?)
+    Simulation B:    [ Price: $20 ] --> [ Revenue: $50 ]  (Too high!)
+
+    **VISUALIZATION 13.2: SENSITIVITY**
+    *Caption: How sensitive is the outcome to the input?*
+
+    Input Change:  [ Small Push ]
+    Outcome:       [ Huge Swing ]  <--- High Sensitivity (Risky)
+
+--------------------------------------------------------------------------------
+14. THE FULL MODERN DATA STACK
 --------------------------------------------------------------------------------
 *   **Concept**: How it all fits together.
 
-    **VISUALIZATION 12.1: FULL STACK**
+    **VISUALIZATION 14.1: FULL STACK**
     *Caption: From raw file to dashboard.*
 
     [Raw File]
