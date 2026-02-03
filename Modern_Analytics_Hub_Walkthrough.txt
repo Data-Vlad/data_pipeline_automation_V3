@@ -448,6 +448,38 @@ to make abstract concepts easy to understand.
     | OUTPUT:  "SELECT * FROM Sales"                   |
     +--------------------------------------------------+
 
+    **VISUALIZATION 1.10: PRE-TRAINING VS FINE-TUNING**
+    *Caption: General school vs. Job training.*
+
+    [ Internet Data ] --> [ PRE-TRAINING ] --> [ Base Model ]
+    (Wikipedia, Books)    (Months, $$$)        (Knows English, Math, History)
+                                                     |
+                                                     v
+    [ Specific Data ] --> [ FINE-TUNING ]  --> [ Specialist Model ]
+    (Medical Records)     (Hours, $)           (Knows Medicine)
+
+    **VISUALIZATION 1.11: ZERO-SHOT VS FEW-SHOT**
+    *Caption: Giving a hint helps.*
+
+    Zero-Shot (No help):
+    "Translate to Spanish: Hello." -> "Hola."
+
+    Few-Shot (Examples provided):
+    "Translate to Spanish:
+     Good morning -> Buenos dias
+     Good night -> Buenas noches
+     Hello ->"
+    Result: "Hola" (Much higher confidence because it sees the pattern).
+
+    **VISUALIZATION 1.12: RLHF (Reinforcement Learning)**
+    *Caption: Teaching manners.*
+
+    Model: "To make a bomb, mix..."
+    Human: 👎 (Bad!) -> Model adjusts.
+
+    Model: "I cannot help with that."
+    Human: 👍 (Good!) -> Model reinforces this behavior.
+
 --------------------------------------------------------------------------------
 2. TEXT-TO-SQL
 --------------------------------------------------------------------------------
@@ -869,3 +901,17 @@ to make abstract concepts easy to understand.
         |
         v
     [Dashboard (Streamlit)]
+
+    **VISUALIZATION 14.2: DATA LINEAGE**
+    *Caption: The family tree of a number.*
+
+    [ Dashboard says $100 ]
+          ^
+          |
+    [ Table: FactSales ]
+          ^
+          |
+    [ Transformation: CleanSales.sql ]
+          ^
+          |
+    [ Raw File: sales_dump.csv ]
