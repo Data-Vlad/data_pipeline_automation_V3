@@ -744,11 +744,70 @@ to make abstract concepts easy to understand.
     Action: Auto-correct to "Apple".
 
 --------------------------------------------------------------------------------
-10. THE FULL MODERN DATA STACK
+10. CLUSTERING & SEGMENTATION (Unsupervised Learning)
+--------------------------------------------------------------------------------
+*   **Concept**: Grouping similar things together without knowing what the groups 
+    are beforehand. Like sorting a bucket of mixed lego bricks by color/size 
+    without instructions.
+
+    **VISUALIZATION 10.1: K-MEANS STEPS**
+    *Caption: Finding the center of the crowd.*
+
+    Step 1: Pick random spots (Centroids "X").
+    [ . . X . . ]       [ . . . X . ]
+
+    Step 2: Assign points to the closest X.
+    [ A A X A A ]       [ B B B X B ]
+
+    Step 3: Move X to the center of its group.
+    [ . . A X A ]       [ . B X B . ]
+
+    Step 4: Repeat until X stops moving.
+
+    **VISUALIZATION 10.2: MULTI-DIMENSIONAL SPACE**
+    *Caption: Grouping by more than one thing.*
+
+    Customer A: [Age: 25, Spend: $100]
+    Customer B: [Age: 24, Spend: $110]
+    Customer C: [Age: 60, Spend: $500]
+
+    Result:
+    Group 1 (Young/Low Spend): A, B
+    Group 2 (Older/High Spend): C
+
+--------------------------------------------------------------------------------
+11. TIME SERIES FORECASTING (Prophet)
+--------------------------------------------------------------------------------
+*   **Concept**: Predicting the future by understanding the rhythm of the past. 
+    Unlike simple trend lines, this handles weekends, holidays, and seasons.
+
+    **VISUALIZATION 11.1: THE ADDITIVE MODEL**
+    *Caption: Building a prediction like lego blocks.*
+
+    [ Trend ]      /       (Going up generally)
+                  /
+
+    [ Season ]   /\/\/\    (Weekly pattern: High on Sat, Low on Mon)
+
+    [ Holiday]     ^       (Black Friday spike)
+
+    [ Result ]   /^\/\^/   (The final forecast line)
+
+    **VISUALIZATION 11.2: CONFIDENCE INTERVALS**
+    *Caption: The "Cone of Uncertainty".*
+
+    Today:  * (Exact)
+    Day 1:  * (Pretty sure)
+    Day 30: < (Maybe here, maybe there) >
+
+    The further you look, the wider the cone gets.
+
+--------------------------------------------------------------------------------
+12. THE FULL MODERN DATA STACK
 --------------------------------------------------------------------------------
 *   **Concept**: How it all fits together.
 
-    **VISUALIZATION 10.1: FULL STACK**
+    **VISUALIZATION 12.1: FULL STACK**
     *Caption: From raw file to dashboard.*
 
     [Raw File]
