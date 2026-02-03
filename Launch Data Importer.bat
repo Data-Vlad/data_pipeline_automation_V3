@@ -17,6 +17,7 @@ set "ENV_FILE=%SCRIPT_DIR%.env"
 set "PYTHONPATH=%SCRIPT_DIR%"
 set "UI_SCRIPT=%SCRIPT_DIR%simple_ui.py"
 set "GET_CREDS_SCRIPT=%SCRIPT_DIR%get_credentials.py"
+set "ANALYTICS_UI_SCRIPT=%SCRIPT_DIR%analytics_ui.py"
 set "CREATE_DIRS_SCRIPT=%SCRIPT_DIR%create_dirs.py"
 set "ERROR_LOG=%SCRIPT_DIR%launcher-error.log"
 set "DAGSTER_HOME_DIR=%SCRIPT_DIR%dagster_home"
@@ -68,11 +69,22 @@ echo.
 
 :: ----------------------------------------------------------------------------
 call :log INFO "Step 1/6: Performing initial cleanup..."
-:: This prevents "ghost" errors from zombie processes from previous runs by ensuring the port is free.
-set "port=3000"
-for /f "tokens=5" %%a in ('netstat -aon ^| findstr :%port% ^| findstr LISTENING') do (
+:: This prevents "ghost" errors from zombie processes from previous runs by ensuring the ports are free.
+set "importer_port=3000"
+set "analytics_port=8501"
+
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr :%importer_port% ^| findstr LISTENING') do (
     set "pid=%%a"
     if defined pid (
+        call :log INFO "Terminating existing process on port %importer_port% (PID: %%a)..."
+        taskkill /F /PID %%a >nul
+    )
+)
+
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr :%analytics_port% ^| findstr LISTENING') do (
+    set "pid=%%a"
+    if defined pid (
+        call :log INFO "Terminating existing process on port %analytics_port% (PID: %%a)..."
         taskkill /F /PID %%a >nul
     )
 )
@@ -187,6 +199,7 @@ if not exist "%ENV_FILE%" (
         echo DB_DATABASE=TargetDatabase
         echo DB_DRIVER=ODBC Driver 17 for SQL Server
         echo CREDENTIAL_TARGET=WindowsCredentialName
+        echo OPENAI_API_KEY=sk-...
     ) > "%ENV_FILE%"
     call :handle_error "The .env file was missing. A template has been created. Please configure it and run again."
 )
@@ -198,8 +211,9 @@ for /f "usebackq tokens=1,* delims==" %%i in ("%ENV_FILE%") do (
     if /i "!line!"=="DB_DATABASE" set "DB_DATABASE=%%~j"
     if /i "!line!"=="DB_DRIVER" set "DB_DRIVER=%%~j"
     if /i "!line!"=="CREDENTIAL_TARGET" set "CREDENTIAL_TARGET=%%~j"
+    if /i "!line!"=="OPENAI_API_KEY" set "OPENAI_API_KEY=%%~j"
 )
-endlocal & set "DB_SERVER=%DB_SERVER%" & set "DB_DATABASE=%DB_DATABASE%" & set "DB_DRIVER=%DB_DRIVER%" & set "CREDENTIAL_TARGET=%CREDENTIAL_TARGET%"
+endlocal & set "DB_SERVER=%DB_SERVER%" & set "DB_DATABASE=%DB_DATABASE%" & set "DB_DRIVER=%DB_DRIVER%" & set "CREDENTIAL_TARGET=%CREDENTIAL_TARGET%" & set "OPENAI_API_KEY=%OPENAI_API_KEY%"
 
 if not defined DB_SERVER call :handle_error "DB_SERVER is not defined in the .env file."
 if not defined DB_DATABASE call :handle_error "DB_DATABASE is not defined in the .env file."
@@ -267,26 +281,34 @@ if exist "%OLD_WORKSPACE_YAML%" (
 )
 
 :: ----------------------------------------------------------------------------
-call :log INFO "Step 6/6: Launching Data Launchpad UI..."
+call :log INFO "Step 6/6: Launching Data Launchpad and Analytics Hub..."
 
-:: Set the password in an environment variable that the UI process will inherit.
-:: This is the crucial step to pass the credential to the separate UI process.
+:: Set environment variables that the UI processes will inherit.
+:: This is the crucial step to pass credentials and config to the separate UI processes.
 set "DAGSTER_DB_USERNAME=%DB_USERNAME%"
 set "DAGSTER_DB_PASSWORD=%DB_PASSWORD%"
+set "DB_USERNAME=%DB_USERNAME%"
+set "DB_PASSWORD=%DB_PASSWORD%"
+set "DB_SERVER=%DB_SERVER%"
+set "DB_DATABASE=%DB_DATABASE%"
+set "DB_DRIVER=%DB_DRIVER%"
+set "OPENAI_API_KEY=%OPENAI_API_KEY%"
+set "DB_TRUST_SERVER_CERTIFICATE=yes"
 set "DAGSTER_HOME=%DAGSTER_HOME_DIR%"
 set "PYTHONPATH=%SCRIPT_DIR%"
 
-:: Launch the UI in a new background process, reliably passing environment variables.
-:: We use pythonw.exe to run the script without a console window for a better UX.
-:: The server will run silently in the background. Errors will be logged to ui-server.log
+:: --- 1. Launch Analytics Hub (Streamlit) in the background ---
+:: We use python.exe here and start it minimized. If it fails, the user can open the window to see the error.
+set "ANALYTICS_UI_CMD=%PYTHON_EXE% -m streamlit run "%ANALYTICS_UI_SCRIPT%""
+start "Analytics Hub" /min %ANALYTICS_UI_CMD%
+
+:: --- 2. Launch Data Importer UI (Flask) in the background ---
+:: We use pythonw.exe to run this script without a console window for a better UX.
+:: The server will run silently in the background.
 set "UI_CMD=%PYTHONW_EXE% %UI_SCRIPT% --server %DB_SERVER% --database %DB_DATABASE% --credential-target %CREDENTIAL_TARGET%"
-
-:: ----------------------------------------------------------------------------
-
-:: Start the UI process in the background FIRST.
 start "Data Importer UI" %UI_CMD%
 
-:: --- Wait for the server to be ready before opening the browser ---
+:: --- 3. Wait for the main server to be ready before opening the browser ---
 :: This loop actively checks if the port is open, avoiding the "Connection Refused" error.
 set "wait_time=0"
 :wait_loop
