@@ -550,6 +550,34 @@ to make abstract concepts easy to understand.
 
     *Challenge*: AI is hard to debug compared to regular code.
 
+    **VISUALIZATION 1.20: BACKPROPAGATION (The Teacher)**
+    *Caption: How the model learns from mistakes during training.*
+
+    Prediction: "The sky is [Green]"
+    Reality:    "The sky is [Blue]"
+    Error:      High.
+    Action:     Send "Blame" backwards through the network.
+                Adjust weights slightly so "Green" is less likely next time.
+
+    **VISUALIZATION 1.21: MULTI-HEAD ATTENTION (The Committee)**
+    *Caption: Reading for different things at once.*
+
+    Head 1 (Grammar): Checks if "sat" follows "cat".
+    Head 2 (Context): Checks if "bank" means river or money.
+    Head 3 (Tone):    Checks if the sentence is angry or happy.
+
+    Result: A rich, multi-layered understanding of the sentence.
+
+    **VISUALIZATION 1.22: SOFTMAX (The Scoreboard)**
+    *Caption: Turning raw math into percentages.*
+
+    [ Raw Logits ]      [ Math Function ]      [ Probabilities ]
+    Cat: 5.0       -->  e^x / sum(e^x)    -->  Cat: 95%
+    Dog: 2.0                                   Dog: 4%
+    Car: -1.0                                  Car: 1%
+
+    This is the final step before the model makes a choice.
+
 --------------------------------------------------------------------------------
 2. TEXT-TO-SQL
 --------------------------------------------------------------------------------
@@ -775,6 +803,16 @@ to make abstract concepts easy to understand.
     Step 3 (Sort): Picks the top 5 *actually* relevant ones.
 
     *Result*: Much higher accuracy.
+
+    **VISUALIZATION 4.7: HYBRID SEARCH (The Best of Both Worlds)**
+    *Caption: Combining exact matches with meaning.*
+
+    Query: "Error 504 on Gateway"
+
+    Sparse (Keyword): Matches "504" exactly. (Precise)
+    Dense (Vector):   Matches "Gateway Timeout". (Conceptual)
+
+    Result:           Combined score finds the exact log entry.
 
 --------------------------------------------------------------------------------
 5. MULTI-MODAL AI
