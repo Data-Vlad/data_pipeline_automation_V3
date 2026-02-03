@@ -7,6 +7,7 @@ from dotenv import load_dotenv
 import plotly.express as px
 import plotly.graph_objects as go
 import time
+from itsdangerous import URLSafeTimedSerializer
 
 # Add project root to path to import core modules
 sys.path.append(os.path.dirname(__file__))
@@ -37,9 +38,54 @@ def run_query(query_str):
         return pd.read_sql(query_str, conn)
  
 # --- Authentication & RBAC System ---
-# For seamless integration, authentication is bypassed. Defaulting to 'Admin' role.
-if "user_role" not in st.session_state:
-    st.session_state.user_role = "Admin"
+if "authenticated" not in st.session_state:
+    st.session_state.authenticated = False
+    st.session_state.user_role = None
+
+def login_screen():
+    st.title("🔐 Enterprise Analytics Hub")
+    st.markdown("Please sign in to access the secure data environment.")
+    
+    col1, col2 = st.columns([1, 2])
+    with col1:
+        with st.form("login_form"):
+            username = st.text_input("Username")
+            password = st.text_input("Password", type="password")
+            submitted = st.form_submit_button("Sign In")
+            
+            if submitted:
+                # Simple hardcoded credentials for the demo
+                if username == "admin" and password == "admin123":
+                    st.session_state.authenticated = True
+                    st.session_state.user_role = "Admin"
+                    st.success("Welcome, Administrator.")
+                    st.rerun()
+                else:
+                    st.error("Invalid credentials.")
+
+# --- SSO Token Validation ---
+# Check for a token from simple_ui before showing the login screen.
+if not st.session_state.authenticated and "token" in st.query_params:
+    token = st.query_params["token"]
+    secret_key = os.getenv("SECRET_KEY")
+    if secret_key:
+        s = URLSafeTimedSerializer(secret_key)
+        try:
+            # The token is valid for 60 seconds to prevent reuse.
+            data = s.loads(token, max_age=60)
+            if data.get("user"):
+                st.session_state.authenticated = True
+                st.session_state.user_role = "Admin"  # Assign role based on token if needed
+                # Clear the token from the URL to prevent reuse/bookmarking
+                st.query_params.clear()
+                st.rerun()
+        except Exception:
+            st.warning("Invalid or expired access token. Please log in.")
+            time.sleep(2) # Give user time to read the message
+
+if not st.session_state.authenticated:
+    login_screen()
+    st.stop() # Block access to the rest of the app
 
 # --- Sidebar ---
 st.sidebar.title("Analytics & AI Hub")
