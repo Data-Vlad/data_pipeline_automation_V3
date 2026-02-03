@@ -480,6 +480,28 @@ to make abstract concepts easy to understand.
     Model: "I cannot help with that."
     Human: 👍 (Good!) -> Model reinforces this behavior.
 
+    **VISUALIZATION 1.13: PARAMETERS (The Brain Cells)**
+    *Caption: What makes the model "smart"?*
+
+    [ Neuron A ] --(Weight: 0.5)--> [ Neuron B ]
+                 --(Weight: 0.1)--> [ Neuron C ]
+
+    "7 Billion Parameters" means 7 billion of these connections.
+    Training adjusts the "Weights" (strength) of these connections.
+
+    **VISUALIZATION 1.14: BIAS (The Mirror)**
+    *Caption: The AI reflects what it reads.*
+
+    Training Data: "Doctors are usually men in old books."
+          |
+          v
+    Prompt: "Draw a doctor."
+          |
+          v
+    Output: Draws a man. (Bias)
+
+    *Fix*: RLHF (Teaching it to be better than its data).
+
 --------------------------------------------------------------------------------
 2. TEXT-TO-SQL
 --------------------------------------------------------------------------------
@@ -582,6 +604,24 @@ to make abstract concepts easy to understand.
     2. [ ] Calculate growth percentage.
     3. [ ] Summarize findings in text.
 
+    **VISUALIZATION 3.4: MEMORY (The Notebook)**
+    *Caption: Remembering what happened 5 minutes ago.*
+
+    Step 1: "I found sales data." -> [Write to Memory]
+    Step 2: "I calculated growth." -> [Write to Memory]
+    Step 3: "What did I find in Step 1?" -> [Read Memory]
+
+    Without memory, the agent is stuck in "Memento".
+
+    **VISUALIZATION 3.5: REFLECTION (The Editor)**
+    *Caption: Checking your own work.*
+
+    [Draft Answer]: "Sales dropped because of rain."
+          |
+    [Critic Agent]: "Wait, do we have weather data? No."
+          |
+    [Revision]: "Sales dropped, but we don't know why yet."
+
 --------------------------------------------------------------------------------
 4. RAG (RETRIEVAL-AUGMENTED GENERATION) & VECTOR SEARCH
 --------------------------------------------------------------------------------
@@ -628,6 +668,16 @@ to make abstract concepts easy to understand.
     Semantic Search (Vectors):
     - Looks for concept "Broken Screen".
     - Finds: "Display shattered" (Because they are close on the map).
+
+    **VISUALIZATION 4.4: INDEXING (The Library Card)**
+    *Caption: How to search 1 million docs in 10ms.*
+
+    Without Index:
+    Read Doc 1... Read Doc 2... ... Read Doc 1,000,000. (Too Slow)
+
+    With Vector Index (HNSW):
+    Start at top layer -> Zoom in to relevant neighborhood -> Find neighbors.
+    (Like finding a city on a globe, then a street, then a house).
 
 --------------------------------------------------------------------------------
 5. MULTI-MODAL AI
