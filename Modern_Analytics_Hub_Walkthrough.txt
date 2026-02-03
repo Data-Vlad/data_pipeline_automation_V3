@@ -727,6 +727,15 @@ to make abstract concepts easy to understand.
 
     We embed and search the *Chunks*, not the whole book.
 
+    **VISUALIZATION 4.6: RE-RANKING (The Second Opinion)**
+    *Caption: Double-checking the search results.*
+
+    Step 1 (Fast): Vector Search finds 50 docs. (Some are irrelevant).
+    Step 2 (Slow): Re-ranker Model reads all 50 carefully.
+    Step 3 (Sort): Picks the top 5 *actually* relevant ones.
+
+    *Result*: Much higher accuracy.
+
 --------------------------------------------------------------------------------
 5. MULTI-MODAL AI
 --------------------------------------------------------------------------------
