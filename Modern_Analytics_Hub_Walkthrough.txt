@@ -1,0 +1,273 @@
+================================================================================
+          MODERN ANALYTICS & AI HUB: THE ULTIMATE DEMO GUIDE
+================================================================================
+
+This is a comprehensive, step-by-step script for demonstrating the full power of 
+the Modern Analytics & AI Hub. It is designed to "show off" the system's 
+capabilities, moving from descriptive analytics to advanced AI and self-healing 
+data pipelines.
+
+--------------------------------------------------------------------------------
+PHASE 1: ENVIRONMENT SETUP
+--------------------------------------------------------------------------------
+
+1.  **Install Dependencies & Drivers**
+    Open your terminal in the project root and run:
+    > pip install pandas sqlalchemy pyodbc openai plotly streamlit scipy scikit-learn faker
+    *Ensure you have the ODBC Driver 17 for SQL Server installed.*
+
+2.  **Configure Environment Variables**
+    Create or edit the `.env` file in the project root:
+    - DB_SERVER=...
+    - DB_DATABASE=...
+    - DB_USERNAME=...
+    - DB_PASSWORD=...
+    - OPENAI_API_KEY=sk-... (Crucial for Text-to-SQL, Semantic Search, and Vision)
+
+3.  **Generate the "Perfect" Demo Data**
+    Run the setup script. This doesn't just create tables; it injects specific
+    statistical patterns, anomalies, and text correlations that the AI is 
+    programmed to find later.
+    > python scripts/setup_demo_environment.py
+    
+    *Check Output*: Look for "🎉 Demo Environment Setup Complete!".
+
+--------------------------------------------------------------------------------
+PHASE 2: GENERATE AI INSIGHTS (BATCH LAYER)
+--------------------------------------------------------------------------------
+
+Before the demo, we need the "Batch AI" to process history, train models, and 
+detect the anomalies we injected.
+
+1.  Start Dagster:
+    > dagster dev
+
+2.  Open the Dagster UI (http://localhost:3000).
+3.  Locate the asset group `analytics_ai` (or search for `run_predictive_analytics`).
+4.  Click **Materialize** on the `run_predictive_analytics` asset.
+    *   *Behind the Scenes*: The system pulls the last year of data, trains an 
+        Isolation Forest model to find outliers, runs a Prophet forecast for the 
+        next 30 days, and saves all predictions to the SQL database.
+
+--------------------------------------------------------------------------------
+PHASE 3: THE "SHOW OFF" DEMO SCRIPT (UI LAYER)
+--------------------------------------------------------------------------------
+
+Launch the Analytics UI in a new terminal:
+> streamlit run analytics_ui.py
+
+**Login**: Username: `admin` / Password: `admin123`
+
+================================================================================
+SCENARIO 1: THE EXECUTIVE OVERVIEW (Generative AI / LLM)
+================================================================================
+*Goal: Show that the system understands data context without human input.*
+
+1.  **Navigate to "Dashboard"**.
+2.  **Point out the Metrics**:
+    - "AI Detected Anomalies": Point out the red number (e.g., 5).
+    - "Failed Runs": Point out the system health.
+3.  **The "Wow" Factor**: Scroll to **Automated Data Story**.
+    - *Action*: Read the first bullet point aloud.
+    - *Talking Point*: "I didn't write this report. A Generative AI (LLM) agent analyzed the raw pipeline logs and anomaly tables to generate this executive summary in real-time."
+    - *Code Reference*:
+        - UI: `analytics_ui.py` (Lines ~112-117)
+        - Logic: `ml_engine.py` (Lines ~198-226, `generate_data_story`)
+
+================================================================================
+SCENARIO 2: CONVERSATIONAL ANALYTICS (LLM-Powered Text-to-SQL)
+================================================================================
+*Goal: Show democratization of data access.*
+
+1.  **Navigate to "Conversational Analytics"**.
+2.  **The Query**: Type: `Show me total sales by region for last month`
+3.  **The Result**:
+    - Show the generated SQL code block (proving transparency/security).
+    - Show the resulting data table.
+    - *Talking Point*: "This uses an LLM to translate natural language into SQL. It understands 'last month' and 'sales', writes valid SQL, checks it for safety, and executes it."
+    - *Code Reference*:
+        - UI: `analytics_ui.py` (Lines ~153-167)
+        - Logic: `ml_engine.py` (Lines ~238-257, `generate_sql_from_question`)
+
+================================================================================
+SCENARIO 3: DIAGNOSTIC AI (Root Cause Analysis)
+================================================================================
+*Goal: Solve a business mystery in seconds.*
+
+1.  **Navigate to "Root Cause Analysis"**.
+2.  **Setup**:
+    - Table: `fact_retail_sales`
+    - Metric: `SalesAmount`
+    - Target Date: Select the date **3 days ago** (The setup script injected a 80% drop here).
+3.  **Action**: Click **Analyze Drivers**.
+4.  **The Reveal**:
+    - The system will display `Region = North` and `Category = Electronics` with a large negative impact (e.g., -80%).
+    - *Talking Point*: "Usually, an analyst would spend hours slicing data in Excel to find this. The AI scanned every combination of dimensions and found the exact source of the crash: Electronics in the North region."
+    - *Code Reference*:
+        - UI: `analytics_ui.py` (Lines ~261)
+        - Logic: `ml_engine.py` (Lines ~60-115, `analyze_root_cause`)
+
+================================================================================
+SCENARIO 4: SEMANTIC INTELLIGENCE (LLM RAG / Vector Search)
+================================================================================
+*Goal: Connect the quantitative drop to qualitative feedback.*
+
+1.  **Navigate to "Semantic Search"**.
+2.  **Context**: "We know sales dropped in North/Electronics. Was it a pricing issue? A product issue?"
+3.  **Setup**:
+    - Table: `fact_retail_sales`
+    - Column: `CustomerFeedback`
+    - Query: `technical issues during checkout`
+4.  **Action**: Click **Search**.
+5.  **The Reveal**:
+    - The results show rows containing: *"Cannot checkout, server error"*.
+    - *Crucial Point*: Note that the word "technical" might not appear in the result.
+    - *Talking Point*: "This uses LLM Embeddings for Semantic Search. I searched for 'technical issues', and it found 'server error' because the LLM understands they mean the same thing. Traditional keyword search would have failed here."
+    - *Code Reference*:
+        - UI: `analytics_ui.py` (Lines ~351)
+        - Logic: `ml_engine.py` (Lines ~359-395, `perform_semantic_search`)
+
+================================================================================
+SCENARIO 5: PRESCRIPTIVE ANALYTICS (Optimization)
+================================================================================
+*Goal: Move from "What happened?" to "What should we do?".*
+
+1.  **Navigate to "Prescriptive Optimization"**.
+2.  **Context**: "We need to recover that lost revenue next week. How much should we spend on ads?"
+3.  **Setup**:
+    - Table: `fact_retail_sales`
+    - Target: `SalesAmount`
+    - Inputs: Select `MarketingSpend` and `DiscountRate`.
+4.  **Action**: Click **Run Optimization**.
+5.  **The Reveal**:
+    - The system displays a "Projected Maximum Target".
+    - It gives specific recommendations: e.g., *MarketingSpend: $840.50*, *DiscountRate: 0.15*.
+    - *Talking Point*: "The system modeled the elasticity of demand based on our history and used a mathematical solver to give us the optimal marketing mix."
+    - *Code Reference*:
+        - UI: `analytics_ui.py` (Lines ~320)
+        - Logic: `ml_engine.py` (Lines ~306-357, `optimize_business_objective`)
+
+================================================================================
+SCENARIO 6: MULTI-MODAL ANALYSIS (Vision LLM)
+================================================================================
+*Goal: Show the system handling unstructured, non-text data.*
+
+1.  **Navigate to "Multi-Modal Analysis"**.
+2.  **Context**: "We just received a vendor invoice as a scanned image."
+3.  **Action**:
+    - Upload a sample image (e.g., a screenshot of an invoice or a receipt).
+    - In "Fields to Extract", type: `Invoice Number, Total Amount, Vendor Name, Date`.
+    - Click **Extract Data**.
+4.  **The Reveal**:
+    - The JSON result appears with the correct data extracted from the pixels.
+    - *Talking Point*: "We are using a Multi-Modal LLM (GPT-4 Vision) to turn pixels into structured database records instantly."
+    - *Code Reference*:
+        - UI: `analytics_ui.py` (Lines ~406)
+        - Logic: `ml_engine.py` (Lines ~432-483, `extract_structured_data`)
+
+================================================================================
+SCENARIO 7: AUTONOMOUS DATA REPAIR (Self-Healing)
+================================================================================
+*Goal: Show AI maintaining data quality.*
+
+1.  **Navigate to "Autonomous Data Repair"**.
+2.  **Context**: "Data entry errors happen. Let's see if the AI can find them."
+3.  **Setup**:
+    - Table: `fact_retail_sales`
+4.  **Action**: Click **Scan for Issues**.
+5.  **The Reveal**:
+    - The system should find the injected typo: `Issue: Potential typo 'Nrth'`, `Suggestion: 'North'`.
+    - It shows the confidence level and affected row count.
+    - *Action*: Click the checkbox to select the fix, then click **Apply Selected Fixes**.
+    - *Talking Point*: "The system uses fuzzy matching logic to identify inconsistencies. It doesn't just flag them; it generates the SQL `UPDATE` statement to fix them with one click."
+    - *Code Reference*:
+        - UI: `analytics_ui.py` (Lines ~371)
+        - Logic: `ml_engine.py` (Lines ~397-430, `suggest_data_repairs`)
+
+================================================================================
+SCENARIO 8: AI AUTO-DASHBOARDS (Instant Viz)
+================================================================================
+*Goal: Zero-effort visualization.*
+
+1.  **Navigate to "AI Auto-Dashboards"**.
+2.  **Setup**: Select `fact_retail_sales`.
+3.  **The Reveal**:
+    - The system automatically detects the Date column and the Sales column.
+    - It renders a Time Series chart without you asking for it.
+    - *Talking Point*: "I didn't configure a chart type. The AI analyzed the schema, saw a date and a float, and decided a Time Series was the best way to visualize this data."
+    - *Code Reference*:
+        - UI: `analytics_ui.py` (Lines ~468)
+        - Logic: `ml_engine.py` (Lines ~259-304, `recommend_visualization`)
+
+================================================================================
+SCENARIO 9: WHAT-IF SIMULATOR
+================================================================================
+*Goal: Strategic planning.*
+
+1.  **Navigate to "What-If Simulator"**.
+2.  **Action**:
+    - Move the "Marketing Spend Increase" slider to +20%.
+    - Move "Pricing Adjustment" to -5%.
+3.  **The Reveal**:
+    - The "Projected Revenue" number updates instantly.
+    - The chart shows the "Simulated Scenario" diverging from the "Baseline".
+    - *Talking Point*: "This allows business stakeholders to play with variables and see the potential financial impact in real-time."
+    - *Code Reference*:
+        - UI: `analytics_ui.py` (Lines ~440-450)
+        - Logic: Inline simulation logic in `analytics_ui.py`.
+
+================================================================================
+SCENARIO 10: PREDICTIVE INSIGHTS (Forecasting)
+================================================================================
+*Goal: Looking forward.*
+
+1.  **Navigate to "Predictive Insights"**.
+2.  **Setup**: Select `fact_retail_sales`.
+3.  **The Reveal**:
+    - Show the historical line (solid).
+    - Show the forecast line (dashed) extending into the future.
+    - Point out any red dots (Anomalies).
+4.  **Action**: Select a date in the "Anomaly Feedback" dropdown and click **Dismiss**.
+    - *Talking Point*: "This is Human-in-the-Loop AI. By dismissing this, I'm retraining the model to ignore similar patterns in the future, reducing alert fatigue."
+    - *Code Reference*:
+        - UI: `analytics_ui.py` (Lines ~180-215)
+        - Logic: `ml_engine.py` (Lines ~40-57 `detect_anomalies`, Lines ~134-165 `generate_forecast`)
+
+================================================================================
+SCENARIO 11: DATA GOVERNANCE (Quality Gates)
+================================================================================
+*Goal: Prove that the AI is trained on trusted data.*
+
+1.  **Navigate to "Data Explorer"**.
+2.  **Context**: "How do we know the data feeding these AI models is accurate? We have automated governance gates."
+3.  **Action**:
+    - Select Table: `data_quality_rules`.
+    - Show the rules: e.g., `Sales_Not_Negative` (Severity: FAIL).
+    - *Talking Point*: "We define rules as metadata. If 'Sales' is negative, the pipeline halts immediately."
+4.  **Action**:
+    - Select Table: `data_quality_run_logs`.
+    - Sort by `check_timestamp` DESC.
+    - Point to the row with `status = FAIL` and `failing_row_count = 12`.
+    - *Talking Point*: "Look here—5 days ago, a bad file was uploaded with negative sales numbers. The system caught it, blocked the load, and alerted the team. No bad data reached the dashboard."
+    - *Code Reference*:
+        - Setup: `setup_demo_environment.py` (Lines ~180-210)
+        - Logic: `02_setup_data_governance.sql` (Stored Procedure `sp_execute_data_quality_checks`)
+
+================================================================================
+SCENARIO 12: AUTOMATED ENRICHMENT
+================================================================================
+*Goal: Show how the system adds value to raw data automatically.*
+
+1.  **Navigate to "Data Explorer"**.
+2.  **Context**: "Raw data is often incomplete. For example, transactions might have a Product ID but missing the Category."
+3.  **Action**:
+    - Select Table: `data_enrichment_rules`.
+    - Show the rule: `Enrich_Product_Category`.
+    - *Talking Point*: "We don't write Python code to fix this. We just add a rule: 'If Category is missing, look it up in the Product Master table using the SKU'. The pipeline handles the join automatically."
+    - *Code Reference*:
+        - Setup: `setup_demo_environment.py` (Lines ~197-202)
+        - Logic: `README.md` (Section: Automated Data Enrichment)
+
+================================================================================
+END OF DEMO
+================================================================================
