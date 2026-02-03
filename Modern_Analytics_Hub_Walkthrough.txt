@@ -297,3 +297,131 @@ SCENARIO 13: AUTOMATED ENRICHMENT
 ================================================================================
 END OF DEMO
 ================================================================================
+
+================================================================================
+APPENDIX: DEEP DIVE TECHNICAL REFERENCE & LEARNING GUIDE
+================================================================================
+This section provides a technical deep-dive into the AI and Analytics concepts 
+implemented in this framework. Use this to understand the "How" and "Why" behind 
+the features.
+
+--------------------------------------------------------------------------------
+1. LARGE LANGUAGE MODELS (LLMs) & GENERATIVE AI
+--------------------------------------------------------------------------------
+*   **Technical Definition**: LLMs are probabilistic models based on the **Transformer** 
+    architecture (specifically the Decoder-only stack in GPT models). They are trained 
+    on vast corpora to predict the next token (sub-word unit) in a sequence.
+*   **Mechanism**:
+    1.  **Tokenization**: Input text is converted into numerical tokens.
+    2.  **Embeddings**: Tokens are mapped to vectors in a high-dimensional space.
+    3.  **Self-Attention**: The model weighs the importance of different words in the 
+        context window relative to each other (e.g., linking "bank" to "river" vs "money").
+    4.  **Probabilistic Output**: The model outputs a probability distribution (logits) 
+        over the vocabulary for the next token.
+*   **Key Parameters**:
+    *   **Temperature**: Controls randomness. Low (0.1) makes the model deterministic 
+        and focused (good for SQL/Code). High (0.8) makes it creative (good for stories).
+    *   **Context Window**: The maximum number of tokens the model can process at once 
+        (Input + Output).
+*   **In this Demo**: Used in `generate_data_story` with a low temperature for factual 
+    summarization of logs.
+
+--------------------------------------------------------------------------------
+2. TEXT-TO-SQL
+--------------------------------------------------------------------------------
+*   **Concept**: A specialized application of LLMs where the output is constrained 
+    to valid SQL syntax based on a provided schema.
+*   **Architecture**:
+    *   **Input**: User Question + Database Schema (DDL or list of columns).
+    *   **System Prompt**: Instructions to act as a SQL expert, use specific dialects 
+        (T-SQL), and avoid hallucinations.
+    *   **Output**: Executable SQL string.
+*   **Security & Governance (Critical)**:
+    *   **Schema Only**: We NEVER send actual row data to the LLM, only metadata 
+        (Table names, Column names, Types). This preserves data privacy.
+    *   **Validation**: The generated SQL is parsed (using Regex or AST) to block 
+        destructive commands (`DROP`, `DELETE`, `TRUNCATE`) before execution.
+*   **Implementation**: See `MLEngine.generate_sql_from_question`. It constructs a 
+    prompt containing `INFORMATION_SCHEMA` data and enforces a read-only policy.
+
+--------------------------------------------------------------------------------
+3. AGENTIC AI (Autonomous Agents)
+--------------------------------------------------------------------------------
+*   **Definition**: An Agent is an LLM loop equipped with **Tools** (functions) and 
+    **Reasoning** capabilities (ReAct Pattern: Reason + Act).
+*   **The ReAct Loop**:
+    1.  **Thought**: The LLM analyzes the user goal and current state.
+    2.  **Plan**: It determines the next step (e.g., "I need data").
+    3.  **Action**: It selects a Tool (e.g., `run_sql_query`) and generates arguments.
+    4.  **Observation**: The system executes the tool and feeds the output (DataFrame) 
+        back to the LLM.
+    5.  **Synthesis**: The LLM uses the observation to answer the user or plan the next step.
+*   **Tools**: In our code, "Tools" are just Python functions wrapped in a way the 
+    LLM can invoke (e.g., `generate_sql`, `generate_data_story`).
+*   **Why it matters**: Standard LLMs are passive (Input -> Output). Agents are active; 
+    they can perform multi-step workflows to solve open-ended problems.
+
+--------------------------------------------------------------------------------
+4. RAG (RETRIEVAL-AUGMENTED GENERATION) & VECTOR SEARCH
+--------------------------------------------------------------------------------
+*   **Problem**: LLMs have a knowledge cutoff and don't know your private data.
+*   **Solution (RAG)**: Retrieve relevant private data and inject it into the LLM's 
+    context window at query time.
+*   **Vector Embeddings**:
+    *   We use an Embedding Model (e.g., `text-embedding-3-small`) to convert text 
+        into **Dense Vectors** (arrays of floating-point numbers, e.g., 1536 dimensions).
+    *   **Semantic Meaning**: In this vector space, concepts that are semantically 
+        similar ("Dog" and "Puppy", or "Error 500" and "Crash") are located close 
+        together geometrically.
+*   **Cosine Similarity**: The mathematical operation used to measure the distance 
+    between two vectors. A score of 1.0 means identical meaning; 0 means unrelated.
+*   **Implementation**: `MLEngine.perform_semantic_search` calculates the cosine 
+    similarity between the User Query vector and the Database Row vectors.
+
+--------------------------------------------------------------------------------
+5. MULTI-MODAL AI
+--------------------------------------------------------------------------------
+*   **Definition**: Models capable of processing and correlating information from 
+    multiple modalities (Text, Images, Audio).
+*   **Vision Transformers (ViT)**:
+    *   Images are sliced into patches (e.g., 16x16 pixels).
+    *   These patches are flattened and linearly projected into embeddings, similar 
+        to word tokens.
+    *   The Transformer processes these visual tokens alongside text tokens.
+*   **Use Case**: OCR on steroids. Instead of just reading text characters, the model 
+    understands **layout** and **context** (e.g., distinguishing a "Total" field 
+    from a "Subtotal" based on position and font weight).
+*   **In this Demo**: We use GPT-4o to extract JSON from invoice images.
+
+--------------------------------------------------------------------------------
+6. PRESCRIPTIVE ANALYTICS & OPTIMIZATION
+--------------------------------------------------------------------------------
+*   **Hierarchy of Analytics**:
+    1.  **Descriptive**: What happened? (Dashboards)
+    2.  **Predictive**: What will happen? (Forecasting)
+    3.  **Prescriptive**: How can we make it happen? (Optimization)
+*   **Technical Implementation**:
+    1.  **Digital Twin**: We train a regression model ($y = mx + b$) to approximate 
+        the business process. This model predicts the Target (Sales) based on Inputs 
+        (Marketing Spend, Price).
+    2.  **Objective Function**: We define a mathematical function to maximize (Profit) 
+        or minimize (Cost).
+    3.  **Solver**: We use `scipy.optimize.minimize` (SLSQP algorithm) to mathematically 
+        find the input values that yield the best output, subject to constraints 
+        (e.g., Budget < $10k).
+
+--------------------------------------------------------------------------------
+7. ANOMALY DETECTION (Unsupervised Learning)
+--------------------------------------------------------------------------------
+*   **Algorithm**: **Isolation Forest**.
+*   **Concept**: Anomalies are "few and different".
+*   **How it works**:
+    *   The algorithm builds an ensemble of random decision trees.
+    *   At each node, it randomly selects a feature and a split value.
+    *   **Normal points** are clustered together and require many splits to isolate.
+    *   **Anomalies** are far apart and are isolated very quickly (short path length 
+        from root to leaf).
+*   **Scoring**: The average path length across all trees determines the anomaly score. 
+    Shorter paths = Higher Anomaly Score.
+*   **Contamination**: A hyperparameter defining the expected proportion of outliers 
+    in the dataset (e.g., 0.05 or 5%).
