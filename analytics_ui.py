@@ -73,15 +73,15 @@ if not st.session_state.authenticated:
 
 # --- Sidebar ---
 st.sidebar.title("Analytics & AI Hub")
-page = st.sidebar.radio("Navigate", ["Dashboard", "Conversational Analytics", "Predictive Insights", "Root Cause Analysis", "Clustering & Segmentation", "What-If Simulator", "AI Auto-Dashboards", "Data Explorer", "Data Steward", "Data Observability", "Configuration Manager"])
+page = st.sidebar.radio("Navigate", ["Dashboard", "Conversational Analytics", "Predictive Insights", "Root Cause Analysis", "Clustering & Segmentation", "Prescriptive Optimization", "Semantic Search", "Multi-Modal Analysis", "Autonomous Data Repair", "What-If Simulator", "AI Auto-Dashboards", "Data Explorer", "Data Steward", "Data Observability", "Configuration Manager"])
 st.sidebar.caption(f"👤 Logged in as: **{st.session_state.user_role}**")
 
 # RBAC: Define accessible pages based on Role
 if st.session_state.user_role == "Admin":
-    available_pages = ["Dashboard", "Conversational Analytics", "Predictive Insights", "Root Cause Analysis", "Clustering & Segmentation", "What-If Simulator", "AI Auto-Dashboards", "Data Explorer", "Data Steward", "Data Observability", "Configuration Manager"]
+    available_pages = ["Dashboard", "Conversational Analytics", "Predictive Insights", "Root Cause Analysis", "Clustering & Segmentation", "Prescriptive Optimization", "Semantic Search", "Multi-Modal Analysis", "Autonomous Data Repair", "What-If Simulator", "AI Auto-Dashboards", "Data Explorer", "Data Steward", "Data Observability", "Configuration Manager"]
 else:
     # Viewers cannot access Data Steward (Write) or Config (Admin)
-    available_pages = ["Dashboard", "Conversational Analytics", "Predictive Insights", "Clustering & Segmentation", "What-If Simulator", "AI Auto-Dashboards", "Data Explorer", "Data Observability"]
+    available_pages = ["Dashboard", "Conversational Analytics", "Predictive Insights", "Clustering & Segmentation", "Prescriptive Optimization", "Semantic Search", "What-If Simulator", "AI Auto-Dashboards", "Data Explorer", "Data Observability"]
 
 page = st.sidebar.radio("Navigate", available_pages)
 
@@ -295,6 +295,124 @@ elif page == "Clustering & Segmentation":
             if len(selected_features) >= 2:
                 fig = px.scatter(clustered_df, x=selected_features[0], y=selected_features[1], color='cluster_id', title=f"Segmentation: {selected_features[0]} vs {selected_features[1]}")
                 st.plotly_chart(fig, use_container_width=True)
+
+# --- Prescriptive Optimization Page ---
+elif page == "Prescriptive Optimization":
+    st.title("🎯 Prescriptive Analytics & Optimization")
+    st.markdown("Don't just predict the future—**shape it**. Define a target to maximize, and the AI will recommend the optimal input values.")
+
+    tables_df = run_query("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'")
+    selected_table = st.selectbox("Select Table", tables_df['TABLE_NAME'])
+
+    if selected_table:
+        df_preview = run_query(f"SELECT TOP 100 * FROM {selected_table}")
+        numeric_cols = df_preview.select_dtypes(include=['float', 'int']).columns.tolist()
+
+        col1, col2 = st.columns(2)
+        target_col = col1.selectbox("Target to Maximize", numeric_cols, help="e.g., TotalSales, Profit")
+        input_cols = col2.multiselect("Controllable Inputs", [c for c in numeric_cols if c != target_col], help="Variables you can change, e.g., Discount, AdSpend")
+
+        if st.button("🚀 Run Optimization") and target_col and input_cols:
+            full_df = run_query(f"SELECT {target_col}, {', '.join(input_cols)} FROM {selected_table}")
+            
+            with st.spinner("Training regression model and solving optimization problem..."):
+                result = MLEngine.optimize_business_objective(full_df, target_col, input_cols)
+            
+            if result.get("success"):
+                st.success("Optimization Solved!")
+                st.metric("Projected Maximum Target", f"{result['optimized_target']:,.2f}")
+                
+                st.subheader("Recommended Actions")
+                rec_df = pd.DataFrame(list(result['recommendations'].items()), columns=["Input Variable", "Recommended Value"])
+                st.dataframe(rec_df, use_container_width=True)
+            else:
+                st.error(f"Optimization failed: {result.get('message')}")
+
+# --- Semantic Search (RAG) Page ---
+elif page == "Semantic Search":
+    st.title("🧠 Semantic Search (RAG)")
+    st.markdown("Search your data using **meaning**, not just keywords. Finds relevant rows even if exact words don't match.")
+
+    tables_df = run_query("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'")
+    selected_table = st.selectbox("Select Table", tables_df['TABLE_NAME'])
+
+    if selected_table:
+        df_preview = run_query(f"SELECT TOP 5 * FROM {selected_table}")
+        text_cols = df_preview.select_dtypes(include=['object']).columns.tolist()
+        
+        search_col = st.selectbox("Column to Search", text_cols)
+        query = st.text_input("Search Query", placeholder="e.g., 'Customers complaining about late delivery'")
+
+        if st.button("🔍 Search") and query:
+            # Fetch data (Limit for demo performance)
+            full_df = run_query(f"SELECT TOP 200 * FROM {selected_table}")
+            
+            with st.spinner("Generating embeddings and calculating similarity..."):
+                results = MLEngine.perform_semantic_search(full_df, query, search_col)
+            
+            if not results.empty:
+                st.dataframe(results[['similarity_score'] + [c for c in results.columns if c != 'similarity_score']], use_container_width=True)
+            else:
+                st.warning("No results found or OpenAI API not configured.")
+
+# --- Autonomous Data Repair Page ---
+elif page == "Autonomous Data Repair":
+    st.title("🔧 Autonomous Data Repair")
+    st.markdown("The system scans for data quality issues (like typos in categories) and suggests **self-healing** fixes.")
+
+    tables_df = run_query("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'")
+    selected_table = st.selectbox("Select Table to Scan", tables_df['TABLE_NAME'])
+
+    if st.button("🩺 Scan for Issues"):
+        full_df = run_query(f"SELECT * FROM {selected_table}")
+        suggestions = MLEngine.suggest_data_repairs(full_df)
+        
+        if suggestions:
+            st.info(f"Found {len(suggestions)} potential issues.")
+            sugg_df = pd.DataFrame(suggestions)
+            
+            # Allow user to select which fixes to apply
+            edited_df = st.data_editor(sugg_df, key="repair_editor", num_rows="dynamic")
+            
+            if st.button("✨ Apply Selected Fixes"):
+                st.success("Fixes applied! (Simulation: In production, this would execute SQL UPDATE statements)")
+        else:
+            st.success("No obvious data quality issues found.")
+
+# --- Multi-Modal Analysis Page ---
+elif page == "Multi-Modal Analysis":
+    st.title("📷 Multi-Modal Data Extraction")
+    st.markdown("Extract structured data from unstructured files (Images, PDFs) using AI.")
+
+    uploaded_file = st.file_uploader("Upload Invoice, Contract, or Image", type=['png', 'jpg', 'jpeg', 'pdf'])
+    
+    extraction_schema = st.text_area("Fields to Extract (Comma separated or JSON structure)", "Invoice Number, Date, Total Amount, Vendor Name")
+
+    if uploaded_file and st.button("Extract Data"):
+        file_bytes = uploaded_file.getvalue()
+        file_type = uploaded_file.name.split('.')[-1].lower()
+        
+        with st.spinner("Analyzing file content..."):
+            result = MLEngine.extract_structured_data(file_bytes, file_type, extraction_schema)
+        
+        if "error" in result:
+            st.error(result["error"])
+        else:
+            st.success("Extraction Complete!")
+            st.json(result)
+            
+            # Convert to DataFrame for display/loading
+            df_result = pd.DataFrame([result])
+            st.dataframe(df_result)
+            
+            # Load to DB option
+            tables_df = run_query("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE'")
+            target_table = st.selectbox("Target Table (Optional)", ["Select..."] + tables_df['TABLE_NAME'].tolist())
+            
+            if target_table != "Select..." and st.button("Append to Database"):
+                with engine.begin() as conn:
+                    df_result.to_sql(target_table, conn, if_exists='append', index=False)
+                st.success(f"Data appended to `{target_table}` successfully!")
 
 # --- What-If Simulator Page ---
 elif page == "What-If Simulator":

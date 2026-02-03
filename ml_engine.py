@@ -3,8 +3,11 @@ import numpy as np
 from sklearn.ensemble import IsolationForest
 from sklearn.linear_model import LinearRegression
 from sklearn.cluster import KMeans
+import difflib
 import re
 import json
+import base64
+import io
 try:
     from prophet import Prophet
     PROPHET_INSTALLED = True
@@ -22,6 +25,12 @@ try:
     OPENAI_INSTALLED = True
 except ImportError:
     OPENAI_INSTALLED = False
+
+try:
+    from scipy.optimize import minimize
+    SCIPY_INSTALLED = True
+except ImportError:
+    SCIPY_INSTALLED = False
     
 class MLEngine:
     """
@@ -295,3 +304,181 @@ class MLEngine:
         
         else:
             return {"type": "table", "title": "Raw Data View", "reasoning": "Could not detect clear patterns for visualization."}
+
+    @staticmethod
+    def optimize_business_objective(df: pd.DataFrame, target_col: str, input_cols: list, constraints: dict = None) -> dict:
+        """
+        Prescriptive Analytics: Recommends optimal values for input columns to maximize the target column.
+        Uses Linear Regression to model relationships and Scipy to optimize.
+        
+        :param constraints: dict of {col_name: (min_val, max_val)}
+        """
+        if not SCIPY_INSTALLED:
+            return {"error": "Scipy not installed. Cannot perform optimization."}
+        
+        if df.empty or len(df) < 10:
+            return {"error": "Insufficient data to model relationships."}
+
+        # 1. Train a lightweight model to understand relationships (Coefficients)
+        # We assume linear relationships for this basic implementation
+        clean_df = df.dropna(subset=[target_col] + input_cols)
+        X = clean_df[input_cols].values
+        y = clean_df[target_col].values
+        
+        model = LinearRegression()
+        model.fit(X, y)
+        
+        # 2. Define the Objective Function (Maximize Target -> Minimize Negative Target)
+        def objective_function(inputs):
+            # Predict target based on inputs
+            prediction = model.predict([inputs])[0]
+            return -prediction # Negate because we want to maximize
+
+        # 3. Define Bounds (Constraints)
+        # If no constraints provided, use min/max from historical data +/- 20%
+        bounds = []
+        for i, col in enumerate(input_cols):
+            if constraints and col in constraints:
+                bounds.append(constraints[col])
+            else:
+                col_min = clean_df[col].min() * 0.8
+                col_max = clean_df[col].max() * 1.2
+                bounds.append((col_min, col_max))
+
+        # 4. Run Optimization
+        initial_guess = [clean_df[col].mean() for col in input_cols]
+        result = minimize(objective_function, initial_guess, bounds=bounds, method='SLSQP')
+        
+        return {
+            "optimized_target": -result.fun,
+            "recommendations": dict(zip(input_cols, result.x)),
+            "success": result.success,
+            "message": result.message
+        }
+
+    @staticmethod
+    def perform_semantic_search(df: pd.DataFrame, query: str, text_col: str, top_k: int = 5) -> pd.DataFrame:
+        """
+        Performs semantic search (RAG) on a dataframe column using OpenAI embeddings.
+        """
+        if not OPENAI_INSTALLED or not os.getenv("OPENAI_API_KEY"):
+             return pd.DataFrame()
+
+        try:
+            client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+
+            # 1. Get query embedding
+            query_resp = client.embeddings.create(input=[query], model="text-embedding-3-small")
+            query_embedding = query_resp.data[0].embedding
+
+            # 2. Get text embeddings (Optimization: Only embed unique values to save API tokens)
+            unique_texts = df[text_col].dropna().astype(str).unique().tolist()[:50] # Limit to 50 for demo
+            
+            if not unique_texts:
+                return pd.DataFrame()
+
+            emb_resp = client.embeddings.create(input=unique_texts, model="text-embedding-3-small")
+            embeddings = [d.embedding for d in emb_resp.data]
+            text_emb_map = dict(zip(unique_texts, embeddings))
+
+            # 3. Calculate Cosine Similarity
+            def get_similarity(text):
+                text = str(text)
+                if text not in text_emb_map: return -1
+                emb = text_emb_map[text]
+                return np.dot(query_embedding, emb) / (np.linalg.norm(query_embedding) * np.linalg.norm(emb))
+
+            df_copy = df.copy()
+            df_copy['similarity_score'] = df_copy[text_col].apply(get_similarity)
+            return df_copy.sort_values('similarity_score', ascending=False).head(top_k)
+        except Exception as e:
+            return pd.DataFrame()
+
+    @staticmethod
+    def suggest_data_repairs(df: pd.DataFrame) -> list:
+        """
+        Scans categorical columns for inconsistencies (e.g. 'CA' vs 'Californi') using fuzzy matching.
+        """
+        suggestions = []
+        cat_cols = df.select_dtypes(include=['object']).columns
+        
+        for col in cat_cols:
+            counts = df[col].value_counts()
+            if len(counts) < 3: continue 
+            
+            values = counts.index.tolist()
+            for val in values:
+                # Skip if this is a very frequent value (likely correct)
+                if counts[val] > len(df) * 0.05: continue
+                
+                # Look for matches in values that are MORE frequent than the current one
+                potential_matches = [v for v in values if counts[v] > counts[val]]
+                matches = difflib.get_close_matches(str(val), [str(v) for v in potential_matches], n=1, cutoff=0.85)
+                
+                if matches:
+                    better_val = matches[0]
+                    suggestions.append({
+                        "column": col,
+                        "issue": f"Potential typo: '{val}'",
+                        "suggestion": better_val,
+                        "confidence": "High",
+                        "original_value": val,
+                        "suggested_value": better_val,
+                        "affected_rows": int(counts[val])
+                    })
+        return suggestions
+
+    @staticmethod
+    def extract_structured_data(file_bytes: bytes, file_type: str, extraction_schema: str) -> dict:
+        """
+        Uses Multimodal LLMs to extract structured data from Images or PDFs.
+        """
+        if not OPENAI_INSTALLED or not os.getenv("OPENAI_API_KEY"):
+            return {"error": "OpenAI API Key missing or library not installed."}
+
+        client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        
+        # Handle Images
+        if file_type.lower() in ['png', 'jpg', 'jpeg']:
+            try:
+                base64_image = base64.b64encode(file_bytes).decode('utf-8')
+                
+                response = client.chat.completions.create(
+                    model="gpt-4o", 
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": [
+                                {"type": "text", "text": f"Extract the following fields from this image as JSON: {extraction_schema}"},
+                                {"type": "image_url", "image_url": {"url": f"data:image/{file_type};base64,{base64_image}"}},
+                            ],
+                        }
+                    ],
+                    response_format={ "type": "json_object" }
+                )
+                return json.loads(response.choices[0].message.content)
+            except Exception as e:
+                return {"error": f"Image processing failed: {str(e)}"}
+        
+        # Handle PDF
+        elif file_type.lower() == 'pdf':
+            try:
+                import pypdf
+                reader = pypdf.PdfReader(io.BytesIO(file_bytes))
+                text_content = "\n".join([page.extract_text() for page in reader.pages])
+                
+                response = client.chat.completions.create(
+                    model="gpt-3.5-turbo",
+                    messages=[
+                        {"role": "system", "content": "You are a data extraction assistant. Output JSON."},
+                        {"role": "user", "content": f"Extract these fields: {extraction_schema}\n\nFrom this text:\n{text_content[:15000]}"} # Truncate for limits
+                    ],
+                    response_format={ "type": "json_object" }
+                )
+                return json.loads(response.choices[0].message.content)
+            except ImportError:
+                return {"error": "pypdf library not installed. Cannot process PDFs."}
+            except Exception as e:
+                return {"error": f"PDF processing failed: {str(e)}"}
+
+        return {"error": "Unsupported file type."}
