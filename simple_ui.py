@@ -262,7 +262,9 @@ def api_status():
 def index():
     """Renders the main UI page."""
     # The before_request handler ensures this only runs after successful initialization.
-    response = make_response(render_template("index.html"))
+    # Pass the analytics URL to the template.
+    analytics_url = "http://localhost:8501"  # Default Streamlit port
+    response = make_response(render_template("index.html", analytics_url=analytics_url))
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "0"

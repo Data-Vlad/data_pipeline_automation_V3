@@ -16,7 +16,7 @@ from elt_project.core.ml_engine import MLEngine
 load_dotenv()
 
 # Page Config
-st.set_page_config(page_title="Modern Analytics Hub", page_icon="📈", layout="wide")
+st.set_page_config(page_title="Analytics & AI Hub", page_icon="📈", layout="wide")
 
 # Database Connection
 @st.cache_resource
@@ -35,60 +35,27 @@ engine = get_connection()
 def run_query(query_str):
     with engine.connect() as conn:
         return pd.read_sql(query_str, conn)
-
+ 
 # --- Authentication & RBAC System ---
-if "authenticated" not in st.session_state:
-    st.session_state.authenticated = False
-    st.session_state.user_role = None
-
-def login_screen():
-    st.title("🔐 Enterprise Analytics Hub")
-    st.markdown("Please sign in to access the secure data environment.")
-    
-    col1, col2 = st.columns([1, 2])
-    with col1:
-        with st.form("login_form"):
-            username = st.text_input("Username")
-            password = st.text_input("Password", type="password")
-            submitted = st.form_submit_button("Sign In")
-            
-            if submitted:
-                # In a real production app, validate against a DB table or SSO (LDAP/Okta)
-                if username == "admin" and password == "admin123":
-                    st.session_state.authenticated = True
-                    st.session_state.user_role = "Admin"
-                    st.success("Welcome, Administrator.")
-                    st.rerun()
-                elif username == "user" and password == "user123":
-                    st.session_state.authenticated = True
-                    st.session_state.user_role = "Viewer"
-                    st.success("Welcome, User.")
-                    st.rerun()
-                else:
-                    st.error("Invalid credentials. (Try admin/admin123)")
-
-if not st.session_state.authenticated:
-    login_screen()
-    st.stop() # Block access to the rest of the app
+# For seamless integration, authentication is bypassed. Defaulting to 'Admin' role.
+if "user_role" not in st.session_state:
+    st.session_state.user_role = "Admin"
 
 # --- Sidebar ---
 st.sidebar.title("Analytics & AI Hub")
-page = st.sidebar.radio("Navigate", ["Dashboard", "Conversational Analytics", "Predictive Insights", "Root Cause Analysis", "Clustering & Segmentation", "Prescriptive Optimization", "Semantic Search", "Multi-Modal Analysis", "Autonomous Data Repair", "What-If Simulator", "AI Auto-Dashboards", "Data Explorer", "Data Steward", "Data Observability", "Configuration Manager"])
-st.sidebar.caption(f"👤 Logged in as: **{st.session_state.user_role}**")
+st.sidebar.caption(f"👤 Role: **{st.session_state.user_role}**")
 
 # RBAC: Define accessible pages based on Role
-if st.session_state.user_role == "Admin":
-    available_pages = ["Dashboard", "Conversational Analytics", "Predictive Insights", "Root Cause Analysis", "Clustering & Segmentation", "Prescriptive Optimization", "Semantic Search", "Multi-Modal Analysis", "Autonomous Data Repair", "What-If Simulator", "AI Auto-Dashboards", "Data Explorer", "Data Steward", "Data Observability", "Configuration Manager"]
-else:
-    # Viewers cannot access Data Steward (Write) or Config (Admin)
-    available_pages = ["Dashboard", "Conversational Analytics", "Predictive Insights", "Clustering & Segmentation", "Prescriptive Optimization", "Semantic Search", "What-If Simulator", "AI Auto-Dashboards", "Data Explorer", "Data Observability"]
+# Since the role is defaulted to 'Admin', all pages are available.
+available_pages = [
+    "Dashboard", "Conversational Analytics", "Predictive Insights", "Root Cause Analysis", 
+    "Clustering & Segmentation", "Prescriptive Optimization", "Semantic Search", 
+    "Multi-Modal Analysis", "Autonomous Data Repair", "What-If Simulator", 
+    "AI Auto-Dashboards", "Data Explorer", "Data Steward", "Data Observability", 
+    "Configuration Manager"
+]
 
 page = st.sidebar.radio("Navigate", available_pages)
-
-if st.sidebar.button("🚪 Logout"):
-    st.session_state.authenticated = False
-    st.session_state.user_role = None
-    st.rerun()
 
 # --- Dashboard Page ---
 if page == "Dashboard":
