@@ -299,8 +299,8 @@ def index():
     token = s.dumps({"user": session.get("username")})
 
     # Get base URL for analytics, supporting public hosting via ngrok
-    base_analytics_url = os.getenv("ANALYTICS_PUBLIC_URL", "http://localhost:8501")
-    analytics_url = f"{base_analytics_url}?token={token}"
+    base_analytics_url = os.getenv("ANALYTICS_PUBLIC_URL", "http://localhost:8501").strip('"').strip("'").rstrip("/")
+    analytics_url = f"{base_analytics_url}/?token={token}"
 
     response = make_response(render_template("index.html", analytics_url=analytics_url))
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
