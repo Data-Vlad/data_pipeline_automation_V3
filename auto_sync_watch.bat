@@ -6,9 +6,6 @@ title GitHub Updater
 :: CONFIGURATION
 :: ============================================================================
 
-:: Path to Repository 1 (The folder containing .git for V2)
-set "REPO_1=C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V2"
-
 :: Path to Repository 2 (The folder containing .git for V3)
 set "REPO_2=C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation_V3"
 
@@ -20,16 +17,10 @@ set "INTERVAL=10"
 :: ============================================================================
 echo [%DATE% %TIME%] Auto-Sync Watcher Started.
 echo Monitoring:
-echo 1. %REPO_1%
-echo 2. %REPO_2%
+echo %REPO_2%
 echo.
 
 :loop
-    :: 1. Sync changes from V2 to V3 (Overwrites V3 files with V2 versions)
-    :: /E=Recursive, /XO=ExcludeOlder (only copy if V2 is newer), /XD=Exclude dirs
-    robocopy "%REPO_1%" "%REPO_2%" /E /XO /XD .git .vs __pycache__ .idea /R:1 /W:1 >nul
-
-    call :process_repo "%REPO_1%" "Repo 1"
     call :process_repo "%REPO_2%" "Repo 2"
     
     :: Wait before next check

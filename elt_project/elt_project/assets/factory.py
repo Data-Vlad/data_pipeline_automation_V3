@@ -466,6 +466,48 @@ If it fails, check the run logs for details on data quality issues or parsing er
                     context.log.info(f"Filling NaN values with 0 for boolean columns: {bool_cols}")
                     df[bool_cols] = df[bool_cols].fillna(0)
 
+                # --- AUTOMATED DATA ENRICHMENT ---
+                # Dynamically fill missing fields using metadata-driven lookups defined in DB
+                try:
+                    # Check if enrichment rules table exists (it might not be set up yet)
+                    inspector = inspect(engine)
+                    if inspector.has_table("data_enrichment_rules"):
+                        with engine.connect() as conn:
+                            rules = conn.execute(
+                                text("SELECT * FROM data_enrichment_rules WHERE target_staging_table = :table"),
+                                {"table": current_staging_table}
+                            ).mappings().all()
+
+                        for rule in rules:
+                            target_col = rule['target_column_to_enrich']
+                            lookup_table = rule['lookup_table']
+                            lookup_key_staging = rule['lookup_key_column_staging']
+                            lookup_key_remote = rule['lookup_key_column_lookup']
+                            lookup_value_col = rule['lookup_value_column']
+
+                            if lookup_key_staging in df.columns:
+                                context.log.info(f"Applying enrichment: Filling '{target_col}' from '{lookup_table}' using '{lookup_key_staging}'")
+                                
+                                # Fetch lookup data (Dimension tables are usually small enough for this)
+                                lookup_df = pd.read_sql(f"SELECT {lookup_key_remote}, {lookup_value_col} FROM {lookup_table}", engine)
+                                
+                                # Perform left join to get the value
+                                merged = df.merge(
+                                    lookup_df, 
+                                    left_on=lookup_key_staging, 
+                                    right_on=lookup_key_remote, 
+                                    how='left', 
+                                    suffixes=('', '_lookup')
+                                )
+                                
+                                # If target column doesn't exist, create it. Then fill missing values.
+                                if target_col not in df.columns:
+                                    df[target_col] = None
+                                lookup_col_name = lookup_value_col if lookup_value_col not in df.columns else f"{lookup_value_col}_lookup"
+                                df[target_col] = df[target_col].fillna(merged[lookup_col_name])
+                except Exception as e:
+                    context.log.warning(f"Data enrichment process encountered an issue (skipping): {e}")
+
                 rows_processed = len(df)
                 log_details["rows_processed"] = rows_processed
                 context.log.info(f"Successfully parsed {rows_processed} rows.")

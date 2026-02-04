@@ -11,7 +11,8 @@ from dagster import DagsterInstance, DagsterRunStatus
 from dagster._core.utils import make_new_run_id
 from dagster._core.workspace.context import WorkspaceProcessContext
 from dagster._core.workspace.load_target import WorkspaceFileTarget
-from flask import Flask, g, jsonify, make_response, render_template, request
+from flask import Flask, g, jsonify, make_response, render_template, request, session, redirect, url_for
+from itsdangerous import URLSafeTimedSerializer
 from sqlalchemy import create_engine, text
 from sqlalchemy.pool import NullPool
 
@@ -44,7 +45,10 @@ logger = logging.getLogger(__name__)
 
 app = Flask(__name__)
 app.template_folder = 'templates'
-app.secret_key = os.urandom(24)
+# Use a secret key from environment variables for security
+app.secret_key = os.getenv("SECRET_KEY", "dev-secret-key-should-be-overridden")
+
+
 
 # Load environment variables from .env file
 load_dotenv()
@@ -224,11 +228,12 @@ def check_initialization():
     """
     Before every request, check if the app is initialized.
     This middleware protects all endpoints from being accessed before the app is ready.
+    It also handles user authentication.
     """
     # Allow access to status/shutdown endpoints regardless of state
     logger.info(f"--> {request.method} {request.path}")
-    if request.path in ["/status", "/api/status", "/api/shutdown"]:
-        return
+    if request.path in ["/status", "/api/status", "/api/shutdown", "/login", "/logout"] or request.path.startswith('/static'):
+        return # Skip checks for these endpoints
 
     with APP_STATE.lock:
         if APP_STATE.initialization_status == "PENDING":
@@ -236,7 +241,10 @@ def check_initialization():
         if APP_STATE.initialization_status == "FAILED":
             return render_template("error.html", error_message=APP_STATE.initialization_error), 500
         # If SUCCESS, proceed to the requested endpoint.
-
+    
+    # Authentication Check
+    if not session.get("logged_in"):
+        return redirect(url_for("login"))
 @app.after_request
 def log_response(response):
     """Log the status code of the response for each request."""
@@ -258,11 +266,43 @@ def api_status():
             {"status": APP_STATE.initialization_status, "error": APP_STATE.initialization_error}
         )
 
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    """Handles user login."""
+    if request.method == "POST":
+        username = request.form["username"]
+        password = request.form["password"]
+        # In a real app, validate against a database. For demo, use hardcoded values.
+        if username == "admin" and password == "admin123":
+            session["logged_in"] = True
+            session["username"] = username
+            return redirect(url_for("index"))
+        else:
+            return render_template("login.html", error="Invalid credentials")
+    return render_template("login.html")
+
+@app.route("/logout")
+def logout():
+    """Logs the user out."""
+    session.clear()
+    return redirect(url_for("login"))
+
 @app.route("/", methods=["GET"])
 def index():
     """Renders the main UI page."""
     # The before_request handler ensures this only runs after successful initialization.
-    response = make_response(render_template("index.html"))
+    
+    # --- SSO Token Generation ---
+    # Create a short-lived, secure token to pass to the analytics UI.
+    s = URLSafeTimedSerializer(app.secret_key)
+    # The payload can be anything, it's just to confirm the token is valid.
+    token = s.dumps({"user": session.get("username")})
+
+    # Get base URL for analytics, supporting public hosting via ngrok
+    base_analytics_url = os.getenv("ANALYTICS_PUBLIC_URL", "http://localhost:8501")
+    analytics_url = f"{base_analytics_url}?token={token}"
+
+    response = make_response(render_template("index.html", analytics_url=analytics_url))
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     response.headers["Pragma"] = "no-cache"
     response.headers["Expires"] = "0"

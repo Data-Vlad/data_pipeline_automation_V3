@@ -42,10 +42,12 @@ def run_predictive_analytics(context: AssetExecutionContext):
 
         context.log.info(f"Running {model_type} on {target_table}...")
 
-        # 2. Fetch source data
-        query = f"SELECT {date_col}, {value_col} FROM {target_table} ORDER BY {date_col}"
+        # 2. Fetch source data (Capped at 50k rows for memory safety)
+        # We fetch DESC to get the latest data, then sort ASC for the ML model
+        query = f"SELECT TOP 50000 {date_col}, {value_col} FROM {target_table} ORDER BY {date_col} DESC"
         try:
             df = pd.read_sql(query, engine)
+            df = df.sort_values(by=date_col, ascending=True).reset_index(drop=True)
 
             # 3. Apply ML Logic (Inside try block to catch ML errors per table)
             if model_type == 'anomaly_detection':
