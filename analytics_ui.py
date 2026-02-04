@@ -15,7 +15,7 @@ from views.data_operations import page_data_explorer, page_data_steward, page_da
 load_dotenv()
 
 # Page Config
-st.set_page_config(page_title="Analytics Hub", page_icon="📈", layout="wide")
+st.set_page_config(page_title="Analytics Launchpad", page_icon="📈", layout="wide")
  
 # --- Authentication & RBAC System ---
 if "authenticated" not in st.session_state:
@@ -47,7 +47,7 @@ if not st.session_state.authenticated:
     st.stop() # Block access to the rest of the app
 
 # --- Navigation Setup ---
-st.sidebar.title("Analytics Hub")
+st.sidebar.title("Analytics Launchpad")
 st.sidebar.caption(f"👤 Role: **{st.session_state.user_role}**")
 
 pg = st.navigation({
