@@ -662,7 +662,7 @@ if __name__ == "__main__":
     init_thread = threading.Thread(target=_initialize_app_thread, daemon=True)
     init_thread.start()
 
-    logger.info("Server  : Starting Data Importer UI on http://localhost:3000")
+    logger.info("Server  : Starting Data and Analytics Launchpad UI on http://localhost:3000")
     logger.info(f"Server  : Logging detailed errors to {os.path.abspath('simple_ui.log')}")
     logger.info("Server  : Initialization is running in the background...")
     

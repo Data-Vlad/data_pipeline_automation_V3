@@ -318,7 +318,7 @@ start "Analytics Hub" /min %ANALYTICS_UI_CMD%
 :: We use pythonw.exe to run this script without a console window for a better UX.
 :: The server will run silently in the background.
 set "UI_CMD=%PYTHONW_EXE% %UI_SCRIPT% --server %DB_SERVER% --database %DB_DATABASE% --credential-target %CREDENTIAL_TARGET%"
-start "Data Importer UI" %UI_CMD%
+start "Data and Analytics Launchpad UI" %UI_CMD%
 
 :: --- 3. Wait for the main server to be ready before opening the browser ---
 :: This loop actively checks if the port is open, avoiding the "Connection Refused" error.
