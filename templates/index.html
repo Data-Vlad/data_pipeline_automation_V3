@@ -30,9 +30,14 @@
             font-size: 28px;
             font-weight: 700;
             color: #212529;
+            margin-top: 0;
+        }
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             border-bottom: 1px solid #dee2e6;
             padding-bottom: 10px;
-            margin-top: 0;
             margin-bottom: 20px;
         }
         .instructions {
@@ -257,7 +262,13 @@
 <body>
 
 <div class="container">
-    <h1>Data Hub</h1>
+    <div class="header-container">
+        <h1>Data Hub</h1>
+        <button id="analyticsButton" class="btn-secondary" style="font-size: 14px; padding: 8px 16px;">
+            <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" /><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" /></svg>
+            Open Analytics Hub
+        </button>
+    </div>
 
     <div class="instructions">
         <h2>How to Use This Tool</h2>
@@ -301,6 +312,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const shutdownButton = document.getElementById('shutdownButton');
     const statusContainer = document.getElementById('status-container');
     const runStatusList = document.getElementById('runStatusList');
+    const analyticsButton = document.getElementById('analyticsButton');
 
     let activePollers = {};
 
@@ -536,6 +548,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.body.innerHTML = '<h1>Could not reach server to shut down. Please close the launcher script window.</h1>';
             }
         }
+    });
+
+    // --- 6. Handle Analytics Button ---
+    analyticsButton.addEventListener('click', () => {
+        const host = window.location.hostname;
+        window.open(`http://${host}:8501`, '_blank');
     });
 
     // --- Initial Load ---
