@@ -292,7 +292,7 @@ if exist "%OLD_WORKSPACE_YAML%" (
 )
 
 :: ----------------------------------------------------------------------------
-call :log INFO "Step 6/6: Launching Data Launchpad and Analytics Hub..."
+call :log INFO "Step 6/6: Launching Data and Analytics Launchpad..."
 
 :: Set environment variables that the UI processes will inherit.
 :: This is the crucial step to pass credentials and config to the separate UI processes.
