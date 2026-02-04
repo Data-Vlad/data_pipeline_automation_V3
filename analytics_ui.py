@@ -17,7 +17,7 @@ from elt_project.core.ml_engine import MLEngine
 load_dotenv()
 
 # Page Config
-st.set_page_config(page_title="Data and Analytics Hub", page_icon="📈", layout="wide")
+st.set_page_config(page_title="Analytics Hub", page_icon="📈", layout="wide")
 
 # Database Connection
 @st.cache_resource
@@ -88,7 +88,7 @@ if not st.session_state.authenticated:
     st.stop() # Block access to the rest of the app
 
 # --- Sidebar ---
-st.sidebar.title("Data and Analytics Hub")
+st.sidebar.title("Analytics Hub")
 st.sidebar.caption(f"👤 Role: **{st.session_state.user_role}**")
 
 # RBAC: Define accessible pages based on Role
