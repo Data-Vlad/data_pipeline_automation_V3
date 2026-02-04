@@ -1,6 +1,6 @@
-# Data Pipeline Automation & Analytics Hub
+# Nexus Launchpad: ELT & AI Analytics
 
-**A robust, metadata-driven ELT framework integrated with a modern AI Analytics Hub.**
+**A robust, metadata-driven ELT framework (Launchpad) integrated with a modern AI Analytics Hub (Nexus).**
 
 ## Table of Contents
 
