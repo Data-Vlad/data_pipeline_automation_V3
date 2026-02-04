@@ -5,7 +5,7 @@ setlocal
 :: ============================================================================
 :: Configuration
 :: ============================================================================
-title Nexus Launchpad
+title Data and Analytics Launchpad
 cd /d "%~dp0"
 
 set "SCRIPT_DIR=%~dp0"
@@ -63,7 +63,7 @@ goto :main
 cls
 echo.
 echo  ========================================================================
-echo                           Nexus Launchpad
+echo                           Data and Analytics Launchpad
 echo  ======================================================================
 echo.
 
@@ -186,7 +186,7 @@ if %errorlevel% neq 0 (
 call :log INFO "Step 4/6: Loading application configuration and credentials..."
 
 :: Create desktop shortcut
-set "SHORTCUT_PATH=%USERPROFILE%\Desktop\Launch Data Importer.lnk"
+set "SHORTCUT_PATH=%USERPROFILE%\Desktop\Launch Data and Analytics Launchpad.lnk"
 if not exist "%SHORTCUT_PATH%" (
     call :log INFO "Creating desktop shortcut..."
     (
@@ -195,7 +195,7 @@ if not exist "%SHORTCUT_PATH%" (
         echo Set oLink = oWS.CreateShortcut^(sLinkFile^)
         echo oLink.TargetPath = "%~f0"
         echo oLink.IconLocation = "imageres.dll, 71"
-        echo oLink.Description = "Launch Nexus Launchpad"
+        echo oLink.Description = "Launch Data and Analytics Launchpad"
         echo oLink.WorkingDirectory = "%SCRIPT_DIR%"
         echo oLink.Save
     ) >"%TEMP%\create_shortcut.vbs"
@@ -209,7 +209,7 @@ if not exist "%ENV_FILE%" (
         echo DB_SERVER=localhost
         echo DB_DATABASE=TargetDatabase
         echo DB_DRIVER=ODBC Driver 17 for SQL Server
-        echo CREDENTIAL_TARGET=WindowsCredentialName
+        echo CREDENTIAL_TARGET=DataAndAnalyticsLaunchpad/DB_Credentials
         echo OPENAI_API_KEY=sk-...
     ) > "%ENV_FILE%"
     call :handle_error "The .env file was missing. A template has been created. Please configure it and run again."
