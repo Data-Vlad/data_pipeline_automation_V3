@@ -186,7 +186,7 @@ if %errorlevel% neq 0 (
 call :log INFO "Step 4/6: Loading application configuration and credentials..."
 
 :: Create desktop shortcut
-set "SHORTCUT_PATH=%USERPROFILE%\Desktop\Data and Analytics Launchpad.lnk"
+set "SHORTCUT_PATH=%USERPROFILE%\Desktop\Launch Data and Analytics Launchpad.lnk"
 if not exist "%SHORTCUT_PATH%" (
     call :log INFO "Creating desktop shortcut..."
     (
@@ -195,7 +195,7 @@ if not exist "%SHORTCUT_PATH%" (
         echo Set oLink = oWS.CreateShortcut^(sLinkFile^)
         echo oLink.TargetPath = "%~f0"
         echo oLink.IconLocation = "imageres.dll, 71"
-        echo oLink.Description = "Launch Data and Analytics Launchpad"
+        echo oLink.Description = "Data and Analytics Launchpad"
         echo oLink.WorkingDirectory = "%SCRIPT_DIR%"
         echo oLink.Save
     ) >"%TEMP%\create_shortcut.vbs"
