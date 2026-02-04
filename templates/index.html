@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Data Launchpad</title>
+    <title>Data and Analytics Launchpad</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -556,8 +556,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // --- 6. Handle Analytics Button ---
-    // Set the href dynamically to match the current hostname (localhost or network IP)
-    analyticsLink.href = `${window.location.protocol}//${window.location.hostname}:8501`;
+    // Set the href dynamically to match the current hostname.
+    // We force 'http' because Streamlit usually runs without SSL on port 8501,
+    // avoiding "SSL Protocol Error" if the main Hub is accessed via HTTPS.
+    analyticsLink.href = `http://${window.location.hostname}:8501`;
 
     // --- Initial Load ---
     fetchPipelines();
