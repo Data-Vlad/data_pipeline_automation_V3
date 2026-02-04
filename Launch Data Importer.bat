@@ -5,7 +5,7 @@ setlocal
 :: ============================================================================
 :: Configuration
 :: ============================================================================
-title Data and Analytics Launchpad
+title Data and Analytics Hub
 cd /d "%~dp0"
 
 set "SCRIPT_DIR=%~dp0"
@@ -63,7 +63,7 @@ goto :main
 cls
 echo.
 echo  ========================================================================
-echo                           Data and Analytics Launchpad
+echo                           Data and Analytics Hub
 echo  ======================================================================
 echo.
 
@@ -186,7 +186,7 @@ if %errorlevel% neq 0 (
 call :log INFO "Step 4/6: Loading application configuration and credentials..."
 
 :: Create desktop shortcut
-set "SHORTCUT_PATH=%USERPROFILE%\Desktop\Launch Data and Analytics Launchpad.lnk"
+set "SHORTCUT_PATH=%USERPROFILE%\Desktop\Launch Data and Analytics Hub.lnk"
 if not exist "%SHORTCUT_PATH%" (
     call :log INFO "Creating desktop shortcut..."
     (
@@ -195,7 +195,7 @@ if not exist "%SHORTCUT_PATH%" (
         echo Set oLink = oWS.CreateShortcut^(sLinkFile^)
         echo oLink.TargetPath = "%~f0"
         echo oLink.IconLocation = "imageres.dll, 71"
-        echo oLink.Description = "Launch Data and Analytics Launchpad"
+        echo oLink.Description = "Launch Data and Analytics Hub"
         echo oLink.WorkingDirectory = "%SCRIPT_DIR%"
         echo oLink.Save
     ) >"%TEMP%\create_shortcut.vbs"
@@ -318,7 +318,7 @@ start "Analytics Hub" /min %ANALYTICS_UI_CMD%
 :: We use pythonw.exe to run this script without a console window for a better UX.
 :: The server will run silently in the background.
 set "UI_CMD=%PYTHONW_EXE% %UI_SCRIPT% --server %DB_SERVER% --database %DB_DATABASE% --credential-target %CREDENTIAL_TARGET%"
-start "Data and Analytics Launchpad UI" %UI_CMD%
+start "Data and Analytics Hub UI" %UI_CMD%
 
 :: --- 3. Wait for the main server to be ready before opening the browser ---
 :: This loop actively checks if the port is open, avoiding the "Connection Refused" error.
