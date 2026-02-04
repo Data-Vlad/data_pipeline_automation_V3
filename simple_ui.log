@@ -563,3 +563,43 @@
 2026-02-04 13:51:39 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
 2026-02-04 13:51:39 - INFO     - API     : Successfully fetched and processed 3 pipelines.
 2026-02-04 13:51:39 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-02-04 14:00:35 - INFO     - ============================================================
+2026-02-04 14:00:35 - INFO     - Server  : Starting Data and Analytics Launchpad UI on http://localhost:3000
+2026-02-04 14:00:35 - INFO     - --- Application Initialization Started ---
+2026-02-04 14:00:35 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Backup\data_pipeline_automation_V3\simple_ui.log
+2026-02-04 14:00:35 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-02-04 14:00:35 - INFO     - Server  : Initialization is running in the background...
+2026-02-04 14:00:35 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-02-04 14:00:35 - INFO     - INIT(2/3): Testing database connection...
+2026-02-04 14:00:35 - INFO     - DB      : Creating temporary engine to test connection...
+2026-02-04 14:00:35 - INFO     - Serving on http://0.0.0.0:3000
+2026-02-04 14:00:36 - INFO     - DB      : Connection test successful.
+2026-02-04 14:00:36 - INFO     - INIT(2/3): Database connection test successful.
+2026-02-04 14:00:36 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-02-04 14:00:36 - INFO     - [3/3] Dagster workspace file found.
+2026-02-04 14:00:36 - INFO     - --- Application Initialization Succeeded ---
+2026-02-04 14:00:36 - INFO     - ============================================================
+2026-02-04 14:00:37 - INFO     - --> GET /
+2026-02-04 14:00:37 - INFO     - <-- GET / - 302 FOUND
+2026-02-04 14:00:37 - INFO     - --> GET /login
+2026-02-04 14:00:37 - INFO     - <-- GET /login - 200 OK
+2026-02-04 14:00:37 - INFO     - --> GET /favicon.ico
+2026-02-04 14:00:37 - INFO     - <-- GET /favicon.ico - 302 FOUND
+2026-02-04 14:00:37 - INFO     - --> GET /login
+2026-02-04 14:00:37 - INFO     - <-- GET /login - 200 OK
+2026-02-04 14:00:46 - INFO     - --> POST /login
+2026-02-04 14:00:46 - INFO     - <-- POST /login - 302 FOUND
+2026-02-04 14:00:46 - INFO     - --> GET /
+2026-02-04 14:00:46 - INFO     - SSO     : Generated Analytics URL: http://localhost:8501/?token=eyJ1c2VyIjoiYWRtaW4ifQ.aYOXXg.hT0BNTjW08Yh2OsYQKkHTNRsSF4
+2026-02-04 14:00:46 - INFO     - <-- GET / - 200 OK
+2026-02-04 14:00:47 - INFO     - --> GET /api/pipelines
+2026-02-04 14:00:47 - INFO     - API     : Fetching pipeline configurations from database...
+2026-02-04 14:00:47 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-02-04 14:00:47 - INFO     - DB      : Database engine initialized successfully.
+2026-02-04 14:00:47 - INFO     - --> GET /favicon.ico
+2026-02-04 14:00:47 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-02-04 14:00:47 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-02-04 14:00:47 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-02-04 14:03:04 - INFO     - --> GET /.well-known/appspecific/com.chrome.devtools.json
+2026-02-04 14:03:04 - WARNING  - 404 Not Found: http://localhost:3000/.well-known/appspecific/com.chrome.devtools.json
+2026-02-04 14:03:04 - INFO     - <-- GET /.well-known/appspecific/com.chrome.devtools.json - 404 NOT FOUND
