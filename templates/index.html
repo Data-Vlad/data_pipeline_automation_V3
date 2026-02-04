@@ -133,7 +133,7 @@
             justify-content: space-between;
             align-items: center;
         }
-        button {
+        button, .btn {
             padding: 12px 24px;
             border: none;
             border-radius: 5px;
@@ -144,14 +144,15 @@
             align-items: center;
             gap: 8px;
             transition: all 0.2s ease-in-out;
+            text-decoration: none;
         }
-        button.btn-secondary {
+        .btn-secondary {
             background-color: #f8f9fa;
             color: #495057;
             border: 1px solid #ced4da;
             margin-right: 10px;
         }
-        button.btn-secondary:hover {
+        .btn-secondary:hover {
             background-color: #e9ecef;
             border-color: #adb5bd;
         }
@@ -264,10 +265,10 @@
 <div class="container">
     <div class="header-container">
         <h1>Data Hub</h1>
-        <button id="analyticsButton" class="btn-secondary" style="font-size: 14px; padding: 8px 16px;">
+        <a id="analyticsLink" class="btn btn-secondary" style="font-size: 14px; padding: 8px 16px;" target="_blank">
             <svg class="icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" /><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" /></svg>
             Open Analytics Hub
-        </button>
+        </a>
     </div>
 
     <div class="instructions">
@@ -312,7 +313,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const shutdownButton = document.getElementById('shutdownButton');
     const statusContainer = document.getElementById('status-container');
     const runStatusList = document.getElementById('runStatusList');
-    const analyticsButton = document.getElementById('analyticsButton');
+    const analyticsLink = document.getElementById('analyticsLink');
 
     let activePollers = {};
 
@@ -551,10 +552,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // --- 6. Handle Analytics Button ---
-    analyticsButton.addEventListener('click', () => {
-        const host = window.location.hostname;
-        window.open(`http://${host}:8501`, '_blank');
-    });
+    // Set the href dynamically to match the current hostname (localhost or network IP)
+    analyticsLink.href = `${window.location.protocol}//${window.location.hostname}:8501`;
 
     // --- Initial Load ---
     fetchPipelines();
