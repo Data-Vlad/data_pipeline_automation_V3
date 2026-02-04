@@ -311,11 +311,11 @@ set "DB_TRUST_SERVER_CERTIFICATE=yes"
 set "DAGSTER_HOME=%DAGSTER_HOME_DIR%"
 set "PYTHONPATH=%SCRIPT_DIR%"
 
-:: --- 1. Launch Analytics Hub (Streamlit) invisibly in the background ---
-:: We use start /b with cmd /c to run the process without creating a new console window.
-:: Errors will be logged to Streamlit's default log location, not a visible window.
-set "ANALYTICS_UI_CMD="%PYTHON_EXE%" -m streamlit run "%ANALYTICS_UI_SCRIPT%" --server.port=8501 --server.address=0.0.0.0 --server.headless=true --server.enableCORS=false --server.enableXsrfProtection=false"
-start "Analytics Hub" /b cmd /c %ANALYTICS_UI_CMD%
+:: --- 1. Launch Analytics Hub (Streamlit) in the background ---
+:: We use pythonw.exe to run this script without a console window.
+:: This ensures the process runs invisibly and persists after this script closes.
+set "ANALYTICS_UI_CMD="%PYTHONW_EXE%" -m streamlit run "%ANALYTICS_UI_SCRIPT%" --server.port=8501 --server.address=0.0.0.0 --server.headless=true --server.enableCORS=false --server.enableXsrfProtection=false"
+start "Analytics Hub" %ANALYTICS_UI_CMD%
 
 :: --- 2. Launch Data Importer UI (Flask) in the background ---
 :: We use pythonw.exe to run this script without a console window for a better UX.
