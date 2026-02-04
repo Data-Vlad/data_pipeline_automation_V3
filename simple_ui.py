@@ -374,7 +374,7 @@ def get_pipelines():
                     "etl_imports": data["load_imports"], # Alias for frontend compatibility
                     "ingest_imports": data["ingest_imports"],
                     "ingestion_imports": data["ingest_imports"], # Alias for frontend compatibility
-                    "imports": [item["import_name"] for item in data["ingest_imports"] + data["load_imports"]],
+                    "imports": data["ingest_imports"] + data["load_imports"],
                     "monitored_directory": data["monitored_directory"]
                 }
                 for pipeline_name, data in pipeline_groups.items()
