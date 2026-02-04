@@ -186,7 +186,7 @@ if %errorlevel% neq 0 (
 call :log INFO "Step 4/6: Loading application configuration and credentials..."
 
 :: Create desktop shortcut
-set "SHORTCUT_PATH=%USERPROFILE%\Desktop\Launch Data and Analytics Launchpad.lnk"
+set "SHORTCUT_PATH=%USERPROFILE%\Desktop\Data and Analytics Launchpad.lnk"
 if not exist "%SHORTCUT_PATH%" (
     call :log INFO "Creating desktop shortcut..."
     (
