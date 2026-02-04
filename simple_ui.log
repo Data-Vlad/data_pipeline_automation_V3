@@ -550,3 +550,16 @@
 2026-02-04 13:51:21 - INFO     - <-- GET /favicon.ico - 302 FOUND
 2026-02-04 13:51:21 - INFO     - --> GET /login
 2026-02-04 13:51:21 - INFO     - <-- GET /login - 200 OK
+2026-02-04 13:51:39 - INFO     - --> POST /login
+2026-02-04 13:51:39 - INFO     - <-- POST /login - 302 FOUND
+2026-02-04 13:51:39 - INFO     - --> GET /
+2026-02-04 13:51:39 - INFO     - SSO     : Generated Analytics URL: http://localhost:8501/?token=eyJ1c2VyIjoiYWRtaW4ifQ.aYOVOw.fp8qpzV6SlTqh7vsBKn6z44n8nQ
+2026-02-04 13:51:39 - INFO     - <-- GET / - 200 OK
+2026-02-04 13:51:39 - INFO     - --> GET /api/pipelines
+2026-02-04 13:51:39 - INFO     - API     : Fetching pipeline configurations from database...
+2026-02-04 13:51:39 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-02-04 13:51:39 - INFO     - --> GET /favicon.ico
+2026-02-04 13:51:39 - INFO     - DB      : Database engine initialized successfully.
+2026-02-04 13:51:39 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-02-04 13:51:39 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-02-04 13:51:39 - INFO     - <-- GET /api/pipelines - 200 OK
