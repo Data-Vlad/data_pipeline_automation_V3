@@ -16,8 +16,11 @@ load_dotenv()
 
 # Page Config
 <<<<<<< HEAD
+<<<<<<< HEAD
 st.set_page_config(page_title="Data and Analytics Launchpad", page_icon="📈", layout="wide")
 =======
+=======
+>>>>>>> f85118260c4daa8917ea6a49d8b6583231ad7fc3
 st.set_page_config(page_title="Analytics Hub", page_icon="📈", layout="wide")
 
 # Database Connection
@@ -74,6 +77,9 @@ st.sidebar.title("Data and Analytics Launchpad")
 =======
 # --- Sidebar ---
 st.sidebar.title("Analytics Hub")
+<<<<<<< HEAD
+>>>>>>> f85118260c4daa8917ea6a49d8b6583231ad7fc3
+=======
 >>>>>>> f85118260c4daa8917ea6a49d8b6583231ad7fc3
 st.sidebar.caption(f"👤 Role: **{st.session_state.user_role}**")
 
