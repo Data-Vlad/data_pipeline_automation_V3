@@ -144,7 +144,7 @@ ngrok http 8501 --basic-auth="admin:CollegePassword123"
 ```
 *Copy the Forwarding URL (e.g., `https://1111-analytics.ngrok-free.app`).*
 
-**Terminal 2 (Data Importer):**
+**Terminal 2 (Launchpad UI):**
 ```bash
 # This exposes the main UI.
 ngrok http 3000 --basic-auth="admin:CollegePassword123"
@@ -157,10 +157,10 @@ ngrok http 3000 --basic-auth="admin:CollegePassword123"
     ```ini
     ANALYTICS_PUBLIC_URL=https://1111-analytics.ngrok-free.app
     ```
-3.  **Restart** `Launch Data Importer.bat`.
+3.  **Restart** the main launcher script.
 
 ### Step 5: Share
-Send the **Data Importer URL** (from Terminal 2) to your users.
+Send the **Launchpad UI URL** (from Terminal 2) to your users.
 *   They will be prompted for the ngrok password (`CollegePassword123`).
 *   They will see the login screen (`admin`/`admin123`).
 *   When they click "Go to Analytics", they will be seamlessly redirected to the Analytics tunnel.
