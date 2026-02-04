@@ -311,13 +311,18 @@ set "DB_TRUST_SERVER_CERTIFICATE=yes"
 set "DAGSTER_HOME=%DAGSTER_HOME_DIR%"
 set "PYTHONPATH=%SCRIPT_DIR%"
 
-:: --- 1. Launch Data Importer UI (Flask) in the background ---
+:: --- 1. Launch Analytics Hub (Streamlit) in the background ---
+:: We use python.exe here and start it minimized to ensure it runs correctly.
+set "ANALYTICS_UI_CMD="%PYTHON_EXE%" -m streamlit run "%ANALYTICS_UI_SCRIPT%" --server.port=8501 --server.address=0.0.0.0 --server.headless=true --server.enableCORS=false --server.enableXsrfProtection=false"
+start "Analytics Hub" /min %ANALYTICS_UI_CMD%
+
+:: --- 2. Launch Data Importer UI (Flask) in the background ---
 :: We use pythonw.exe to run this script without a console window for a better UX.
 :: The server will run silently in the background.
 set "UI_CMD=%PYTHONW_EXE% %UI_SCRIPT% --server %DB_SERVER% --database %DB_DATABASE% --credential-target %CREDENTIAL_TARGET%"
 start "Data and Analytics Launchpad UI" %UI_CMD%
 
-:: --- 2. Wait for the main server to be ready before opening the browser ---
+:: --- 3. Wait for the main server to be ready before opening the browser ---
 :: This loop actively checks if the port is open, avoiding the "Connection Refused" error.
 set "wait_time=0"
 :wait_loop
