@@ -15,7 +15,29 @@ from views.data_operations import page_data_explorer, page_data_steward, page_da
 load_dotenv()
 
 # Page Config
+<<<<<<< HEAD
 st.set_page_config(page_title="Data and Analytics Launchpad", page_icon="📈", layout="wide")
+=======
+st.set_page_config(page_title="Analytics Hub", page_icon="📈", layout="wide")
+
+# Database Connection
+@st.cache_resource
+def get_connection():
+    db_connection_str = (
+        f"mssql+pyodbc://{os.getenv('DB_USERNAME')}:{os.getenv('DB_PASSWORD')}@"
+        f"{os.getenv('DB_SERVER')}/{os.getenv('DB_DATABASE')}?"
+        f"driver={os.getenv('DB_DRIVER')}&TrustServerCertificate={os.getenv('DB_TRUST_SERVER_CERTIFICATE')}"
+    )
+    return create_engine(db_connection_str)
+
+engine = get_connection()
+
+# --- Caching Helper ---
+@st.cache_data(ttl=600) # Cache data for 10 minutes
+def run_query(query_str):
+    with engine.connect() as conn:
+        return pd.read_sql(query_str, conn)
+>>>>>>> f85118260c4daa8917ea6a49d8b6583231ad7fc3
  
 # --- Authentication & RBAC System ---
 if "authenticated" not in st.session_state:
@@ -46,8 +68,13 @@ if not st.session_state.authenticated:
     st.error("Please sign in via the main Data and Analytics Launchpad application.")
     st.stop() # Block access to the rest of the app
 
+<<<<<<< HEAD
 # --- Navigation Setup ---
 st.sidebar.title("Data and Analytics Launchpad")
+=======
+# --- Sidebar ---
+st.sidebar.title("Analytics Hub")
+>>>>>>> f85118260c4daa8917ea6a49d8b6583231ad7fc3
 st.sidebar.caption(f"👤 Role: **{st.session_state.user_role}**")
 
 pg = st.navigation({

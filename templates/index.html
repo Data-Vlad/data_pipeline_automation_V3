@@ -559,7 +559,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set the href dynamically to match the current hostname.
     // We force 'http' because Streamlit usually runs without SSL on port 8501,
     // avoiding "SSL Protocol Error" if the main Hub is accessed via HTTPS.
-    analyticsLink.href = `http://${window.location.hostname}:8501`;
+    const analyticsUrl = `http://${window.location.hostname}:8501`;
+    console.log("Analytics URL configured as:", analyticsUrl);
+    analyticsLink.href = analyticsUrl;
 
     // --- Initial Load ---
     fetchPipelines();
