@@ -195,7 +195,7 @@ if not exist "%SHORTCUT_PATH%" (
         echo Set oLink = oWS.CreateShortcut^(sLinkFile^)
         echo oLink.TargetPath = "%~f0"
         echo oLink.IconLocation = "imageres.dll, 71"
-        echo oLink.Description = "Launch Data and Analytics Launchpad"
+        echo oLink.Description = "Data and Analytics Launchpad"
         echo oLink.WorkingDirectory = "%SCRIPT_DIR%"
         echo oLink.Save
     ) >"%TEMP%\create_shortcut.vbs"
@@ -292,7 +292,7 @@ if exist "%OLD_WORKSPACE_YAML%" (
 )
 
 :: ----------------------------------------------------------------------------
-call :log INFO "Step 6/6: Launching Data Launchpad and Analytics Hub..."
+call :log INFO "Step 6/6: Launching Data and Analytics Launchpad..."
 
 :: Set environment variables that the UI processes will inherit.
 :: This is the crucial step to pass credentials and config to the separate UI processes.
