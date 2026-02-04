@@ -661,7 +661,10 @@ def _start_analytics_hub():
     if os.path.exists(analytics_script):
         logger.info("Server  : Launching Analytics Hub on http://localhost:8501...")
         try:
-            python_exe = sys.executable.strip('"')
+            # Explicitly use 'python.exe' from the venv, not 'pythonw.exe' (sys.executable)
+            # This resolves module loading issues when running as a background subprocess.
+            pythonw_path = sys.executable.strip('"')
+            python_exe = os.path.join(os.path.dirname(pythonw_path), 'python.exe')
             creationflags = 0
             if os.name == 'nt':
                 creationflags = subprocess.CREATE_NO_WINDOW
