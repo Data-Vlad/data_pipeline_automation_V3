@@ -301,6 +301,7 @@ def index():
     # Get base URL for analytics, supporting public hosting via ngrok
     base_analytics_url = os.getenv("ANALYTICS_PUBLIC_URL", "http://localhost:8501").strip('"').strip("'").rstrip("/")
     analytics_url = f"{base_analytics_url}/?token={token}"
+    logger.info(f"SSO     : Generated Analytics URL: {analytics_url}")
 
     response = make_response(render_template("index.html", analytics_url=analytics_url))
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
