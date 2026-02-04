@@ -26,7 +26,7 @@ if "authenticated" not in st.session_state:
 # Check for a token from simple_ui before showing the login screen.
 if not st.session_state.authenticated and "token" in st.query_params:
     token = st.query_params["token"]
-    secret_key = os.getenv("SECRET_KEY")
+    secret_key = os.getenv("SECRET_KEY", "dev-secret-key-should-be-overridden")
     if secret_key:
         s = URLSafeTimedSerializer(secret_key)
         try:
