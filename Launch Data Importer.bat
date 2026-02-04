@@ -311,7 +311,7 @@ set "PYTHONPATH=%SCRIPT_DIR%"
 
 :: --- 1. Launch Analytics Hub (Streamlit) in the background ---
 :: We use python.exe here and start it minimized. If it fails, the user can open the window to see the error.
-set "ANALYTICS_UI_CMD=%PYTHON_EXE% -m streamlit run "%ANALYTICS_UI_SCRIPT%""
+set "ANALYTICS_UI_CMD=%PYTHON_EXE% -m streamlit run "%ANALYTICS_UI_SCRIPT%" --server.address=0.0.0.0"
 start "Analytics Hub" /min %ANALYTICS_UI_CMD%
 
 :: --- 2. Launch Data Importer UI (Flask) in the background ---
