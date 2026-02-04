@@ -223,8 +223,9 @@ for /f "usebackq tokens=1,* delims==" %%i in ("%ENV_FILE%") do (
     if /i "!line!"=="DB_DRIVER" set "DB_DRIVER=%%~j"
     if /i "!line!"=="CREDENTIAL_TARGET" set "CREDENTIAL_TARGET=%%~j"
     if /i "!line!"=="OPENAI_API_KEY" set "OPENAI_API_KEY=%%~j"
+    if /i "!line!"=="ANALYTICS_PUBLIC_URL" set "ANALYTICS_PUBLIC_URL=%%~j"
 )
-endlocal & set "DB_SERVER=%DB_SERVER%" & set "DB_DATABASE=%DB_DATABASE%" & set "DB_DRIVER=%DB_DRIVER%" & set "CREDENTIAL_TARGET=%CREDENTIAL_TARGET%" & set "OPENAI_API_KEY=%OPENAI_API_KEY%"
+endlocal & set "DB_SERVER=%DB_SERVER%" & set "DB_DATABASE=%DB_DATABASE%" & set "DB_DRIVER=%DB_DRIVER%" & set "CREDENTIAL_TARGET=%CREDENTIAL_TARGET%" & set "OPENAI_API_KEY=%OPENAI_API_KEY%" & set "ANALYTICS_PUBLIC_URL=%ANALYTICS_PUBLIC_URL%"
 
 if not defined DB_SERVER call :handle_error "DB_SERVER is not defined in the .env file."
 if not defined DB_DATABASE call :handle_error "DB_DATABASE is not defined in the .env file."
@@ -304,6 +305,7 @@ set "DB_SERVER=%DB_SERVER%"
 set "DB_DATABASE=%DB_DATABASE%"
 set "DB_DRIVER=%DB_DRIVER%"
 set "OPENAI_API_KEY=%OPENAI_API_KEY%"
+set "ANALYTICS_PUBLIC_URL=%ANALYTICS_PUBLIC_URL%"
 set "SECRET_KEY=a-very-secret-and-random-string-that-is-long-and-secure"
 set "DB_TRUST_SERVER_CERTIFICATE=yes"
 set "DAGSTER_HOME=%DAGSTER_HOME_DIR%"
@@ -311,8 +313,8 @@ set "PYTHONPATH=%SCRIPT_DIR%"
 
 :: --- 1. Launch Analytics Hub (Streamlit) in the background ---
 :: We use python.exe here and start it minimized. If it fails, the user can open the window to see the error.
-set "ANALYTICS_UI_CMD=%PYTHON_EXE% -m streamlit run "%ANALYTICS_UI_SCRIPT%" --server.address=0.0.0.0"
-start "Analytics Hub" /min %ANALYTICS_UI_CMD%
+set "ANALYTICS_UI_CMD="%PYTHON_EXE%" -m streamlit run "%ANALYTICS_UI_SCRIPT%" --server.port=8501 --server.address=0.0.0.0 --server.headless=true --server.enableCORS=false --server.enableXsrfProtection=false"
+start "Analytics Hub" /min cmd /k %ANALYTICS_UI_CMD%
 
 :: --- 2. Launch Data Importer UI (Flask) in the background ---
 :: We use pythonw.exe to run this script without a console window for a better UX.
