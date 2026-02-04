@@ -320,3 +320,29 @@
 2026-02-04 13:05:28 - INFO     - INIT(2/3): Testing database connection...
 2026-02-04 13:05:28 - INFO     - DB      : Creating temporary engine to test connection...
 2026-02-04 13:05:28 - INFO     - Serving on http://0.0.0.0:3000
+2026-02-04 13:05:28 - INFO     - DB      : Connection test successful.
+2026-02-04 13:05:28 - INFO     - INIT(2/3): Database connection test successful.
+2026-02-04 13:05:28 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-02-04 13:05:28 - INFO     - [3/3] Dagster workspace file found.
+2026-02-04 13:05:28 - INFO     - --- Application Initialization Succeeded ---
+2026-02-04 13:05:28 - INFO     - ============================================================
+2026-02-04 13:05:30 - INFO     - --> GET /
+2026-02-04 13:05:30 - INFO     - <-- GET / - 302 FOUND
+2026-02-04 13:05:30 - INFO     - --> GET /login
+2026-02-04 13:05:30 - INFO     - <-- GET /login - 200 OK
+2026-02-04 13:05:30 - INFO     - --> GET /favicon.ico
+2026-02-04 13:05:30 - INFO     - <-- GET /favicon.ico - 302 FOUND
+2026-02-04 13:05:30 - INFO     - --> GET /login
+2026-02-04 13:05:30 - INFO     - <-- GET /login - 200 OK
+2026-02-04 13:05:42 - INFO     - --> POST /login
+2026-02-04 13:05:42 - INFO     - <-- POST /login - 302 FOUND
+2026-02-04 13:05:42 - INFO     - --> GET /
+2026-02-04 13:05:42 - INFO     - <-- GET / - 200 OK
+2026-02-04 13:05:42 - INFO     - --> GET /api/pipelines
+2026-02-04 13:05:42 - INFO     - API     : Fetching pipeline configurations from database...
+2026-02-04 13:05:42 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-02-04 13:05:42 - INFO     - DB      : Database engine initialized successfully.
+2026-02-04 13:05:42 - INFO     - --> GET /favicon.ico
+2026-02-04 13:05:42 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-02-04 13:05:42 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-02-04 13:05:42 - INFO     - <-- GET /api/pipelines - 200 OK
