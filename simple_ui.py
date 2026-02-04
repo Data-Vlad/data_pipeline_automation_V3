@@ -54,7 +54,7 @@ app.secret_key = os.getenv("SECRET_KEY", "dev-secret-key-should-be-overridden")
 load_dotenv()
 
 # --- Command-Line Argument Parsing ---
-parser = argparse.ArgumentParser(description="Data Importer UI")
+parser = argparse.ArgumentParser(description="Nexus Launchpad Core")
 parser.add_argument("--server", required=True, help="Database server name")
 parser.add_argument("--database", required=True, help="Database name")
 parser.add_argument("--credential-target", required=True, help="The target name for Windows Credential Manager")
