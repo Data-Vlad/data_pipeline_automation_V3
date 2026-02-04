@@ -4,7 +4,6 @@ import sys
 import threading
 import re
 import logging
-import subprocess
 from collections import defaultdict
 from typing import List, Optional, Any
 from dotenv import load_dotenv
@@ -655,32 +654,6 @@ def internal_error(error):
     logger.error("[RESOLUTION] A generic server error occurred. The traceback above contains the exact cause. Check for DB connection issues, errors in Dagster project code, or workspace configuration problems.")
     return jsonify({"error": "Internal Server Error", "message": "An unexpected error occurred on the server."}), 500
 
-def _start_analytics_hub():
-    """Starts the Streamlit Analytics Hub in a background process."""
-    analytics_script = os.path.join(os.path.dirname(__file__), 'analytics_ui.py')
-    if os.path.exists(analytics_script):
-        logger.info("Server  : Launching Analytics Hub on http://localhost:8501...")
-        try:
-            # Sanitize the python executable path to remove potential quotes
-            python_exe = sys.executable.strip('"')
-
-            # Windows-specific flags to hide the console window
-            creationflags = 0
-            if os.name == 'nt':
-                # CREATE_NO_WINDOW prevents the console window from being created.
-                # DETACHED_PROCESS ensures the new process is fully independent of the parent's console.
-                creationflags = subprocess.CREATE_NO_WINDOW | subprocess.DETACHED_PROCESS
-
-            subprocess.Popen(
-                [python_exe, "-m", "streamlit", "run", analytics_script, "--server.port", "8501", "--server.headless", "true"],
-                cwd=os.path.dirname(__file__),
-                creationflags=creationflags
-            )
-        except Exception as e:
-            logger.error(f"Server  : Failed to start Analytics Hub: {e}")
-    else:
-        logger.warning("Server  : analytics_ui.py not found. Analytics Hub will not be available.")
-
 if __name__ == "__main__":
     # Use Waitress, a production-ready WSGI server.
     from waitress import serve
@@ -689,9 +662,6 @@ if __name__ == "__main__":
     # This allows the web server to start immediately and serve the status page.
     init_thread = threading.Thread(target=_initialize_app_thread, daemon=True)
     init_thread.start()
-
-    # Start the Analytics Hub (Streamlit) in the background
-    _start_analytics_hub()
 
     logger.info("Server  : Starting Data and Analytics Launchpad UI on http://localhost:3000")
     logger.info(f"Server  : Logging detailed errors to {os.path.abspath('simple_ui.log')}")
