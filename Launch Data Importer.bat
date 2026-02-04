@@ -5,7 +5,7 @@ setlocal
 :: ============================================================================
 :: Configuration
 :: ============================================================================
-title Data Launchpad Launcher
+title Nexus Launchpad
 cd /d "%~dp0"
 
 set "SCRIPT_DIR=%~dp0"
@@ -63,7 +63,7 @@ goto :main
 cls
 echo.
 echo  ========================================================================
-echo                           Data Launchpad Launcher
+echo                           Nexus Launchpad
 echo  ======================================================================
 echo.
 
@@ -195,7 +195,7 @@ if not exist "%SHORTCUT_PATH%" (
         echo Set oLink = oWS.CreateShortcut^(sLinkFile^)
         echo oLink.TargetPath = "%~f0"
         echo oLink.IconLocation = "imageres.dll, 71"
-        echo oLink.Description = "Launch the Data Launchpad application"
+        echo oLink.Description = "Launch Nexus Launchpad"
         echo oLink.WorkingDirectory = "%SCRIPT_DIR%"
         echo oLink.Save
     ) >"%TEMP%\create_shortcut.vbs"
