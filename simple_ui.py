@@ -670,14 +670,14 @@ def _start_analytics_hub():
                 creationflags = subprocess.CREATE_NO_WINDOW
             
             log_path = os.path.join(os.path.dirname(__file__), 'analytics.log')
-            log_file = open(log_path, 'a')
-            subprocess.Popen(
-                [python_exe, "-m", "streamlit", "run", analytics_script, "--server.port", "8501", "--server.headless", "true", "--server.address", "0.0.0.0"],
-                cwd=os.path.dirname(__file__),
-                stdout=log_file,
-                stderr=log_file,
-                creationflags=creationflags
-            )
+            with open(log_path, 'a') as log_file:
+                subprocess.Popen(
+                    [python_exe, "-m", "streamlit", "run", analytics_script, "--server.port", "8501", "--server.headless", "true", "--server.address", "0.0.0.0"],
+                    cwd=os.path.dirname(__file__),
+                    stdout=log_file,
+                    stderr=log_file,
+                    creationflags=creationflags
+                )
         except Exception as e:
             logger.error(f"Server  : Failed to start Analytics Hub: {e}")
     else:
