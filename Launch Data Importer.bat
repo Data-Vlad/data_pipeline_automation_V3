@@ -311,12 +311,8 @@ set "DB_TRUST_SERVER_CERTIFICATE=yes"
 set "DAGSTER_HOME=%DAGSTER_HOME_DIR%"
 set "PYTHONPATH=%SCRIPT_DIR%"
 
-:: --- 1. Launch Analytics Hub (Streamlit) in the background ---
-:: We use python.exe here and start it minimized. If it fails, the user can open the window to see the error.
-set "ANALYTICS_UI_CMD="%PYTHON_EXE%" -m streamlit run "%ANALYTICS_UI_SCRIPT%" --server.port=8501 --server.address=0.0.0.0 --server.headless=true --server.enableCORS=false --server.enableXsrfProtection=false"
-start "Analytics Hub" /min cmd /k %ANALYTICS_UI_CMD%
-
-:: --- 2. Launch Data Importer UI (Flask) in the background ---
+:: --- 1. Launch Data Importer UI (Flask) in the background ---
+:: The Flask app (simple_ui.py) will automatically start the Analytics Hub (Streamlit) as a subprocess.
 :: We use pythonw.exe to run this script without a console window for a better UX.
 :: The server will run silently in the background.
 set "UI_CMD=%PYTHONW_EXE% %UI_SCRIPT% --server %DB_SERVER% --database %DB_DATABASE% --credential-target %CREDENTIAL_TARGET%"
