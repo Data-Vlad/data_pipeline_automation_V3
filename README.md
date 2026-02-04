@@ -2306,9 +2306,9 @@ Your Dagster application is a hybrid. The orchestration and local file processin
 **In your specific project, you can run all your local file-based ELT pipelines offline, as long as your SQL Server instance is also running locally.** Any pipeline configured to use a web scraper will fail.
 Once you have saved the credential, you can simply **re-run the `run_elt_service.bat` script**. It will now automatically and securely retrieve the credentials it needs to connect to the database.
 
-# Data Import Service
+# Data and Analytics Launchpad
 
-This project provides a user-friendly web interface for triggering and monitoring Dagster data import pipelines.
+This project provides a user-friendly web interface for triggering and monitoring data pipelines and accessing analytics.
 
 ## How It Works
 
