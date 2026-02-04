@@ -17,7 +17,7 @@ from elt_project.core.ml_engine import MLEngine
 load_dotenv()
 
 # Page Config
-st.set_page_config(page_title="Analytics & AI Hub", page_icon="📈", layout="wide")
+st.set_page_config(page_title="Data and Analytics Launchpad", page_icon="📈", layout="wide")
 
 # Database Connection
 @st.cache_resource
@@ -43,7 +43,7 @@ if "authenticated" not in st.session_state:
     st.session_state.user_role = None
 
 def login_screen():
-    st.title("🔐 Enterprise Analytics Hub")
+    st.title("🔐 Data and Analytics Launchpad")
     st.markdown("Please sign in to access the secure data environment.")
     
     col1, col2 = st.columns([1, 2])
@@ -88,7 +88,7 @@ if not st.session_state.authenticated:
     st.stop() # Block access to the rest of the app
 
 # --- Sidebar ---
-st.sidebar.title("Analytics & AI Hub")
+st.sidebar.title("Data and Analytics Launchpad")
 st.sidebar.caption(f"👤 Role: **{st.session_state.user_role}**")
 
 # RBAC: Define accessible pages based on Role
