@@ -329,37 +329,33 @@ If it fails, check the run logs for details on data quality issues or parsing er
             if not file_to_parse:
                 raise ValueError("No source file path provided or configured for extraction.")
 
+            # --- Resolve wildcards/globs for ALL file types ---
+            # This ensures that Excel, PSV, and custom parsers also support file patterns.
+            import glob
+            if any(ch in str(file_to_parse) for ch in ["*", "?", "["]):
+                matches = glob.glob(file_to_parse, recursive=True)
+                if not matches and config.monitored_directory:
+                    pattern2 = os.path.join(config.monitored_directory, os.path.basename(file_to_parse))
+                    matches = glob.glob(pattern2, recursive=True)
+
+                if not matches:
+                    context.log.warning(f"Source file not found for {config.import_name}: '{file_to_parse}'. Skipping.")
+                    log_details["status"] = "SUCCESS"
+                    log_details["message"] = f"Source file not found: '{file_to_parse}'. No data loaded."
+                    return pd.DataFrame()
+                
+                resolved_path = max(matches, key=os.path.getmtime)
+                context.log.info(f"Resolved pattern '{file_to_parse}' to file '{resolved_path}'")
+                file_to_parse = resolved_path
+            
+            resolved_path_for_feedback = file_to_parse
+
             # OPTIMIZATION: Use chunked loading for standard CSVs to save memory
             if config.file_type.lower() == 'csv' and not config.parser_function:
                 try:
-                    import glob
-                    # Resolve wildcards/globs to an actual file path (pandas cannot read a glob pattern)
-                    # This is the path that will be used for logging user feedback
-                    resolved_path = file_to_parse
-                    if any(ch in str(file_to_parse) for ch in ["*", "?", "["]):
-                        # If file_to_parse is already an absolute pattern keep it, otherwise join with monitored dir
-                        pattern = file_to_parse
-                        matches = glob.glob(pattern, recursive=True) # Use recursive for potential **/ patterns
-                        # If no matches, try joining with monitored_directory if available
-                        if not matches and config.monitored_directory:
-                            pattern2 = os.path.join(config.monitored_directory, os.path.basename(pattern))
-                            matches = glob.glob(pattern2, recursive=True)
-
-                        if not matches:
-                            raise FileNotFoundError(f"No files matched the pattern '{file_to_parse}'")
-                        # Choose the most recently modified file if multiple matches
-                        resolved_path = max(matches, key=os.path.getmtime)
-                        context.log.info(f"Resolved pattern '{file_to_parse}' to file '{resolved_path}'")
-                    else:
-                        # If it's not a glob, it might be a relative path. Join with monitored_directory if it exists.
-                        resolved_path = file_to_parse
-
-                    # Ensure the path used for user feedback is the resolved one
-                    resolved_path_for_feedback = resolved_path
-
-                    context.log.info(f"Using memory-efficient chunked CSV loader for {resolved_path}")
+                    context.log.info(f"Using memory-efficient chunked CSV loader for {file_to_parse}")
                     rows_processed = load_csv_to_sql_chunked(
-                        file_path=resolved_path,
+                        file_path=file_to_parse,
                         table_name=current_staging_table,
                         engine=engine,
                         run_id=context.run_id,
@@ -383,7 +379,6 @@ If it fails, check the run logs for details on data quality issues or parsing er
                     df: pd.DataFrame
                     if config.parser_function:
                         # For custom parsers, the file_to_parse is what we have.
-                        resolved_path_for_feedback = file_to_parse
                         if config.parser_function not in ALLOWED_CUSTOM_PARSERS:
                             raise ValueError(f"Custom parser function '{config.parser_function}' is not whitelisted.")
                         context.log.info(f"Using custom parser function '{config.parser_function}' for file: {file_to_parse}")
@@ -414,7 +409,6 @@ If it fails, check the run logs for details on data quality issues or parsing er
                             df = custom_parser_func(file_to_parse)
                     else:
                         # For factory parsers, the file_to_parse is what we have.
-                        resolved_path_for_feedback = file_to_parse
                         parser = parsers.parser_factory.get_parser(config.file_type)
                         context.log.info(f"Using '{config.file_type}' parser from factory for file: {file_to_parse}")
                         df = parser.parse(file_to_parse)
