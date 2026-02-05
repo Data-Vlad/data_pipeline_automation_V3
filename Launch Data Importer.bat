@@ -132,6 +132,17 @@ if exist "%PYTHON_EXE%" (
     )
 )
 
+if exist "%PYTHON_EXE%" (
+    "%PYTHON_EXE%" -m pip --version >nul 2>&1
+    if errorlevel 1 (
+        call :log WARNING "Pip installation is corrupted. Recreating virtual environment..."
+        rd /s /q "%VENV_DIR%"
+        if exist "%VENV_DIR%" (
+            call :handle_error "Failed to remove corrupted virtual environment. A file may be locked by another process. Please close other programs and try again."
+        )
+    )
+)
+
 if not exist "%PYTHON_EXE%" (
     call :log WARNING "Virtual environment not found. Creating it now..."
 
