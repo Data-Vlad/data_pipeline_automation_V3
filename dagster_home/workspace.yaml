@@ -3,7 +3,11 @@ load_from:
       module_name: "elt_project.elt_project.definitions"
       location_name: "elt_project"
 <<<<<<< HEAD
+<<<<<<< HEAD
       working_directory: "C:/Users/Staff/Dropbox/Projects/Work/data_pipeline_automation/"
+=======
+      working_directory: "C:/Users/Staff/Dropbox/Backup/data_pipeline_automation/"
+>>>>>>> 95c3eab2522d9e485e63d289506931dac5221ec7
 =======
       working_directory: "C:/Users/Staff/Dropbox/Backup/data_pipeline_automation/"
 >>>>>>> 95c3eab2522d9e485e63d289506931dac5221ec7
