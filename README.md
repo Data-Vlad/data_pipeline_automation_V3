@@ -919,7 +919,7 @@ CREATE TABLE analytics_predictions (
 *   **Workflow**:
     1.  User types a question in `analytics_ui.py`.
     2.  App fetches the database schema (table/column names) using `run_query`.
-    3.  App sends the schema + question to OpenAI (GPT-3.5/4).
+    3.  App sends the schema + question to OpenAI (**GPT-4o**).
     4.  **Security**: The returned SQL is validated against a regex whitelist (blocking `DROP`, `DELETE`) in `MLEngine.validate_sql_safety`.
     5.  The safe SQL is executed against the DB, and results are displayed.
 *   **Setup**: Ensure `OPENAI_API_KEY` is set in your `.env` file.
@@ -948,6 +948,24 @@ CREATE TABLE analytics_predictions (
     2.  User selects a target date (e.g., the date of an anomaly).
     3.  The system compares that date to the previous period.
     4.  It scans all categorical columns to find which segments (e.g., `Region=West`, `Product=WidgetA`) contributed most to the change.
+
+#### 5. 🕵️ Agentic Analyst (Autonomous Planning)
+*   **Implementation**: `MLEngine.generate_analysis_plan`
+*   **Purpose**: Solves complex, multi-step analysis goals that a single SQL query cannot handle.
+*   **Workflow**:
+    1.  User defines a high-level goal (e.g., "Analyze sales trends and summarize the key drivers").
+    2.  Agent uses **GPT-4o** to generate a logical execution plan (JSON) consisting of specific tools (SQL, Summary, Visualization).
+    3.  Agent executes the plan step-by-step, passing data context between steps.
+    4.  Generates a final multi-modal report with data, charts, and text.
+
+#### 6. 🧠 Semantic Search (RAG)
+*   **Implementation**: `MLEngine.perform_semantic_search`
+*   **Purpose**: Allows users to search text data by *meaning* rather than exact keywords (e.g., searching "angry customers" finds "furious client").
+*   **Workflow**:
+    1.  User enters a search query.
+    2.  System generates vector embeddings for the query and the target text column using OpenAI's `text-embedding-3-small`.
+    3.  Calculates Cosine Similarity to find the most relevant rows.
+    4.  Returns ranked results.
 
 ### 7.4. Developer Guide: How to Extend
 
