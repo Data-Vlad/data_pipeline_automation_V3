@@ -4,6 +4,7 @@ import sys
 import threading
 import re
 import logging
+import subprocess
 from collections import defaultdict
 from typing import List, Optional, Any
 from dotenv import load_dotenv
@@ -54,7 +55,7 @@ app.secret_key = os.getenv("SECRET_KEY", "dev-secret-key-should-be-overridden")
 load_dotenv()
 
 # --- Command-Line Argument Parsing ---
-parser = argparse.ArgumentParser(description="Data Importer UI")
+parser = argparse.ArgumentParser(description="Data and Analytics Launchpad Core")
 parser.add_argument("--server", required=True, help="Database server name")
 parser.add_argument("--database", required=True, help="Database name")
 parser.add_argument("--credential-target", required=True, help="The target name for Windows Credential Manager")
@@ -299,8 +300,9 @@ def index():
     token = s.dumps({"user": session.get("username")})
 
     # Get base URL for analytics, supporting public hosting via ngrok
-    base_analytics_url = os.getenv("ANALYTICS_PUBLIC_URL", "http://localhost:8501")
-    analytics_url = f"{base_analytics_url}?token={token}"
+    base_analytics_url = os.getenv("ANALYTICS_PUBLIC_URL", "http://localhost:8501").strip('"').strip("'").rstrip("/")
+    analytics_url = f"{base_analytics_url}/?token={token}"
+    logger.info(f"SSO     : Generated Analytics URL: {analytics_url}")
 
     response = make_response(render_template("index.html", analytics_url=analytics_url))
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
@@ -374,7 +376,7 @@ def get_pipelines():
                     "etl_imports": data["load_imports"], # Alias for frontend compatibility
                     "ingest_imports": data["ingest_imports"],
                     "ingestion_imports": data["ingest_imports"], # Alias for frontend compatibility
-                    "imports": [item["import_name"] for item in data["ingest_imports"] + data["load_imports"]],
+                    "imports": data["ingest_imports"] + data["load_imports"],
                     "monitored_directory": data["monitored_directory"]
                 }
                 for pipeline_name, data in pipeline_groups.items()
@@ -653,6 +655,34 @@ def internal_error(error):
     logger.error("[RESOLUTION] A generic server error occurred. The traceback above contains the exact cause. Check for DB connection issues, errors in Dagster project code, or workspace configuration problems.")
     return jsonify({"error": "Internal Server Error", "message": "An unexpected error occurred on the server."}), 500
 
+def _start_analytics_hub():
+    """Starts the Streamlit Analytics Hub in a background process."""
+    analytics_script = os.path.join(os.path.dirname(__file__), 'analytics_ui.py')
+    if os.path.exists(analytics_script):
+        logger.info("Server  : Launching Analytics Hub on http://localhost:8501...")
+        try:
+            # Explicitly use 'python.exe' from the venv, not 'pythonw.exe' (sys.executable)
+            # This resolves module loading issues when running as a background subprocess.
+            pythonw_path = sys.executable.strip('"')
+            python_exe = os.path.join(os.path.dirname(pythonw_path), 'python.exe')
+            creationflags = 0
+            if os.name == 'nt':
+                creationflags = subprocess.CREATE_NO_WINDOW
+            
+            log_path = os.path.join(os.path.dirname(__file__), 'analytics.log')
+            with open(log_path, 'a') as log_file:
+                subprocess.Popen(
+                    [python_exe, "-m", "streamlit", "run", analytics_script, "--server.port", "8501", "--server.headless", "true", "--server.address", "0.0.0.0"],
+                    cwd=os.path.dirname(__file__),
+                    stdout=log_file,
+                    stderr=log_file,
+                    creationflags=creationflags
+                )
+        except Exception as e:
+            logger.error(f"Server  : Failed to start Analytics Hub: {e}")
+    else:
+        logger.warning("Server  : analytics_ui.py not found. Analytics Hub will not be available.")
+
 if __name__ == "__main__":
     # Use Waitress, a production-ready WSGI server.
     from waitress import serve
@@ -662,7 +692,10 @@ if __name__ == "__main__":
     init_thread = threading.Thread(target=_initialize_app_thread, daemon=True)
     init_thread.start()
 
-    logger.info("Server  : Starting Data Importer UI on http://localhost:3000")
+    # Start the Analytics Hub (Streamlit) in the background
+    _start_analytics_hub()
+
+    logger.info("Server  : Starting Data and Analytics Launchpad UI on http://localhost:3000")
     logger.info(f"Server  : Logging detailed errors to {os.path.abspath('simple_ui.log')}")
     logger.info("Server  : Initialization is running in the background...")
     

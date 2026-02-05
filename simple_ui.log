@@ -1,0 +1,967 @@
+2026-02-04 10:00:16 - INFO     - ============================================================
+2026-02-04 10:00:16 - INFO     - Server  : Starting Data and Analytics Launchpad UI on http://localhost:3000
+2026-02-04 10:00:16 - INFO     - --- Application Initialization Started ---
+2026-02-04 10:00:16 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Backup\data_pipeline_automation_V3\simple_ui.log
+2026-02-04 10:00:16 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-02-04 10:00:16 - INFO     - Server  : Initialization is running in the background...
+2026-02-04 10:00:16 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-02-04 10:00:16 - INFO     - INIT(2/3): Testing database connection...
+2026-02-04 10:00:16 - INFO     - DB      : Creating temporary engine to test connection...
+2026-02-04 10:00:16 - INFO     - Serving on http://0.0.0.0:3000
+2026-02-04 10:00:17 - INFO     - DB      : Connection test successful.
+2026-02-04 10:00:17 - INFO     - INIT(2/3): Database connection test successful.
+2026-02-04 10:00:17 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-02-04 10:00:17 - INFO     - [3/3] Dagster workspace file found.
+2026-02-04 10:00:17 - INFO     - --- Application Initialization Succeeded ---
+2026-02-04 10:00:17 - INFO     - ============================================================
+2026-02-04 10:00:17 - INFO     - --> GET /
+2026-02-04 10:00:17 - INFO     - <-- GET / - 302 FOUND
+2026-02-04 10:00:17 - INFO     - --> GET /login
+2026-02-04 10:00:17 - INFO     - <-- GET /login - 200 OK
+2026-02-04 10:00:18 - INFO     - --> GET /favicon.ico
+2026-02-04 10:00:18 - INFO     - <-- GET /favicon.ico - 302 FOUND
+2026-02-04 10:00:18 - INFO     - --> GET /login
+2026-02-04 10:00:18 - INFO     - <-- GET /login - 200 OK
+2026-02-04 10:11:21 - INFO     - ============================================================
+2026-02-04 10:11:21 - INFO     - Server  : Starting Data and Analytics Launchpad UI on http://localhost:3000
+2026-02-04 10:11:21 - INFO     - --- Application Initialization Started ---
+2026-02-04 10:11:21 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Backup\data_pipeline_automation_V3\simple_ui.log
+2026-02-04 10:11:21 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-02-04 10:11:21 - INFO     - Server  : Initialization is running in the background...
+2026-02-04 10:11:21 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-02-04 10:11:21 - INFO     - INIT(2/3): Testing database connection...
+2026-02-04 10:11:21 - INFO     - DB      : Creating temporary engine to test connection...
+2026-02-04 10:11:21 - INFO     - Serving on http://0.0.0.0:3000
+2026-02-04 10:11:21 - INFO     - DB      : Connection test successful.
+2026-02-04 10:11:21 - INFO     - INIT(2/3): Database connection test successful.
+2026-02-04 10:11:21 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-02-04 10:11:21 - INFO     - [3/3] Dagster workspace file found.
+2026-02-04 10:11:21 - INFO     - --- Application Initialization Succeeded ---
+2026-02-04 10:11:21 - INFO     - ============================================================
+2026-02-04 10:11:23 - INFO     - --> GET /
+2026-02-04 10:11:23 - INFO     - <-- GET / - 302 FOUND
+2026-02-04 10:11:23 - INFO     - --> GET /login
+2026-02-04 10:11:23 - INFO     - <-- GET /login - 200 OK
+2026-02-04 10:11:23 - INFO     - --> GET /favicon.ico
+2026-02-04 10:11:23 - INFO     - <-- GET /favicon.ico - 302 FOUND
+2026-02-04 10:11:23 - INFO     - --> GET /login
+2026-02-04 10:11:23 - INFO     - <-- GET /login - 200 OK
+2026-02-04 10:12:57 - INFO     - ============================================================
+2026-02-04 10:12:57 - INFO     - Server  : Starting Data and Analytics Launchpad UI on http://localhost:3000
+2026-02-04 10:12:57 - INFO     - --- Application Initialization Started ---
+2026-02-04 10:12:57 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-02-04 10:12:57 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Backup\data_pipeline_automation_V3\simple_ui.log
+2026-02-04 10:12:57 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-02-04 10:12:57 - INFO     - INIT(2/3): Testing database connection...
+2026-02-04 10:12:57 - INFO     - DB      : Creating temporary engine to test connection...
+2026-02-04 10:12:57 - INFO     - Server  : Initialization is running in the background...
+2026-02-04 10:12:57 - INFO     - Serving on http://0.0.0.0:3000
+2026-02-04 10:12:57 - INFO     - DB      : Connection test successful.
+2026-02-04 10:12:57 - INFO     - INIT(2/3): Database connection test successful.
+2026-02-04 10:12:57 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-02-04 10:12:57 - INFO     - [3/3] Dagster workspace file found.
+2026-02-04 10:12:57 - INFO     - --- Application Initialization Succeeded ---
+2026-02-04 10:12:57 - INFO     - ============================================================
+2026-02-04 10:12:59 - INFO     - --> GET /
+2026-02-04 10:12:59 - INFO     - <-- GET / - 302 FOUND
+2026-02-04 10:12:59 - INFO     - --> GET /login
+2026-02-04 10:12:59 - INFO     - <-- GET /login - 200 OK
+2026-02-04 10:12:59 - INFO     - --> GET /favicon.ico
+2026-02-04 10:12:59 - INFO     - <-- GET /favicon.ico - 302 FOUND
+2026-02-04 10:12:59 - INFO     - --> GET /login
+2026-02-04 10:12:59 - INFO     - <-- GET /login - 200 OK
+2026-02-04 10:14:18 - INFO     - ============================================================
+2026-02-04 10:14:18 - INFO     - Server  : Starting Data and Analytics Launchpad UI on http://localhost:3000
+2026-02-04 10:14:18 - INFO     - --- Application Initialization Started ---
+2026-02-04 10:14:18 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Backup\data_pipeline_automation_V3\simple_ui.log
+2026-02-04 10:14:18 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-02-04 10:14:18 - INFO     - Server  : Initialization is running in the background...
+2026-02-04 10:14:18 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-02-04 10:14:18 - INFO     - INIT(2/3): Testing database connection...
+2026-02-04 10:14:18 - INFO     - DB      : Creating temporary engine to test connection...
+2026-02-04 10:14:18 - INFO     - Serving on http://0.0.0.0:3000
+2026-02-04 10:14:18 - INFO     - DB      : Connection test successful.
+2026-02-04 10:14:18 - INFO     - INIT(2/3): Database connection test successful.
+2026-02-04 10:14:18 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-02-04 10:14:18 - INFO     - [3/3] Dagster workspace file found.
+2026-02-04 10:14:18 - INFO     - --- Application Initialization Succeeded ---
+2026-02-04 10:14:18 - INFO     - ============================================================
+2026-02-04 10:14:20 - INFO     - --> GET /
+2026-02-04 10:14:20 - INFO     - <-- GET / - 302 FOUND
+2026-02-04 10:14:20 - INFO     - --> GET /login
+2026-02-04 10:14:20 - INFO     - <-- GET /login - 200 OK
+2026-02-04 10:14:20 - INFO     - --> GET /favicon.ico
+2026-02-04 10:14:20 - INFO     - <-- GET /favicon.ico - 302 FOUND
+2026-02-04 10:14:20 - INFO     - --> GET /login
+2026-02-04 10:14:20 - INFO     - <-- GET /login - 200 OK
+2026-02-04 10:18:43 - INFO     - ============================================================
+2026-02-04 10:18:43 - INFO     - Server  : Starting Data and Analytics Launchpad UI on http://localhost:3000
+2026-02-04 10:18:43 - INFO     - --- Application Initialization Started ---
+2026-02-04 10:18:43 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-02-04 10:18:43 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-02-04 10:18:43 - INFO     - INIT(2/3): Testing database connection...
+2026-02-04 10:18:43 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Backup\data_pipeline_automation_V3\simple_ui.log
+2026-02-04 10:18:43 - INFO     - DB      : Creating temporary engine to test connection...
+2026-02-04 10:18:43 - INFO     - Server  : Initialization is running in the background...
+2026-02-04 10:18:43 - INFO     - Serving on http://0.0.0.0:3000
+2026-02-04 10:18:43 - INFO     - DB      : Connection test successful.
+2026-02-04 10:18:43 - INFO     - INIT(2/3): Database connection test successful.
+2026-02-04 10:18:43 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-02-04 10:18:43 - INFO     - [3/3] Dagster workspace file found.
+2026-02-04 10:18:43 - INFO     - --- Application Initialization Succeeded ---
+2026-02-04 10:18:43 - INFO     - ============================================================
+2026-02-04 10:18:45 - INFO     - --> GET /
+2026-02-04 10:18:45 - INFO     - <-- GET / - 302 FOUND
+2026-02-04 10:18:45 - INFO     - --> GET /login
+2026-02-04 10:18:45 - INFO     - <-- GET /login - 200 OK
+2026-02-04 10:18:45 - INFO     - --> GET /favicon.ico
+2026-02-04 10:18:45 - INFO     - <-- GET /favicon.ico - 302 FOUND
+2026-02-04 10:18:45 - INFO     - --> GET /login
+2026-02-04 10:18:45 - INFO     - <-- GET /login - 200 OK
+2026-02-04 10:25:14 - INFO     - ============================================================
+2026-02-04 10:25:14 - INFO     - Server  : Starting Data and Analytics Launchpad UI on http://localhost:3000
+2026-02-04 10:25:14 - INFO     - --- Application Initialization Started ---
+2026-02-04 10:25:14 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Backup\data_pipeline_automation_V3\simple_ui.log
+2026-02-04 10:25:14 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-02-04 10:25:14 - INFO     - Server  : Initialization is running in the background...
+2026-02-04 10:25:14 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-02-04 10:25:14 - INFO     - INIT(2/3): Testing database connection...
+2026-02-04 10:25:14 - INFO     - DB      : Creating temporary engine to test connection...
+2026-02-04 10:25:14 - INFO     - Serving on http://0.0.0.0:3000
+2026-02-04 10:25:15 - INFO     - DB      : Connection test successful.
+2026-02-04 10:25:15 - INFO     - INIT(2/3): Database connection test successful.
+2026-02-04 10:25:15 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-02-04 10:25:15 - INFO     - [3/3] Dagster workspace file found.
+2026-02-04 10:25:15 - INFO     - --- Application Initialization Succeeded ---
+2026-02-04 10:25:15 - INFO     - ============================================================
+2026-02-04 10:25:16 - INFO     - --> GET /
+2026-02-04 10:25:16 - INFO     - <-- GET / - 302 FOUND
+2026-02-04 10:25:16 - INFO     - --> GET /login
+2026-02-04 10:25:16 - INFO     - <-- GET /login - 200 OK
+2026-02-04 10:25:16 - INFO     - --> GET /favicon.ico
+2026-02-04 10:25:16 - INFO     - <-- GET /favicon.ico - 302 FOUND
+2026-02-04 10:25:16 - INFO     - --> GET /login
+2026-02-04 10:25:16 - INFO     - <-- GET /login - 200 OK
+2026-02-04 10:25:35 - INFO     - --> GET /login
+2026-02-04 10:25:35 - INFO     - <-- GET /login - 200 OK
+2026-02-04 10:25:35 - INFO     - --> GET /favicon.ico
+2026-02-04 10:25:35 - INFO     - <-- GET /favicon.ico - 302 FOUND
+2026-02-04 10:25:35 - INFO     - --> GET /login
+2026-02-04 10:25:35 - INFO     - <-- GET /login - 200 OK
+2026-02-04 10:29:58 - INFO     - ============================================================
+2026-02-04 10:29:58 - INFO     - Server  : Starting Data and Analytics Launchpad UI on http://localhost:3000
+2026-02-04 10:29:58 - INFO     - --- Application Initialization Started ---
+2026-02-04 10:29:58 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Backup\data_pipeline_automation_V3\simple_ui.log
+2026-02-04 10:29:58 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-02-04 10:29:58 - INFO     - Server  : Initialization is running in the background...
+2026-02-04 10:29:58 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-02-04 10:29:58 - INFO     - INIT(2/3): Testing database connection...
+2026-02-04 10:29:58 - INFO     - DB      : Creating temporary engine to test connection...
+2026-02-04 10:29:58 - INFO     - Serving on http://0.0.0.0:3000
+2026-02-04 10:29:58 - INFO     - DB      : Connection test successful.
+2026-02-04 10:29:58 - INFO     - INIT(2/3): Database connection test successful.
+2026-02-04 10:29:58 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-02-04 10:29:58 - INFO     - [3/3] Dagster workspace file found.
+2026-02-04 10:29:58 - INFO     - --- Application Initialization Succeeded ---
+2026-02-04 10:29:58 - INFO     - ============================================================
+2026-02-04 10:30:00 - INFO     - --> GET /
+2026-02-04 10:30:00 - INFO     - <-- GET / - 302 FOUND
+2026-02-04 10:30:00 - INFO     - --> GET /login
+2026-02-04 10:30:00 - INFO     - <-- GET /login - 200 OK
+2026-02-04 10:30:00 - INFO     - --> GET /favicon.ico
+2026-02-04 10:30:00 - INFO     - <-- GET /favicon.ico - 302 FOUND
+2026-02-04 10:30:00 - INFO     - --> GET /login
+2026-02-04 10:30:00 - INFO     - <-- GET /login - 200 OK
+2026-02-04 10:31:50 - INFO     - ============================================================
+2026-02-04 10:31:50 - INFO     - Server  : Starting Data and Analytics Launchpad UI on http://localhost:3000
+2026-02-04 10:31:50 - INFO     - --- Application Initialization Started ---
+2026-02-04 10:31:50 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Backup\data_pipeline_automation_V3\simple_ui.log
+2026-02-04 10:31:50 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-02-04 10:31:50 - INFO     - Server  : Initialization is running in the background...
+2026-02-04 10:31:50 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-02-04 10:31:50 - INFO     - INIT(2/3): Testing database connection...
+2026-02-04 10:31:50 - INFO     - DB      : Creating temporary engine to test connection...
+2026-02-04 10:31:50 - INFO     - Serving on http://0.0.0.0:3000
+2026-02-04 10:31:51 - INFO     - DB      : Connection test successful.
+2026-02-04 10:31:51 - INFO     - INIT(2/3): Database connection test successful.
+2026-02-04 10:31:51 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-02-04 10:31:51 - INFO     - [3/3] Dagster workspace file found.
+2026-02-04 10:31:51 - INFO     - --- Application Initialization Succeeded ---
+2026-02-04 10:31:51 - INFO     - ============================================================
+2026-02-04 10:31:51 - INFO     - --> GET /
+2026-02-04 10:31:51 - INFO     - <-- GET / - 302 FOUND
+2026-02-04 10:31:51 - INFO     - --> GET /login
+2026-02-04 10:31:51 - INFO     - <-- GET /login - 200 OK
+2026-02-04 10:31:52 - INFO     - --> GET /favicon.ico
+2026-02-04 10:31:52 - INFO     - <-- GET /favicon.ico - 302 FOUND
+2026-02-04 10:31:52 - INFO     - --> GET /login
+2026-02-04 10:31:52 - INFO     - <-- GET /login - 200 OK
+2026-02-04 10:33:39 - INFO     - --> POST /login
+2026-02-04 10:33:39 - INFO     - <-- POST /login - 302 FOUND
+2026-02-04 10:33:39 - INFO     - --> GET /
+2026-02-04 10:33:39 - INFO     - <-- GET / - 200 OK
+2026-02-04 10:33:39 - INFO     - --> GET /favicon.ico
+2026-02-04 10:33:39 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-02-04 10:58:24 - INFO     - ============================================================
+2026-02-04 10:58:24 - INFO     - Server  : Starting Data and Analytics Launchpad UI on http://localhost:3000
+2026-02-04 10:58:24 - INFO     - --- Application Initialization Started ---
+2026-02-04 10:58:24 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Backup\data_pipeline_automation_V3\simple_ui.log
+2026-02-04 10:58:24 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-02-04 10:58:24 - INFO     - Server  : Initialization is running in the background...
+2026-02-04 10:58:24 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-02-04 10:58:24 - INFO     - INIT(2/3): Testing database connection...
+2026-02-04 10:58:24 - INFO     - DB      : Creating temporary engine to test connection...
+2026-02-04 10:58:24 - INFO     - Serving on http://0.0.0.0:3000
+2026-02-04 10:58:24 - INFO     - DB      : Connection test successful.
+2026-02-04 10:58:24 - INFO     - INIT(2/3): Database connection test successful.
+2026-02-04 10:58:24 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-02-04 10:58:24 - INFO     - [3/3] Dagster workspace file found.
+2026-02-04 10:58:24 - INFO     - --- Application Initialization Succeeded ---
+2026-02-04 10:58:24 - INFO     - ============================================================
+2026-02-04 10:58:25 - INFO     - --> GET /
+2026-02-04 10:58:25 - INFO     - <-- GET / - 302 FOUND
+2026-02-04 10:58:25 - INFO     - --> GET /login
+2026-02-04 10:58:25 - INFO     - <-- GET /login - 200 OK
+2026-02-04 10:58:26 - INFO     - --> GET /favicon.ico
+2026-02-04 10:58:26 - INFO     - <-- GET /favicon.ico - 302 FOUND
+2026-02-04 10:58:26 - INFO     - --> GET /login
+2026-02-04 10:58:26 - INFO     - <-- GET /login - 200 OK
+2026-02-04 10:58:38 - INFO     - --> POST /login
+2026-02-04 10:58:38 - INFO     - <-- POST /login - 302 FOUND
+2026-02-04 10:58:38 - INFO     - --> GET /
+2026-02-04 10:58:38 - INFO     - <-- GET / - 200 OK
+2026-02-04 10:58:38 - INFO     - --> GET /api/pipelines
+2026-02-04 10:58:38 - INFO     - API     : Fetching pipeline configurations from database...
+2026-02-04 10:58:38 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-02-04 10:58:38 - INFO     - DB      : Database engine initialized successfully.
+2026-02-04 10:58:38 - INFO     - --> GET /favicon.ico
+2026-02-04 10:58:38 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-02-04 10:58:38 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-02-04 10:58:38 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-02-04 11:13:01 - INFO     - ============================================================
+2026-02-04 11:13:01 - INFO     - Server  : Starting Data and Analytics Launchpad UI on http://localhost:3000
+2026-02-04 11:13:01 - INFO     - --- Application Initialization Started ---
+2026-02-04 11:13:01 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Backup\data_pipeline_automation_V3\simple_ui.log
+2026-02-04 11:13:01 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-02-04 11:13:01 - INFO     - Server  : Initialization is running in the background...
+2026-02-04 11:13:01 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-02-04 11:13:01 - INFO     - INIT(2/3): Testing database connection...
+2026-02-04 11:13:01 - INFO     - DB      : Creating temporary engine to test connection...
+2026-02-04 11:13:01 - INFO     - Serving on http://0.0.0.0:3000
+2026-02-04 11:13:01 - INFO     - DB      : Connection test successful.
+2026-02-04 11:13:01 - INFO     - INIT(2/3): Database connection test successful.
+2026-02-04 11:13:01 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-02-04 11:13:01 - INFO     - [3/3] Dagster workspace file found.
+2026-02-04 11:13:01 - INFO     - --- Application Initialization Succeeded ---
+2026-02-04 11:13:01 - INFO     - ============================================================
+2026-02-04 11:13:02 - INFO     - --> GET /
+2026-02-04 11:13:02 - INFO     - <-- GET / - 302 FOUND
+2026-02-04 11:13:02 - INFO     - --> GET /login
+2026-02-04 11:13:02 - INFO     - <-- GET /login - 200 OK
+2026-02-04 11:13:03 - INFO     - --> GET /favicon.ico
+2026-02-04 11:13:03 - INFO     - <-- GET /favicon.ico - 302 FOUND
+2026-02-04 11:13:03 - INFO     - --> GET /login
+2026-02-04 11:13:03 - INFO     - <-- GET /login - 200 OK
+2026-02-04 11:22:03 - INFO     - --> POST /login
+2026-02-04 11:22:03 - INFO     - <-- POST /login - 302 FOUND
+2026-02-04 11:22:03 - INFO     - --> GET /
+2026-02-04 11:22:03 - INFO     - <-- GET / - 200 OK
+2026-02-04 11:22:03 - INFO     - --> GET /api/pipelines
+2026-02-04 11:22:03 - INFO     - API     : Fetching pipeline configurations from database...
+2026-02-04 11:22:03 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-02-04 11:22:03 - INFO     - DB      : Database engine initialized successfully.
+2026-02-04 11:22:03 - INFO     - --> GET /favicon.ico
+2026-02-04 11:22:03 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-02-04 11:22:03 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-02-04 11:22:03 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-02-04 12:55:23 - INFO     - ============================================================
+2026-02-04 12:55:23 - INFO     - Server  : Starting Data and Analytics Launchpad UI on http://localhost:3000
+2026-02-04 12:55:23 - INFO     - --- Application Initialization Started ---
+2026-02-04 12:55:23 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Backup\data_pipeline_automation_V3\simple_ui.log
+2026-02-04 12:55:23 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-02-04 12:55:23 - INFO     - Server  : Initialization is running in the background...
+2026-02-04 12:55:23 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-02-04 12:55:23 - INFO     - INIT(2/3): Testing database connection...
+2026-02-04 12:55:23 - INFO     - DB      : Creating temporary engine to test connection...
+2026-02-04 12:55:23 - INFO     - Serving on http://0.0.0.0:3000
+2026-02-04 12:55:24 - INFO     - DB      : Connection test successful.
+2026-02-04 12:55:24 - INFO     - INIT(2/3): Database connection test successful.
+2026-02-04 12:55:24 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-02-04 12:55:24 - INFO     - [3/3] Dagster workspace file found.
+2026-02-04 12:55:24 - INFO     - --- Application Initialization Succeeded ---
+2026-02-04 12:55:24 - INFO     - ============================================================
+2026-02-04 12:55:25 - INFO     - --> GET /
+2026-02-04 12:55:25 - INFO     - <-- GET / - 302 FOUND
+2026-02-04 12:55:25 - INFO     - --> GET /login
+2026-02-04 12:55:25 - INFO     - <-- GET /login - 200 OK
+2026-02-04 12:55:25 - INFO     - --> GET /favicon.ico
+2026-02-04 12:55:25 - INFO     - <-- GET /favicon.ico - 302 FOUND
+2026-02-04 12:55:25 - INFO     - --> GET /login
+2026-02-04 12:55:25 - INFO     - <-- GET /login - 200 OK
+2026-02-04 12:56:05 - INFO     - --> POST /login
+2026-02-04 12:56:05 - INFO     - <-- POST /login - 302 FOUND
+2026-02-04 12:56:05 - INFO     - --> GET /
+2026-02-04 12:56:05 - INFO     - <-- GET / - 200 OK
+2026-02-04 12:56:05 - INFO     - --> GET /api/pipelines
+2026-02-04 12:56:05 - INFO     - API     : Fetching pipeline configurations from database...
+2026-02-04 12:56:05 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-02-04 12:56:05 - INFO     - DB      : Database engine initialized successfully.
+2026-02-04 12:56:05 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-02-04 12:56:05 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-02-04 12:56:05 - INFO     - --> GET /favicon.ico
+2026-02-04 12:56:05 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-02-04 13:05:28 - INFO     - ============================================================
+2026-02-04 13:05:28 - INFO     - Server  : Starting Data and Analytics Launchpad UI on http://localhost:3000
+2026-02-04 13:05:28 - INFO     - --- Application Initialization Started ---
+2026-02-04 13:05:28 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Backup\data_pipeline_automation_V3\simple_ui.log
+2026-02-04 13:05:28 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-02-04 13:05:28 - INFO     - Server  : Initialization is running in the background...
+2026-02-04 13:05:28 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-02-04 13:05:28 - INFO     - INIT(2/3): Testing database connection...
+2026-02-04 13:05:28 - INFO     - DB      : Creating temporary engine to test connection...
+2026-02-04 13:05:28 - INFO     - Serving on http://0.0.0.0:3000
+2026-02-04 13:05:28 - INFO     - DB      : Connection test successful.
+2026-02-04 13:05:28 - INFO     - INIT(2/3): Database connection test successful.
+2026-02-04 13:05:28 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-02-04 13:05:28 - INFO     - [3/3] Dagster workspace file found.
+2026-02-04 13:05:28 - INFO     - --- Application Initialization Succeeded ---
+2026-02-04 13:05:28 - INFO     - ============================================================
+2026-02-04 13:05:30 - INFO     - --> GET /
+2026-02-04 13:05:30 - INFO     - <-- GET / - 302 FOUND
+2026-02-04 13:05:30 - INFO     - --> GET /login
+2026-02-04 13:05:30 - INFO     - <-- GET /login - 200 OK
+2026-02-04 13:05:30 - INFO     - --> GET /favicon.ico
+2026-02-04 13:05:30 - INFO     - <-- GET /favicon.ico - 302 FOUND
+2026-02-04 13:05:30 - INFO     - --> GET /login
+2026-02-04 13:05:30 - INFO     - <-- GET /login - 200 OK
+2026-02-04 13:05:42 - INFO     - --> POST /login
+2026-02-04 13:05:42 - INFO     - <-- POST /login - 302 FOUND
+2026-02-04 13:05:42 - INFO     - --> GET /
+2026-02-04 13:05:42 - INFO     - <-- GET / - 200 OK
+2026-02-04 13:05:42 - INFO     - --> GET /api/pipelines
+2026-02-04 13:05:42 - INFO     - API     : Fetching pipeline configurations from database...
+2026-02-04 13:05:42 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-02-04 13:05:42 - INFO     - DB      : Database engine initialized successfully.
+2026-02-04 13:05:42 - INFO     - --> GET /favicon.ico
+2026-02-04 13:05:42 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-02-04 13:05:42 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-02-04 13:05:42 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-02-04 13:06:27 - INFO     - ============================================================
+2026-02-04 13:06:27 - INFO     - Server  : Starting Data and Analytics Launchpad UI on http://localhost:3000
+2026-02-04 13:06:27 - INFO     - --- Application Initialization Started ---
+2026-02-04 13:06:27 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Backup\data_pipeline_automation_V3\simple_ui.log
+2026-02-04 13:06:27 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-02-04 13:06:27 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-02-04 13:06:27 - INFO     - Server  : Initialization is running in the background...
+2026-02-04 13:06:27 - INFO     - INIT(2/3): Testing database connection...
+2026-02-04 13:06:27 - INFO     - DB      : Creating temporary engine to test connection...
+2026-02-04 13:06:27 - INFO     - Serving on http://0.0.0.0:3000
+2026-02-04 13:06:28 - INFO     - DB      : Connection test successful.
+2026-02-04 13:06:28 - INFO     - INIT(2/3): Database connection test successful.
+2026-02-04 13:06:28 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-02-04 13:06:28 - INFO     - [3/3] Dagster workspace file found.
+2026-02-04 13:06:28 - INFO     - --- Application Initialization Succeeded ---
+2026-02-04 13:06:28 - INFO     - ============================================================
+2026-02-04 13:06:29 - INFO     - --> GET /
+2026-02-04 13:06:29 - INFO     - <-- GET / - 302 FOUND
+2026-02-04 13:06:29 - INFO     - --> GET /login
+2026-02-04 13:06:29 - INFO     - <-- GET /login - 200 OK
+2026-02-04 13:06:29 - INFO     - --> GET /favicon.ico
+2026-02-04 13:06:29 - INFO     - <-- GET /favicon.ico - 302 FOUND
+2026-02-04 13:06:29 - INFO     - --> GET /login
+2026-02-04 13:06:29 - INFO     - <-- GET /login - 200 OK
+2026-02-04 13:06:44 - INFO     - --> POST /login
+2026-02-04 13:06:44 - INFO     - <-- POST /login - 302 FOUND
+2026-02-04 13:06:44 - INFO     - --> GET /
+2026-02-04 13:06:44 - INFO     - <-- GET / - 200 OK
+2026-02-04 13:06:44 - INFO     - --> GET /api/pipelines
+2026-02-04 13:06:44 - INFO     - API     : Fetching pipeline configurations from database...
+2026-02-04 13:06:44 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-02-04 13:06:44 - INFO     - DB      : Database engine initialized successfully.
+2026-02-04 13:06:44 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-02-04 13:06:44 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-02-04 13:06:44 - INFO     - --> GET /favicon.ico
+2026-02-04 13:06:44 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-02-04 13:20:52 - INFO     - ============================================================
+2026-02-04 13:20:52 - INFO     - Server  : Starting Data and Analytics Launchpad UI on http://localhost:3000
+2026-02-04 13:20:52 - INFO     - --- Application Initialization Started ---
+2026-02-04 13:20:52 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Backup\data_pipeline_automation_V3\simple_ui.log
+2026-02-04 13:20:52 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-02-04 13:20:52 - INFO     - Server  : Initialization is running in the background...
+2026-02-04 13:20:52 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-02-04 13:20:52 - INFO     - INIT(2/3): Testing database connection...
+2026-02-04 13:20:52 - INFO     - DB      : Creating temporary engine to test connection...
+2026-02-04 13:20:52 - INFO     - Serving on http://0.0.0.0:3000
+2026-02-04 13:20:52 - INFO     - DB      : Connection test successful.
+2026-02-04 13:20:52 - INFO     - INIT(2/3): Database connection test successful.
+2026-02-04 13:20:52 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-02-04 13:20:52 - INFO     - [3/3] Dagster workspace file found.
+2026-02-04 13:20:52 - INFO     - --- Application Initialization Succeeded ---
+2026-02-04 13:20:52 - INFO     - ============================================================
+2026-02-04 13:20:54 - INFO     - --> GET /
+2026-02-04 13:20:54 - INFO     - <-- GET / - 302 FOUND
+2026-02-04 13:20:54 - INFO     - --> GET /login
+2026-02-04 13:20:54 - INFO     - <-- GET /login - 200 OK
+2026-02-04 13:20:54 - INFO     - --> GET /favicon.ico
+2026-02-04 13:20:54 - INFO     - <-- GET /favicon.ico - 302 FOUND
+2026-02-04 13:20:54 - INFO     - --> GET /login
+2026-02-04 13:20:54 - INFO     - <-- GET /login - 200 OK
+2026-02-04 13:21:04 - INFO     - --> POST /login
+2026-02-04 13:21:04 - INFO     - <-- POST /login - 302 FOUND
+2026-02-04 13:21:04 - INFO     - --> GET /
+2026-02-04 13:21:04 - INFO     - <-- GET / - 200 OK
+2026-02-04 13:21:04 - INFO     - --> GET /api/pipelines
+2026-02-04 13:21:04 - INFO     - API     : Fetching pipeline configurations from database...
+2026-02-04 13:21:04 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-02-04 13:21:04 - INFO     - DB      : Database engine initialized successfully.
+2026-02-04 13:21:04 - INFO     - --> GET /favicon.ico
+2026-02-04 13:21:04 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-02-04 13:21:04 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-02-04 13:21:04 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-02-04 13:37:24 - INFO     - ============================================================
+2026-02-04 13:37:24 - INFO     - Server  : Starting Data and Analytics Launchpad UI on http://localhost:3000
+2026-02-04 13:37:24 - INFO     - --- Application Initialization Started ---
+2026-02-04 13:37:24 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Backup\data_pipeline_automation_V3\simple_ui.log
+2026-02-04 13:37:24 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-02-04 13:37:24 - INFO     - Server  : Initialization is running in the background...
+2026-02-04 13:37:24 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-02-04 13:37:24 - INFO     - INIT(2/3): Testing database connection...
+2026-02-04 13:37:24 - INFO     - DB      : Creating temporary engine to test connection...
+2026-02-04 13:37:24 - INFO     - Serving on http://0.0.0.0:3000
+2026-02-04 13:37:24 - INFO     - DB      : Connection test successful.
+2026-02-04 13:37:24 - INFO     - INIT(2/3): Database connection test successful.
+2026-02-04 13:37:24 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-02-04 13:37:24 - INFO     - [3/3] Dagster workspace file found.
+2026-02-04 13:37:24 - INFO     - --- Application Initialization Succeeded ---
+2026-02-04 13:37:24 - INFO     - ============================================================
+2026-02-04 13:37:26 - INFO     - --> GET /
+2026-02-04 13:37:26 - INFO     - <-- GET / - 302 FOUND
+2026-02-04 13:37:26 - INFO     - --> GET /login
+2026-02-04 13:37:26 - INFO     - <-- GET /login - 200 OK
+2026-02-04 13:37:26 - INFO     - --> GET /favicon.ico
+2026-02-04 13:37:26 - INFO     - <-- GET /favicon.ico - 302 FOUND
+2026-02-04 13:37:26 - INFO     - --> GET /login
+2026-02-04 13:37:26 - INFO     - <-- GET /login - 200 OK
+2026-02-04 13:37:38 - INFO     - --> POST /login
+2026-02-04 13:37:38 - INFO     - <-- POST /login - 302 FOUND
+2026-02-04 13:37:38 - INFO     - --> GET /
+2026-02-04 13:37:38 - INFO     - <-- GET / - 200 OK
+2026-02-04 13:37:38 - INFO     - --> GET /api/pipelines
+2026-02-04 13:37:38 - INFO     - API     : Fetching pipeline configurations from database...
+2026-02-04 13:37:38 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-02-04 13:37:38 - INFO     - --> GET /favicon.ico
+2026-02-04 13:37:38 - INFO     - DB      : Database engine initialized successfully.
+2026-02-04 13:37:38 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-02-04 13:37:38 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-02-04 13:37:38 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-02-04 13:43:26 - INFO     - ============================================================
+2026-02-04 13:43:26 - INFO     - Server  : Starting Data and Analytics Launchpad UI on http://localhost:3000
+2026-02-04 13:43:26 - INFO     - --- Application Initialization Started ---
+2026-02-04 13:43:26 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Backup\data_pipeline_automation_V3\simple_ui.log
+2026-02-04 13:43:26 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-02-04 13:43:26 - INFO     - Server  : Initialization is running in the background...
+2026-02-04 13:43:26 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-02-04 13:43:26 - INFO     - INIT(2/3): Testing database connection...
+2026-02-04 13:43:26 - INFO     - DB      : Creating temporary engine to test connection...
+2026-02-04 13:43:26 - INFO     - Serving on http://0.0.0.0:3000
+2026-02-04 13:43:26 - INFO     - DB      : Connection test successful.
+2026-02-04 13:43:26 - INFO     - INIT(2/3): Database connection test successful.
+2026-02-04 13:43:26 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-02-04 13:43:26 - INFO     - [3/3] Dagster workspace file found.
+2026-02-04 13:43:26 - INFO     - --- Application Initialization Succeeded ---
+2026-02-04 13:43:26 - INFO     - ============================================================
+2026-02-04 13:43:27 - INFO     - --> GET /
+2026-02-04 13:43:27 - INFO     - <-- GET / - 302 FOUND
+2026-02-04 13:43:27 - INFO     - --> GET /login
+2026-02-04 13:43:27 - INFO     - <-- GET /login - 200 OK
+2026-02-04 13:43:27 - INFO     - --> GET /favicon.ico
+2026-02-04 13:43:27 - INFO     - <-- GET /favicon.ico - 302 FOUND
+2026-02-04 13:43:27 - INFO     - --> GET /login
+2026-02-04 13:43:27 - INFO     - <-- GET /login - 200 OK
+2026-02-04 13:43:46 - INFO     - --> POST /login
+2026-02-04 13:43:46 - INFO     - <-- POST /login - 302 FOUND
+2026-02-04 13:43:46 - INFO     - --> GET /
+2026-02-04 13:43:46 - INFO     - <-- GET / - 200 OK
+2026-02-04 13:43:46 - INFO     - --> GET /api/pipelines
+2026-02-04 13:43:46 - INFO     - API     : Fetching pipeline configurations from database...
+2026-02-04 13:43:46 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-02-04 13:43:46 - INFO     - DB      : Database engine initialized successfully.
+2026-02-04 13:43:46 - INFO     - --> GET /favicon.ico
+2026-02-04 13:43:46 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-02-04 13:43:46 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-02-04 13:43:46 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-02-04 13:46:51 - INFO     - ============================================================
+2026-02-04 13:46:51 - INFO     - --- Application Initialization Started ---
+2026-02-04 13:46:51 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-02-04 13:46:51 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-02-04 13:46:51 - INFO     - INIT(2/3): Testing database connection...
+2026-02-04 13:46:51 - INFO     - DB      : Creating temporary engine to test connection...
+2026-02-04 13:46:51 - INFO     - Server  : Starting Data and Analytics Launchpad UI on http://localhost:3000
+2026-02-04 13:46:51 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Backup\data_pipeline_automation_V3\simple_ui.log
+2026-02-04 13:46:51 - INFO     - Server  : Initialization is running in the background...
+2026-02-04 13:46:51 - INFO     - Serving on http://0.0.0.0:3000
+2026-02-04 13:46:51 - INFO     - DB      : Connection test successful.
+2026-02-04 13:46:51 - INFO     - INIT(2/3): Database connection test successful.
+2026-02-04 13:46:51 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-02-04 13:46:51 - INFO     - [3/3] Dagster workspace file found.
+2026-02-04 13:46:51 - INFO     - --- Application Initialization Succeeded ---
+2026-02-04 13:46:51 - INFO     - ============================================================
+2026-02-04 13:46:52 - INFO     - --> GET /
+2026-02-04 13:46:52 - INFO     - <-- GET / - 302 FOUND
+2026-02-04 13:46:52 - INFO     - --> GET /login
+2026-02-04 13:46:52 - INFO     - <-- GET /login - 200 OK
+2026-02-04 13:46:52 - INFO     - --> GET /favicon.ico
+2026-02-04 13:46:52 - INFO     - <-- GET /favicon.ico - 302 FOUND
+2026-02-04 13:46:52 - INFO     - --> GET /login
+2026-02-04 13:46:52 - INFO     - <-- GET /login - 200 OK
+2026-02-04 13:47:06 - INFO     - --> POST /login
+2026-02-04 13:47:06 - INFO     - <-- POST /login - 302 FOUND
+2026-02-04 13:47:06 - INFO     - --> GET /
+2026-02-04 13:47:06 - INFO     - <-- GET / - 200 OK
+2026-02-04 13:47:06 - INFO     - --> GET /api/pipelines
+2026-02-04 13:47:06 - INFO     - API     : Fetching pipeline configurations from database...
+2026-02-04 13:47:06 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-02-04 13:47:06 - INFO     - --> GET /favicon.ico
+2026-02-04 13:47:06 - INFO     - DB      : Database engine initialized successfully.
+2026-02-04 13:47:06 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-02-04 13:47:06 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-02-04 13:47:06 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-02-04 13:51:19 - INFO     - ============================================================
+2026-02-04 13:51:19 - INFO     - Server  : Starting Data and Analytics Launchpad UI on http://localhost:3000
+2026-02-04 13:51:19 - INFO     - --- Application Initialization Started ---
+2026-02-04 13:51:19 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Backup\data_pipeline_automation_V3\simple_ui.log
+2026-02-04 13:51:19 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-02-04 13:51:19 - INFO     - Server  : Initialization is running in the background...
+2026-02-04 13:51:19 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-02-04 13:51:19 - INFO     - INIT(2/3): Testing database connection...
+2026-02-04 13:51:19 - INFO     - DB      : Creating temporary engine to test connection...
+2026-02-04 13:51:19 - INFO     - Serving on http://0.0.0.0:3000
+2026-02-04 13:51:19 - INFO     - DB      : Connection test successful.
+2026-02-04 13:51:19 - INFO     - INIT(2/3): Database connection test successful.
+2026-02-04 13:51:19 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-02-04 13:51:19 - INFO     - [3/3] Dagster workspace file found.
+2026-02-04 13:51:19 - INFO     - --- Application Initialization Succeeded ---
+2026-02-04 13:51:19 - INFO     - ============================================================
+2026-02-04 13:51:21 - INFO     - --> GET /
+2026-02-04 13:51:21 - INFO     - <-- GET / - 302 FOUND
+2026-02-04 13:51:21 - INFO     - --> GET /login
+2026-02-04 13:51:21 - INFO     - <-- GET /login - 200 OK
+2026-02-04 13:51:21 - INFO     - --> GET /favicon.ico
+2026-02-04 13:51:21 - INFO     - <-- GET /favicon.ico - 302 FOUND
+2026-02-04 13:51:21 - INFO     - --> GET /login
+2026-02-04 13:51:21 - INFO     - <-- GET /login - 200 OK
+2026-02-04 13:51:39 - INFO     - --> POST /login
+2026-02-04 13:51:39 - INFO     - <-- POST /login - 302 FOUND
+2026-02-04 13:51:39 - INFO     - --> GET /
+2026-02-04 13:51:39 - INFO     - SSO     : Generated Analytics URL: http://localhost:8501/?token=eyJ1c2VyIjoiYWRtaW4ifQ.aYOVOw.fp8qpzV6SlTqh7vsBKn6z44n8nQ
+2026-02-04 13:51:39 - INFO     - <-- GET / - 200 OK
+2026-02-04 13:51:39 - INFO     - --> GET /api/pipelines
+2026-02-04 13:51:39 - INFO     - API     : Fetching pipeline configurations from database...
+2026-02-04 13:51:39 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-02-04 13:51:39 - INFO     - --> GET /favicon.ico
+2026-02-04 13:51:39 - INFO     - DB      : Database engine initialized successfully.
+2026-02-04 13:51:39 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-02-04 13:51:39 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-02-04 13:51:39 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-02-04 14:00:35 - INFO     - ============================================================
+2026-02-04 14:00:35 - INFO     - Server  : Starting Data and Analytics Launchpad UI on http://localhost:3000
+2026-02-04 14:00:35 - INFO     - --- Application Initialization Started ---
+2026-02-04 14:00:35 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Backup\data_pipeline_automation_V3\simple_ui.log
+2026-02-04 14:00:35 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-02-04 14:00:35 - INFO     - Server  : Initialization is running in the background...
+2026-02-04 14:00:35 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-02-04 14:00:35 - INFO     - INIT(2/3): Testing database connection...
+2026-02-04 14:00:35 - INFO     - DB      : Creating temporary engine to test connection...
+2026-02-04 14:00:35 - INFO     - Serving on http://0.0.0.0:3000
+2026-02-04 14:00:36 - INFO     - DB      : Connection test successful.
+2026-02-04 14:00:36 - INFO     - INIT(2/3): Database connection test successful.
+2026-02-04 14:00:36 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-02-04 14:00:36 - INFO     - [3/3] Dagster workspace file found.
+2026-02-04 14:00:36 - INFO     - --- Application Initialization Succeeded ---
+2026-02-04 14:00:36 - INFO     - ============================================================
+2026-02-04 14:00:37 - INFO     - --> GET /
+2026-02-04 14:00:37 - INFO     - <-- GET / - 302 FOUND
+2026-02-04 14:00:37 - INFO     - --> GET /login
+2026-02-04 14:00:37 - INFO     - <-- GET /login - 200 OK
+2026-02-04 14:00:37 - INFO     - --> GET /favicon.ico
+2026-02-04 14:00:37 - INFO     - <-- GET /favicon.ico - 302 FOUND
+2026-02-04 14:00:37 - INFO     - --> GET /login
+2026-02-04 14:00:37 - INFO     - <-- GET /login - 200 OK
+2026-02-04 14:00:46 - INFO     - --> POST /login
+2026-02-04 14:00:46 - INFO     - <-- POST /login - 302 FOUND
+2026-02-04 14:00:46 - INFO     - --> GET /
+2026-02-04 14:00:46 - INFO     - SSO     : Generated Analytics URL: http://localhost:8501/?token=eyJ1c2VyIjoiYWRtaW4ifQ.aYOXXg.hT0BNTjW08Yh2OsYQKkHTNRsSF4
+2026-02-04 14:00:46 - INFO     - <-- GET / - 200 OK
+2026-02-04 14:00:47 - INFO     - --> GET /api/pipelines
+2026-02-04 14:00:47 - INFO     - API     : Fetching pipeline configurations from database...
+2026-02-04 14:00:47 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-02-04 14:00:47 - INFO     - DB      : Database engine initialized successfully.
+2026-02-04 14:00:47 - INFO     - --> GET /favicon.ico
+2026-02-04 14:00:47 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-02-04 14:00:47 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-02-04 14:00:47 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-02-04 14:03:04 - INFO     - --> GET /.well-known/appspecific/com.chrome.devtools.json
+2026-02-04 14:03:04 - WARNING  - 404 Not Found: http://localhost:3000/.well-known/appspecific/com.chrome.devtools.json
+2026-02-04 14:03:04 - INFO     - <-- GET /.well-known/appspecific/com.chrome.devtools.json - 404 NOT FOUND
+2026-02-04 14:12:08 - INFO     - ============================================================
+2026-02-04 14:12:08 - INFO     - Server  : Starting Data and Analytics Launchpad UI on http://localhost:3000
+2026-02-04 14:12:08 - INFO     - --- Application Initialization Started ---
+2026-02-04 14:12:08 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Backup\data_pipeline_automation_V3\simple_ui.log
+2026-02-04 14:12:08 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-02-04 14:12:08 - INFO     - Server  : Initialization is running in the background...
+2026-02-04 14:12:08 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-02-04 14:12:08 - INFO     - INIT(2/3): Testing database connection...
+2026-02-04 14:12:08 - INFO     - DB      : Creating temporary engine to test connection...
+2026-02-04 14:12:08 - INFO     - Serving on http://0.0.0.0:3000
+2026-02-04 14:12:09 - INFO     - DB      : Connection test successful.
+2026-02-04 14:12:09 - INFO     - INIT(2/3): Database connection test successful.
+2026-02-04 14:12:09 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-02-04 14:12:09 - INFO     - [3/3] Dagster workspace file found.
+2026-02-04 14:12:09 - INFO     - --- Application Initialization Succeeded ---
+2026-02-04 14:12:09 - INFO     - ============================================================
+2026-02-04 14:12:10 - INFO     - --> GET /
+2026-02-04 14:12:10 - INFO     - <-- GET / - 302 FOUND
+2026-02-04 14:12:10 - INFO     - --> GET /login
+2026-02-04 14:12:10 - INFO     - <-- GET /login - 200 OK
+2026-02-04 14:12:10 - INFO     - --> GET /favicon.ico
+2026-02-04 14:12:10 - INFO     - <-- GET /favicon.ico - 302 FOUND
+2026-02-04 14:12:10 - INFO     - --> GET /login
+2026-02-04 14:12:10 - INFO     - <-- GET /login - 200 OK
+2026-02-04 14:12:21 - INFO     - --> POST /login
+2026-02-04 14:12:21 - INFO     - <-- POST /login - 302 FOUND
+2026-02-04 14:12:21 - INFO     - --> GET /
+2026-02-04 14:12:21 - INFO     - SSO     : Generated Analytics URL: http://localhost:8501/?token=eyJ1c2VyIjoiYWRtaW4ifQ.aYOaFQ.q38FdBvbD0hRrb_WcATIX1cBr6k
+2026-02-04 14:12:21 - INFO     - <-- GET / - 200 OK
+2026-02-04 14:12:21 - INFO     - --> GET /api/pipelines
+2026-02-04 14:12:21 - INFO     - API     : Fetching pipeline configurations from database...
+2026-02-04 14:12:21 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-02-04 14:12:21 - INFO     - DB      : Database engine initialized successfully.
+2026-02-04 14:12:21 - INFO     - --> GET /favicon.ico
+2026-02-04 14:12:21 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-02-04 14:12:21 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-02-04 14:12:21 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-02-04 14:23:06 - INFO     - ============================================================
+2026-02-04 14:23:06 - INFO     - Server  : Starting Data and Analytics Launchpad UI on http://localhost:3000
+2026-02-04 14:23:06 - INFO     - --- Application Initialization Started ---
+2026-02-04 14:23:06 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Backup\data_pipeline_automation_V3\simple_ui.log
+2026-02-04 14:23:06 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-02-04 14:23:06 - INFO     - Server  : Initialization is running in the background...
+2026-02-04 14:23:06 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-02-04 14:23:06 - INFO     - INIT(2/3): Testing database connection...
+2026-02-04 14:23:06 - INFO     - DB      : Creating temporary engine to test connection...
+2026-02-04 14:23:06 - INFO     - Serving on http://0.0.0.0:3000
+2026-02-04 14:23:06 - INFO     - DB      : Connection test successful.
+2026-02-04 14:23:06 - INFO     - INIT(2/3): Database connection test successful.
+2026-02-04 14:23:06 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-02-04 14:23:06 - INFO     - [3/3] Dagster workspace file found.
+2026-02-04 14:23:06 - INFO     - --- Application Initialization Succeeded ---
+2026-02-04 14:23:06 - INFO     - ============================================================
+2026-02-04 14:23:07 - INFO     - --> GET /
+2026-02-04 14:23:07 - INFO     - <-- GET / - 302 FOUND
+2026-02-04 14:23:07 - INFO     - --> GET /login
+2026-02-04 14:23:07 - INFO     - <-- GET /login - 200 OK
+2026-02-04 14:23:07 - INFO     - --> GET /favicon.ico
+2026-02-04 14:23:07 - INFO     - <-- GET /favicon.ico - 302 FOUND
+2026-02-04 14:23:07 - INFO     - --> GET /login
+2026-02-04 14:23:07 - INFO     - <-- GET /login - 200 OK
+2026-02-04 14:23:18 - INFO     - --> POST /login
+2026-02-04 14:23:18 - INFO     - <-- POST /login - 302 FOUND
+2026-02-04 14:23:18 - INFO     - --> GET /
+2026-02-04 14:23:18 - INFO     - SSO     : Generated Analytics URL: http://localhost:8501/?token=eyJ1c2VyIjoiYWRtaW4ifQ.aYOcpg.Y_gC4ZWttsvWkF7qaNinMfoRctk
+2026-02-04 14:23:18 - INFO     - <-- GET / - 200 OK
+2026-02-04 14:23:18 - INFO     - --> GET /api/pipelines
+2026-02-04 14:23:18 - INFO     - API     : Fetching pipeline configurations from database...
+2026-02-04 14:23:18 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-02-04 14:23:18 - INFO     - DB      : Database engine initialized successfully.
+2026-02-04 14:23:18 - INFO     - --> GET /favicon.ico
+2026-02-04 14:23:18 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-02-04 14:23:18 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-02-04 14:23:18 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-02-04 14:25:32 - INFO     - ============================================================
+2026-02-04 14:25:32 - INFO     - Server  : Launching Analytics Hub on http://localhost:8501...
+2026-02-04 14:25:32 - INFO     - --- Application Initialization Started ---
+2026-02-04 14:25:32 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-02-04 14:25:32 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-02-04 14:25:32 - INFO     - INIT(2/3): Testing database connection...
+2026-02-04 14:25:32 - INFO     - DB      : Creating temporary engine to test connection...
+2026-02-04 14:25:32 - INFO     - Server  : Starting Data and Analytics Launchpad UI on http://localhost:3000
+2026-02-04 14:25:32 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Backup\data_pipeline_automation_V3\simple_ui.log
+2026-02-04 14:25:32 - INFO     - Server  : Initialization is running in the background...
+2026-02-04 14:25:32 - INFO     - Serving on http://0.0.0.0:3000
+2026-02-04 14:25:32 - INFO     - DB      : Connection test successful.
+2026-02-04 14:25:32 - INFO     - INIT(2/3): Database connection test successful.
+2026-02-04 14:25:32 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-02-04 14:25:32 - INFO     - [3/3] Dagster workspace file found.
+2026-02-04 14:25:32 - INFO     - --- Application Initialization Succeeded ---
+2026-02-04 14:25:32 - INFO     - ============================================================
+2026-02-04 14:25:33 - INFO     - --> GET /
+2026-02-04 14:25:33 - INFO     - <-- GET / - 302 FOUND
+2026-02-04 14:25:33 - INFO     - --> GET /login
+2026-02-04 14:25:33 - INFO     - <-- GET /login - 200 OK
+2026-02-04 14:25:33 - INFO     - --> GET /favicon.ico
+2026-02-04 14:25:33 - INFO     - <-- GET /favicon.ico - 302 FOUND
+2026-02-04 14:25:33 - INFO     - --> GET /login
+2026-02-04 14:25:33 - INFO     - <-- GET /login - 200 OK
+2026-02-04 14:31:41 - INFO     - ============================================================
+2026-02-04 14:31:41 - INFO     - Server  : Launching Analytics Hub on http://localhost:8501...
+2026-02-04 14:31:41 - INFO     - --- Application Initialization Started ---
+2026-02-04 14:31:41 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-02-04 14:31:41 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-02-04 14:31:41 - INFO     - INIT(2/3): Testing database connection...
+2026-02-04 14:31:41 - INFO     - DB      : Creating temporary engine to test connection...
+2026-02-04 14:31:41 - INFO     - Server  : Starting Data and Analytics Launchpad UI on http://localhost:3000
+2026-02-04 14:31:41 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Backup\data_pipeline_automation_V3\simple_ui.log
+2026-02-04 14:31:41 - INFO     - Server  : Initialization is running in the background...
+2026-02-04 14:31:41 - INFO     - Serving on http://0.0.0.0:3000
+2026-02-04 14:31:41 - INFO     - DB      : Connection test successful.
+2026-02-04 14:31:41 - INFO     - INIT(2/3): Database connection test successful.
+2026-02-04 14:31:41 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-02-04 14:31:41 - INFO     - [3/3] Dagster workspace file found.
+2026-02-04 14:31:41 - INFO     - --- Application Initialization Succeeded ---
+2026-02-04 14:31:41 - INFO     - ============================================================
+2026-02-04 14:31:43 - INFO     - --> GET /
+2026-02-04 14:31:43 - INFO     - <-- GET / - 302 FOUND
+2026-02-04 14:31:43 - INFO     - --> GET /login
+2026-02-04 14:31:43 - INFO     - <-- GET /login - 200 OK
+2026-02-04 14:31:43 - INFO     - --> GET /favicon.ico
+2026-02-04 14:31:43 - INFO     - <-- GET /favicon.ico - 302 FOUND
+2026-02-04 14:31:43 - INFO     - --> GET /login
+2026-02-04 14:31:43 - INFO     - <-- GET /login - 200 OK
+2026-02-04 14:31:52 - INFO     - --> POST /login
+2026-02-04 14:31:52 - INFO     - <-- POST /login - 302 FOUND
+2026-02-04 14:31:52 - INFO     - --> GET /
+2026-02-04 14:31:52 - INFO     - SSO     : Generated Analytics URL: http://localhost:8501/?token=eyJ1c2VyIjoiYWRtaW4ifQ.aYOeqA.omT6SRBnNTzvdJZlEHn5a7R9ML8
+2026-02-04 14:31:53 - INFO     - <-- GET / - 200 OK
+2026-02-04 14:31:53 - INFO     - --> GET /api/pipelines
+2026-02-04 14:31:53 - INFO     - API     : Fetching pipeline configurations from database...
+2026-02-04 14:31:53 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-02-04 14:31:53 - INFO     - DB      : Database engine initialized successfully.
+2026-02-04 14:31:53 - INFO     - --> GET /favicon.ico
+2026-02-04 14:31:53 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-02-04 14:31:53 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-02-04 14:31:53 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-02-04 14:38:10 - INFO     - ============================================================
+2026-02-04 14:38:10 - INFO     - Server  : Starting Data and Analytics Launchpad UI on http://localhost:3000
+2026-02-04 14:38:10 - INFO     - --- Application Initialization Started ---
+2026-02-04 14:38:10 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Backup\data_pipeline_automation_V3\simple_ui.log
+2026-02-04 14:38:10 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-02-04 14:38:10 - INFO     - Server  : Initialization is running in the background...
+2026-02-04 14:38:10 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-02-04 14:38:10 - INFO     - INIT(2/3): Testing database connection...
+2026-02-04 14:38:10 - INFO     - DB      : Creating temporary engine to test connection...
+2026-02-04 14:38:10 - INFO     - Serving on http://0.0.0.0:3000
+2026-02-04 14:38:10 - INFO     - DB      : Connection test successful.
+2026-02-04 14:38:10 - INFO     - INIT(2/3): Database connection test successful.
+2026-02-04 14:38:10 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-02-04 14:38:10 - INFO     - [3/3] Dagster workspace file found.
+2026-02-04 14:38:10 - INFO     - --- Application Initialization Succeeded ---
+2026-02-04 14:38:10 - INFO     - ============================================================
+2026-02-04 14:38:11 - INFO     - --> GET /
+2026-02-04 14:38:11 - INFO     - <-- GET / - 302 FOUND
+2026-02-04 14:38:11 - INFO     - --> GET /login
+2026-02-04 14:38:11 - INFO     - <-- GET /login - 200 OK
+2026-02-04 14:38:11 - INFO     - --> GET /favicon.ico
+2026-02-04 14:38:11 - INFO     - <-- GET /favicon.ico - 302 FOUND
+2026-02-04 14:38:11 - INFO     - --> GET /login
+2026-02-04 14:38:11 - INFO     - <-- GET /login - 200 OK
+2026-02-04 14:38:21 - INFO     - --> POST /login
+2026-02-04 14:38:21 - INFO     - <-- POST /login - 302 FOUND
+2026-02-04 14:38:21 - INFO     - --> GET /
+2026-02-04 14:38:21 - INFO     - SSO     : Generated Analytics URL: http://localhost:8501/?token=eyJ1c2VyIjoiYWRtaW4ifQ.aYOgLQ.G9VmnwiKX1WVsHhCHB3TlieJdKs
+2026-02-04 14:38:21 - INFO     - <-- GET / - 200 OK
+2026-02-04 14:38:21 - INFO     - --> GET /api/pipelines
+2026-02-04 14:38:21 - INFO     - API     : Fetching pipeline configurations from database...
+2026-02-04 14:38:21 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-02-04 14:38:21 - INFO     - --> GET /favicon.ico
+2026-02-04 14:38:21 - INFO     - DB      : Database engine initialized successfully.
+2026-02-04 14:38:21 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-02-04 14:38:21 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-02-04 14:38:21 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-02-04 14:42:42 - INFO     - ============================================================
+2026-02-04 14:42:42 - INFO     - Server  : Starting Data and Analytics Launchpad UI on http://localhost:3000
+2026-02-04 14:42:42 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Backup\data_pipeline_automation_V3\simple_ui.log
+2026-02-04 14:42:42 - INFO     - Server  : Initialization is running in the background...
+2026-02-04 14:42:42 - INFO     - --- Application Initialization Started ---
+2026-02-04 14:42:42 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-02-04 14:42:42 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-02-04 14:42:42 - INFO     - INIT(2/3): Testing database connection...
+2026-02-04 14:42:42 - INFO     - DB      : Creating temporary engine to test connection...
+2026-02-04 14:42:42 - INFO     - Serving on http://0.0.0.0:3000
+2026-02-04 14:42:42 - INFO     - DB      : Connection test successful.
+2026-02-04 14:42:42 - INFO     - INIT(2/3): Database connection test successful.
+2026-02-04 14:42:42 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-02-04 14:42:42 - INFO     - [3/3] Dagster workspace file found.
+2026-02-04 14:42:42 - INFO     - --- Application Initialization Succeeded ---
+2026-02-04 14:42:42 - INFO     - ============================================================
+2026-02-04 14:42:43 - INFO     - --> GET /
+2026-02-04 14:42:43 - INFO     - <-- GET / - 302 FOUND
+2026-02-04 14:42:43 - INFO     - --> GET /login
+2026-02-04 14:42:43 - INFO     - <-- GET /login - 200 OK
+2026-02-04 14:42:43 - INFO     - --> GET /favicon.ico
+2026-02-04 14:42:43 - INFO     - <-- GET /favicon.ico - 302 FOUND
+2026-02-04 14:42:43 - INFO     - --> GET /login
+2026-02-04 14:42:43 - INFO     - <-- GET /login - 200 OK
+2026-02-04 14:42:54 - INFO     - --> POST /login
+2026-02-04 14:42:54 - INFO     - <-- POST /login - 302 FOUND
+2026-02-04 14:42:54 - INFO     - --> GET /
+2026-02-04 14:42:54 - INFO     - SSO     : Generated Analytics URL: http://localhost:8501/?token=eyJ1c2VyIjoiYWRtaW4ifQ.aYOhPg.Yxqzd3g8g3WzpUjScrkI2071jeo
+2026-02-04 14:42:54 - INFO     - <-- GET / - 200 OK
+2026-02-04 14:42:54 - INFO     - --> GET /api/pipelines
+2026-02-04 14:42:54 - INFO     - API     : Fetching pipeline configurations from database...
+2026-02-04 14:42:54 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-02-04 14:42:54 - INFO     - DB      : Database engine initialized successfully.
+2026-02-04 14:42:54 - INFO     - --> GET /favicon.ico
+2026-02-04 14:42:54 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-02-04 14:42:54 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-02-04 14:42:54 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-02-04 14:48:57 - INFO     - ============================================================
+2026-02-04 14:48:57 - INFO     - Server  : Starting Data and Analytics Launchpad UI on http://localhost:3000
+2026-02-04 14:48:57 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Backup\data_pipeline_automation_V3\simple_ui.log
+2026-02-04 14:48:57 - INFO     - Server  : Initialization is running in the background...
+2026-02-04 14:48:57 - INFO     - --- Application Initialization Started ---
+2026-02-04 14:48:57 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-02-04 14:48:57 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-02-04 14:48:57 - INFO     - INIT(2/3): Testing database connection...
+2026-02-04 14:48:57 - INFO     - DB      : Creating temporary engine to test connection...
+2026-02-04 14:48:57 - INFO     - Serving on http://0.0.0.0:3000
+2026-02-04 14:48:57 - INFO     - DB      : Connection test successful.
+2026-02-04 14:48:57 - INFO     - INIT(2/3): Database connection test successful.
+2026-02-04 14:48:57 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-02-04 14:48:57 - INFO     - [3/3] Dagster workspace file found.
+2026-02-04 14:48:57 - INFO     - --- Application Initialization Succeeded ---
+2026-02-04 14:48:57 - INFO     - ============================================================
+2026-02-04 14:48:59 - INFO     - --> GET /
+2026-02-04 14:48:59 - INFO     - <-- GET / - 302 FOUND
+2026-02-04 14:48:59 - INFO     - --> GET /login
+2026-02-04 14:48:59 - INFO     - <-- GET /login - 200 OK
+2026-02-04 14:48:59 - INFO     - --> GET /favicon.ico
+2026-02-04 14:48:59 - INFO     - <-- GET /favicon.ico - 302 FOUND
+2026-02-04 14:48:59 - INFO     - --> GET /login
+2026-02-04 14:48:59 - INFO     - <-- GET /login - 200 OK
+2026-02-04 14:50:52 - INFO     - --> POST /login
+2026-02-04 14:50:52 - INFO     - <-- POST /login - 302 FOUND
+2026-02-04 14:50:52 - INFO     - --> GET /
+2026-02-04 14:50:52 - INFO     - SSO     : Generated Analytics URL: http://localhost:8501/?token=eyJ1c2VyIjoiYWRtaW4ifQ.aYOjHA.5Xor1Fc75nQSTGtTH1W8xr73kRc
+2026-02-04 14:50:52 - INFO     - <-- GET / - 200 OK
+2026-02-04 14:50:52 - INFO     - --> GET /api/pipelines
+2026-02-04 14:50:52 - INFO     - API     : Fetching pipeline configurations from database...
+2026-02-04 14:50:52 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-02-04 14:50:52 - INFO     - DB      : Database engine initialized successfully.
+2026-02-04 14:50:52 - INFO     - --> GET /favicon.ico
+2026-02-04 14:50:52 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-02-04 14:50:52 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-02-04 14:50:52 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-02-04 15:11:11 - INFO     - ============================================================
+2026-02-04 15:11:11 - INFO     - Server  : Launching Analytics Hub on http://localhost:8501...
+2026-02-04 15:11:11 - INFO     - --- Application Initialization Started ---
+2026-02-04 15:11:11 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-02-04 15:11:11 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-02-04 15:11:11 - INFO     - INIT(2/3): Testing database connection...
+2026-02-04 15:11:11 - INFO     - DB      : Creating temporary engine to test connection...
+2026-02-04 15:11:11 - INFO     - Server  : Starting Data and Analytics Launchpad UI on http://localhost:3000
+2026-02-04 15:11:11 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Backup\data_pipeline_automation_V3\simple_ui.log
+2026-02-04 15:11:11 - INFO     - Server  : Initialization is running in the background...
+2026-02-04 15:11:11 - INFO     - Serving on http://0.0.0.0:3000
+2026-02-04 15:11:11 - INFO     - DB      : Connection test successful.
+2026-02-04 15:11:11 - INFO     - INIT(2/3): Database connection test successful.
+2026-02-04 15:11:11 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-02-04 15:11:11 - INFO     - [3/3] Dagster workspace file found.
+2026-02-04 15:11:11 - INFO     - --- Application Initialization Succeeded ---
+2026-02-04 15:11:11 - INFO     - ============================================================
+2026-02-04 15:11:13 - INFO     - --> GET /
+2026-02-04 15:11:13 - INFO     - <-- GET / - 302 FOUND
+2026-02-04 15:11:13 - INFO     - --> GET /login
+2026-02-04 15:11:13 - INFO     - <-- GET /login - 200 OK
+2026-02-04 15:11:13 - INFO     - --> GET /favicon.ico
+2026-02-04 15:11:13 - INFO     - <-- GET /favicon.ico - 302 FOUND
+2026-02-04 15:11:13 - INFO     - --> GET /login
+2026-02-04 15:11:13 - INFO     - <-- GET /login - 200 OK
+2026-02-04 15:11:49 - INFO     - --> POST /login
+2026-02-04 15:11:49 - INFO     - <-- POST /login - 302 FOUND
+2026-02-04 15:11:49 - INFO     - --> GET /
+2026-02-04 15:11:49 - INFO     - SSO     : Generated Analytics URL: http://localhost:8501/?token=eyJ1c2VyIjoiYWRtaW4ifQ.aYOoBQ.SfMFyg-BIiadFMxw7IUVtAj8ids
+2026-02-04 15:11:49 - INFO     - <-- GET / - 200 OK
+2026-02-04 15:11:49 - INFO     - --> GET /api/pipelines
+2026-02-04 15:11:49 - INFO     - API     : Fetching pipeline configurations from database...
+2026-02-04 15:11:49 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-02-04 15:11:49 - INFO     - DB      : Database engine initialized successfully.
+2026-02-04 15:11:49 - INFO     - --> GET /favicon.ico
+2026-02-04 15:11:49 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-02-04 15:11:49 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-02-04 15:11:49 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-02-04 15:38:03 - INFO     - ============================================================
+2026-02-04 15:38:03 - INFO     - Server  : Launching Analytics Hub on http://localhost:8501...
+2026-02-04 15:38:03 - INFO     - --- Application Initialization Started ---
+2026-02-04 15:38:03 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-02-04 15:38:03 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-02-04 15:38:03 - INFO     - INIT(2/3): Testing database connection...
+2026-02-04 15:38:03 - INFO     - DB      : Creating temporary engine to test connection...
+2026-02-04 15:38:03 - INFO     - Server  : Starting Data and Analytics Launchpad UI on http://localhost:3000
+2026-02-04 15:38:03 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Backup\data_pipeline_automation_V3\simple_ui.log
+2026-02-04 15:38:03 - INFO     - Server  : Initialization is running in the background...
+2026-02-04 15:38:03 - INFO     - Serving on http://0.0.0.0:3000
+2026-02-04 15:38:04 - INFO     - DB      : Connection test successful.
+2026-02-04 15:38:04 - INFO     - INIT(2/3): Database connection test successful.
+2026-02-04 15:38:04 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-02-04 15:38:04 - INFO     - [3/3] Dagster workspace file found.
+2026-02-04 15:38:04 - INFO     - --- Application Initialization Succeeded ---
+2026-02-04 15:38:04 - INFO     - ============================================================
+2026-02-04 15:38:05 - INFO     - --> GET /
+2026-02-04 15:38:05 - INFO     - <-- GET / - 302 FOUND
+2026-02-04 15:38:05 - INFO     - --> GET /login
+2026-02-04 15:38:05 - INFO     - <-- GET /login - 200 OK
+2026-02-04 15:38:05 - INFO     - --> GET /favicon.ico
+2026-02-04 15:38:05 - INFO     - <-- GET /favicon.ico - 302 FOUND
+2026-02-04 15:38:05 - INFO     - --> GET /login
+2026-02-04 15:38:05 - INFO     - <-- GET /login - 200 OK
+2026-02-04 15:38:18 - INFO     - --> POST /login
+2026-02-04 15:38:18 - INFO     - <-- POST /login - 302 FOUND
+2026-02-04 15:38:18 - INFO     - --> GET /
+2026-02-04 15:38:18 - INFO     - SSO     : Generated Analytics URL: http://localhost:8501/?token=eyJ1c2VyIjoiYWRtaW4ifQ.aYOuOg.U_FpJuoj8CBzyIJWm7x9Do1geFg
+2026-02-04 15:38:18 - INFO     - <-- GET / - 200 OK
+2026-02-04 15:38:18 - INFO     - --> GET /api/pipelines
+2026-02-04 15:38:18 - INFO     - API     : Fetching pipeline configurations from database...
+2026-02-04 15:38:18 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-02-04 15:38:18 - INFO     - DB      : Database engine initialized successfully.
+2026-02-04 15:38:18 - INFO     - --> GET /favicon.ico
+2026-02-04 15:38:18 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-02-04 15:38:18 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-02-04 15:38:18 - INFO     - <-- GET /api/pipelines - 200 OK
+2026-02-04 15:47:42 - INFO     - ============================================================
+2026-02-04 15:47:42 - INFO     - Server  : Launching Analytics Hub on http://localhost:8501...
+2026-02-04 15:47:42 - INFO     - --- Application Initialization Started ---
+2026-02-04 15:47:42 - INFO     - INIT(1/3): Retrieving database credentials from environment...
+2026-02-04 15:47:42 - INFO     - INIT(1/3): Successfully retrieved database credentials.
+2026-02-04 15:47:42 - INFO     - INIT(2/3): Testing database connection...
+2026-02-04 15:47:42 - INFO     - DB      : Creating temporary engine to test connection...
+2026-02-04 15:47:42 - INFO     - Server  : Starting Data and Analytics Launchpad UI on http://localhost:3000
+2026-02-04 15:47:42 - INFO     - Server  : Logging detailed errors to C:\Users\Staff\Dropbox\Backup\data_pipeline_automation_V3\simple_ui.log
+2026-02-04 15:47:42 - INFO     - Server  : Initialization is running in the background...
+2026-02-04 15:47:42 - INFO     - Serving on http://0.0.0.0:3000
+2026-02-04 15:47:42 - INFO     - DB      : Connection test successful.
+2026-02-04 15:47:42 - INFO     - INIT(2/3): Database connection test successful.
+2026-02-04 15:47:42 - INFO     - [3/3] Verifying Dagster workspace configuration...
+2026-02-04 15:47:42 - INFO     - [3/3] Dagster workspace file found.
+2026-02-04 15:47:42 - INFO     - --- Application Initialization Succeeded ---
+2026-02-04 15:47:42 - INFO     - ============================================================
+2026-02-04 15:47:44 - INFO     - --> GET /
+2026-02-04 15:47:44 - INFO     - <-- GET / - 302 FOUND
+2026-02-04 15:47:44 - INFO     - --> GET /login
+2026-02-04 15:47:44 - INFO     - <-- GET /login - 200 OK
+2026-02-04 15:47:44 - INFO     - --> GET /favicon.ico
+2026-02-04 15:47:44 - INFO     - <-- GET /favicon.ico - 302 FOUND
+2026-02-04 15:47:44 - INFO     - --> GET /login
+2026-02-04 15:47:44 - INFO     - <-- GET /login - 200 OK
+2026-02-04 15:48:20 - INFO     - --> POST /login
+2026-02-04 15:48:20 - INFO     - <-- POST /login - 302 FOUND
+2026-02-04 15:48:20 - INFO     - --> GET /
+2026-02-04 15:48:20 - INFO     - SSO     : Generated Analytics URL: http://localhost:8501/?token=eyJ1c2VyIjoiYWRtaW4ifQ.aYOwlA.rfE75jV3jJL8sYWgroIph5Lp7d8
+2026-02-04 15:48:20 - INFO     - <-- GET / - 200 OK
+2026-02-04 15:48:20 - INFO     - --> GET /api/pipelines
+2026-02-04 15:48:20 - INFO     - API     : Fetching pipeline configurations from database...
+2026-02-04 15:48:20 - INFO     - DB      : Initializing persistent, thread-safe database engine...
+2026-02-04 15:48:20 - INFO     - DB      : Database engine initialized successfully.
+2026-02-04 15:48:20 - INFO     - --> GET /favicon.ico
+2026-02-04 15:48:20 - INFO     - <-- GET /favicon.ico - 204 NO CONTENT
+2026-02-04 15:48:20 - INFO     - API     : Successfully fetched and processed 3 pipelines.
+2026-02-04 15:48:20 - INFO     - <-- GET /api/pipelines - 200 OK

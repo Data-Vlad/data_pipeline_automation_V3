@@ -5,7 +5,7 @@ setlocal
 :: ============================================================================
 :: Configuration
 :: ============================================================================
-title Data Launchpad Launcher
+title Data and Analytics Launchpad
 cd /d "%~dp0"
 
 set "SCRIPT_DIR=%~dp0"
@@ -63,7 +63,7 @@ goto :main
 cls
 echo.
 echo  ========================================================================
-echo                           Data Launchpad Launcher
+echo                           Data and Analytics Launchpad
 echo  ======================================================================
 echo.
 
@@ -186,7 +186,7 @@ if %errorlevel% neq 0 (
 call :log INFO "Step 4/6: Loading application configuration and credentials..."
 
 :: Create desktop shortcut
-set "SHORTCUT_PATH=%USERPROFILE%\Desktop\Launch Data Importer.lnk"
+set "SHORTCUT_PATH=%USERPROFILE%\Desktop\Data and Analytics Launchpad.lnk"
 if not exist "%SHORTCUT_PATH%" (
     call :log INFO "Creating desktop shortcut..."
     (
@@ -195,7 +195,7 @@ if not exist "%SHORTCUT_PATH%" (
         echo Set oLink = oWS.CreateShortcut^(sLinkFile^)
         echo oLink.TargetPath = "%~f0"
         echo oLink.IconLocation = "imageres.dll, 71"
-        echo oLink.Description = "Launch the Data Launchpad application"
+        echo oLink.Description = "Data and Analytics Launchpad"
         echo oLink.WorkingDirectory = "%SCRIPT_DIR%"
         echo oLink.Save
     ) >"%TEMP%\create_shortcut.vbs"
@@ -209,7 +209,7 @@ if not exist "%ENV_FILE%" (
         echo DB_SERVER=localhost
         echo DB_DATABASE=TargetDatabase
         echo DB_DRIVER=ODBC Driver 17 for SQL Server
-        echo CREDENTIAL_TARGET=WindowsCredentialName
+        echo CREDENTIAL_TARGET=DataAndAnalyticsLaunchpad/DB_Credentials
         echo OPENAI_API_KEY=sk-...
     ) > "%ENV_FILE%"
     call :handle_error "The .env file was missing. A template has been created. Please configure it and run again."
@@ -223,8 +223,9 @@ for /f "usebackq tokens=1,* delims==" %%i in ("%ENV_FILE%") do (
     if /i "!line!"=="DB_DRIVER" set "DB_DRIVER=%%~j"
     if /i "!line!"=="CREDENTIAL_TARGET" set "CREDENTIAL_TARGET=%%~j"
     if /i "!line!"=="OPENAI_API_KEY" set "OPENAI_API_KEY=%%~j"
+    if /i "!line!"=="ANALYTICS_PUBLIC_URL" set "ANALYTICS_PUBLIC_URL=%%~j"
 )
-endlocal & set "DB_SERVER=%DB_SERVER%" & set "DB_DATABASE=%DB_DATABASE%" & set "DB_DRIVER=%DB_DRIVER%" & set "CREDENTIAL_TARGET=%CREDENTIAL_TARGET%" & set "OPENAI_API_KEY=%OPENAI_API_KEY%"
+endlocal & set "DB_SERVER=%DB_SERVER%" & set "DB_DATABASE=%DB_DATABASE%" & set "DB_DRIVER=%DB_DRIVER%" & set "CREDENTIAL_TARGET=%CREDENTIAL_TARGET%" & set "OPENAI_API_KEY=%OPENAI_API_KEY%" & set "ANALYTICS_PUBLIC_URL=%ANALYTICS_PUBLIC_URL%"
 
 if not defined DB_SERVER call :handle_error "DB_SERVER is not defined in the .env file."
 if not defined DB_DATABASE call :handle_error "DB_DATABASE is not defined in the .env file."
@@ -292,7 +293,7 @@ if exist "%OLD_WORKSPACE_YAML%" (
 )
 
 :: ----------------------------------------------------------------------------
-call :log INFO "Step 6/6: Launching Data Launchpad and Analytics Hub..."
+call :log INFO "Step 6/6: Launching Data and Analytics Launchpad..."
 
 :: Set environment variables that the UI processes will inherit.
 :: This is the crucial step to pass credentials and config to the separate UI processes.
@@ -304,21 +305,22 @@ set "DB_SERVER=%DB_SERVER%"
 set "DB_DATABASE=%DB_DATABASE%"
 set "DB_DRIVER=%DB_DRIVER%"
 set "OPENAI_API_KEY=%OPENAI_API_KEY%"
+set "ANALYTICS_PUBLIC_URL=%ANALYTICS_PUBLIC_URL%"
 set "SECRET_KEY=a-very-secret-and-random-string-that-is-long-and-secure"
 set "DB_TRUST_SERVER_CERTIFICATE=yes"
 set "DAGSTER_HOME=%DAGSTER_HOME_DIR%"
 set "PYTHONPATH=%SCRIPT_DIR%"
 
 :: --- 1. Launch Analytics Hub (Streamlit) in the background ---
-:: We use python.exe here and start it minimized. If it fails, the user can open the window to see the error.
-set "ANALYTICS_UI_CMD=%PYTHON_EXE% -m streamlit run "%ANALYTICS_UI_SCRIPT%""
+:: We use python.exe here and start it minimized to ensure it runs correctly.
+set "ANALYTICS_UI_CMD="%PYTHON_EXE%" -m streamlit run "%ANALYTICS_UI_SCRIPT%" --server.port=8501 --server.address=0.0.0.0 --server.headless=true --server.enableCORS=false --server.enableXsrfProtection=false"
 start "Analytics Hub" /min %ANALYTICS_UI_CMD%
 
 :: --- 2. Launch Data Importer UI (Flask) in the background ---
 :: We use pythonw.exe to run this script without a console window for a better UX.
 :: The server will run silently in the background.
 set "UI_CMD=%PYTHONW_EXE% %UI_SCRIPT% --server %DB_SERVER% --database %DB_DATABASE% --credential-target %CREDENTIAL_TARGET%"
-start "Data Importer UI" %UI_CMD%
+start "Data and Analytics Launchpad UI" %UI_CMD%
 
 :: --- 3. Wait for the main server to be ready before opening the browser ---
 :: This loop actively checks if the port is open, avoiding the "Connection Refused" error.
