@@ -2309,25 +2309,64 @@ Once you have saved the credential, you can simply **re-run the `run_elt_service
 
 ## 11. Self-Service File Converter
 
-The **Self-Service File Converter** is a utility designed to democratize data transformation tasks. It allows business users to convert data files between common formats instantly, without writing code or waiting for data engineering support.
+The **Self-Service File Converter** is a powerful utility designed to democratize data transformation tasks. It allows business users to convert, profile, clean, and reshape data files between common formats instantly, without writing code or waiting for data engineering support.
 
 ### Why It Is Important
 
 1.  **Democratizes Data Transformation**: Business users often receive data in formats they cannot easily use (e.g., a JSON dump from an API or a Parquet file from a data lake) and need it in Excel or CSV for analysis. This tool bridges that gap.
 2.  **Interoperability**: It acts as a bridge between different systems. For example, converting a CSV export from a legacy system into a Parquet file for efficient storage.
-3.  **Quick Data Inspection**: The tool includes a preview function, serving as a quick viewer for file formats that are hard to open on a standard desktop (like Parquet or large JSON files).
-4.  **Standardization**: Loading data through the internal engine (Pandas) and exporting it often fixes minor formatting issues (like inconsistent date formats or quoting in CSVs).
+3.  **Quick Data Inspection & Profiling**: The tool includes an automated data profiler that provides instant insights into data types, missing values, and uniqueness. This helps users quickly validate data quality.
+4.  **Lightweight Data Prep**: Users can perform common data preparation tasks like filtering rows, selecting columns, and filling missing values before downloading the file, saving them from manual work in Excel.
+5.  **Standardization**: Loading data through the internal engine (Pandas) and exporting it often fixes minor formatting issues (like inconsistent date formats or quoting in CSVs).
 
 ### How It Works
 
 The converter operates entirely within the Analytics Launchpad interface:
 
 1.  **Upload**: The user uploads a source file. Supported formats include **CSV**, **Excel (XLSX/XLS)**, **JSON**, and **Parquet**.
-2.  **Automatic Parsing & Preview**: The system automatically detects the file extension, loads the data into a pandas DataFrame, and displays a preview of the first few rows.
-3.  **Selection**: The user selects the desired output format (CSV, Excel, JSON, or Parquet).
-4.  **Conversion & Download**: Upon clicking "Convert", the system processes the dataframe in-memory and generates a downloadable file with the correct MIME type and extension.
+2.  **Automatic Parsing & Profiling**: The system automatically detects the file extension, loads the data into a pandas DataFrame, and displays a data profile and a preview of the first few rows.
+3.  **Transform (Optional)**: The user can optionally use the transformation tools:
+    *   **Data Profile & Quality**: Review the automated summary of each column.
+    *   **Data Shaping**: Select specific columns to keep or filter rows based on conditions.
+    *   **Enrichment & Cleaning**: Add new columns with constant values or fill in missing data.
+4.  **Convert & Download**: The user selects the desired output format (CSV, Excel, JSON, or Parquet) and clicks the download button. The system processes the transformed dataframe in-memory and generates a downloadable file.
 
 This feature runs statelessly; uploaded files are processed in memory and are not permanently stored on the server, ensuring data privacy.
+A "Reset" button is available to revert all transformations and start over with the original data.
+
+### How to Use the Transformation Features
+
+#### Viewing the Data Profile
+- After uploading a file, expand the **"📊 Data Profile & Quality"** section.
+- A table will appear showing each column's name, data type, number of missing values, percentage of missing values, number of unique values, and a sample value.
+- Use this to quickly spot issues, such as a numeric column being read as text or a high percentage of missing data.
+
+#### Selecting Columns
+1.  Expand the **"🔪 Data Shaping (Filter & Select)"** section.
+2.  Go to the **"Select Columns"** tab.
+3.  A multi-select box will show all columns from the original file. By default, all are selected.
+4.  To remove columns, simply click the 'x' next to their names in the box.
+5.  Click **"Apply Column Selection"**. The data preview will update to show only the columns you kept.
+
+#### Filtering Rows
+1.  Expand the **"🔪 Data Shaping (Filter & Select)"** section.
+2.  Go to the **"Filter Rows"** tab.
+3.  **Column to filter**: Select the column you want to apply a condition to.
+4.  **Operator**: Choose the comparison operator. The available operators will change depending on whether the column is numeric (e.g., `==`, `>`, `<`) or text (e.g., `contains`, `equals`).
+5.  **Value**: Enter the value to compare against.
+6.  Click **"Apply Filter"**. The data preview will update to show only the rows that match your condition. You can apply multiple filters sequentially.
+
+#### Enriching Data
+1.  Expand the **"🛠️ Enrichment & Cleaning"** section.
+2.  **To add a new column**:
+    *   Go to the **"➕ Add Column"** tab.
+    *   Enter a **New Column Name** and a **Constant Value**.
+    *   Click **"Add Field"**.
+3.  **To fill missing values**:
+    *   Go to the **"🩹 Fill Missing Values"** tab.
+    *   Select a column that has missing data from the dropdown.
+    *   Enter the **Fill Value** you want to use.
+    *   Click **"Apply Fill"**.
 
 # Data and Analytics Launchpad
 
