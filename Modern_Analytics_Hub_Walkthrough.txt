@@ -295,6 +295,64 @@ SCENARIO 13: AUTOMATED ENRICHMENT
         - Logic: `README.md` (Section: Automated Data Enrichment)
 
 ================================================================================
+SCENARIO 14: SELF-SERVICE DATA PREP & AI CONVERSION
+================================================================================
+*Goal: Show how business users can clean, repair, and reshape data without IT.*
+
+1.  **Navigate to "Self-Service File Converter"**.
+2.  **Upload File**:
+    - Browse to the `demo_files/` folder created by the setup script.
+    - Select `messy_leads.csv`.
+    - *Talking Point*: "Business users often get messy files. This tool lets them fix it themselves before sending it to the warehouse."
+
+3.  **Step 1: AI Summary**:
+    - Expand **"🤖 AI Summary & Insights"**.
+    - Click **Generate AI Summary**.
+    - *The Reveal*: The AI will likely point out the missing value in 'Deal Value' and the inconsistency in 'State'.
+
+4.  **Step 2: Cleaning & Deduplication**:
+    - Expand **"🛠️ Transformations & Cleaning"**.
+    - Go to **"🧹 Clean & Deduplicate"**.
+    - **Trim Whitespace**: Select `Lead Name` and click **Trim Whitespace**. (Explain how " John Doe " becomes "John Doe").
+    - **Drop Duplicates**: Click **Drop Duplicates**.
+    - *The Reveal*: "Removed 1 duplicate rows." (The exact duplicate of John Doe).
+
+5.  **Step 3: AI Repair (The "Magic" Fix)**:
+    - Go to **"🤖 AI Repair Suggestions"**.
+    - Click **Scan for Repair Suggestions**.
+    - *The Reveal*: It finds `Calfornia` -> `California` and `Texs` -> `Texas`.
+    - **Action**: Click **Fix** on both suggestions.
+    - *Talking Point*: "It used fuzzy matching to find typos that would have broken our reporting, and fixed them with one click."
+
+6.  **Step 4: Fill Missing Data**:
+    - Go to **"➕ Add & Fill"**.
+    - Under **Fill Missing Values**, select `Deal Value`.
+    - Enter `0` and click **Apply Fill**.
+
+7.  **Step 5: Advanced Reshaping (Pivot)**:
+    - Go to **"📊 Reshape & Aggregate"**.
+    - **Pivot & Aggregate Data**:
+        - Rows: `Region`
+        - Values: `Deal Value`
+        - Function: `sum`
+    - Click **Apply Pivot**.
+    - *The Reveal*: The data is now a summary table showing Total Deal Value by Region.
+
+8.  **Step 6: AI Document Extraction (Optional/Vision)**:
+    - *If you have a sample invoice image*:
+    - Refresh the page to clear state.
+    - Upload an image (PNG/JPG) of an invoice.
+    - *The Reveal*: The UI changes to "AI-Powered Document Extraction".
+    - Click **Extract Structured Data**.
+    - *Talking Point*: "We just turned a flat image into a queryable database table using a Vision LLM."
+
+9.  **Download**:
+    - Select **Excel** or **Parquet** and click **Download**.
+    - *Code Reference*:
+        - UI: `file_converter.py`
+        - Logic: `MLEngine.suggest_data_repairs` and `MLEngine.extract_structured_data`.
+
+================================================================================
 END OF DEMO
 ================================================================================
 

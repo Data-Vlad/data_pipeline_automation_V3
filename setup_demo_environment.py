@@ -215,6 +215,24 @@ def generate_demo_data(engine):
             ('run_xyz_999', 'Valid_Region', 'FAIL', 45, 'Found 45 rows with invalid regions (e.g. "Narth").', DATEADD(day, -5, GETUTCDATE()))
         """))
 
+def generate_flat_files():
+    print("📂 Generating Flat Files for File Converter Demo...")
+    os.makedirs("demo_files", exist_ok=True)
+    
+    # Create a messy dataset for cleaning/repair demo
+    # Includes: Whitespace issues, Duplicates, Typos (Calfornia), Missing Values
+    data = {
+        "Lead Name": [" John Doe ", "Jane Smith", "John Doe ", "Bob  Jones", "Alice Brown", "Charlie Day"],
+        "Region": ["North", "South", "North", "East", "West", "East"],
+        "State": ["NY", "Calfornia", "NY", "New York", "Texs", "NJ"], # Typos: Calfornia, Texs. Inconsistent: NY vs New York
+        "Deal Value": [1000, 2500, 1000, 500, np.nan, 1200], # Missing value, Duplicate row 1 & 3
+        "Status": ["Closed", "Open", "Closed", "Open", "New", "Open"],
+        "Contact Date": ["2023-01-01", "2023-01-02", "2023-01-01", "2023-01-05", "2023-01-06", "2023-01-07"]
+    }
+    df = pd.DataFrame(data)
+    df.to_csv("demo_files/messy_leads.csv", index=False)
+    print("✅ Created 'demo_files/messy_leads.csv' with intentional data quality issues.")
+
 def configure_analytics(engine):
     print("⚙️ Configuring AI Hub...")
     with engine.begin() as conn:
@@ -239,10 +257,12 @@ if __name__ == "__main__":
         engine = get_db_engine()
         create_tables(engine)
         generate_demo_data(engine)
+        generate_flat_files()
         configure_analytics(engine)
         print("\n🎉 Demo Environment Setup Complete!")
         print("Next Steps:")
         print("1. Run 'dagster dev' and materialize 'run_predictive_analytics' to generate insights.")
         print("2. Run 'streamlit run analytics_ui.py' to view the dashboard.")
+        print("3. Use 'demo_files/messy_leads.csv' to demonstrate the Self-Service File Converter.")
     except Exception as e:
         print(f"❌ Error: {e}")
