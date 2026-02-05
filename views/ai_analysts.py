@@ -67,42 +67,75 @@ def page_agentic_analyst():
         else:
             st.info(f"**Goal:** {goal}")
             
+            # 1. Get Schema
+            schema_df = run_query("SELECT TABLE_NAME, COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME NOT LIKE 'sys%'")
+            schema_context = schema_df.to_csv(index=False)
+
+            # 2. Generate Real Plan
             with st.status("🧠 Agent is planning...", expanded=True) as status:
-                st.write("Analyzing request intent...")
-                time.sleep(1)
-                st.write("Identifying relevant data tables...")
-                time.sleep(0.5)
-                st.write("Formulating execution strategy: `SQL Retrieval` -> `Data Summarization`")
+                plan = MLEngine.generate_analysis_plan(goal, schema_context)
+                for i, step in enumerate(plan):
+                    st.write(f"**Step {i+1} ({step['tool']})**: {step['description']}")
                 status.update(label="Plan confirmed!", state="complete", expanded=False)
             
-            with st.spinner("🕵️ Agent is working..."):
+            # 3. Execute Plan
+            context_df = pd.DataFrame() # Holds data between steps
+            
+            for i, step in enumerate(plan):
+                st.divider()
+                st.subheader(f"Step {i+1}: {step['tool']}")
+                st.caption(f"ℹ️ {step['description']}")
+                
                 try:
-                    schema_df = run_query("SELECT TABLE_NAME, COLUMN_NAME, DATA_TYPE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME NOT LIKE 'sys%'")
-                    schema_context = schema_df.to_csv(index=False)
-                    
-                    st.subheader("1. Data Retrieval")
-                    sql_query = MLEngine.generate_sql_from_question(goal, schema_context)
-                    st.code(sql_query, language="sql")
-                    
-                    df = run_query(sql_query)
-                    st.dataframe(df, use_container_width=True)
-                    
-                    st.subheader("2. Analysis & Insights")
-                    if not df.empty:
-                        metrics = {}
-                        if len(df) > 0:
-                            numeric_cols = df.select_dtypes(include=['number']).columns
-                            for col in numeric_cols:
-                                metrics[f"avg_{col}"] = df[col].mean()
-                                metrics[f"total_{col}"] = df[col].sum()
-                            metrics["row_count"] = len(df)
-                        
-                        story = MLEngine.generate_data_story(metrics, context_str=f"Analysis for goal: {goal}")
-                        st.markdown(f"### 📋 Final Report\n{story}")
-                    else:
-                        st.warning("The agent completed the query but found no matching data to analyze.")
+                    if step['tool'] == 'SQL_Query':
+                        with st.spinner("Generating and executing SQL..."):
+                            sql = MLEngine.generate_sql_from_question(step['instruction'], schema_context)
+                            st.code(sql, language='sql')
+                            context_df = run_query(sql)
+                            st.dataframe(context_df, use_container_width=True)
+                            if context_df.empty:
+                                st.warning("Query returned no results.")
+
+                    elif step['tool'] == 'Data_Summary':
+                        if context_df.empty:
+                            st.warning("Skipping summary (no data available).")
+                        else:
+                            with st.spinner("Analyzing data..."):
+                                # Calculate basic metrics to feed into the story generator
+                                metrics = {"row_count": len(context_df)}
+                                numeric_cols = context_df.select_dtypes(include=['number']).columns
+                                for col in numeric_cols:
+                                    metrics[f"avg_{col}"] = context_df[col].mean()
+                                    metrics[f"total_{col}"] = context_df[col].sum()
+                                
+                                story = MLEngine.generate_data_story(metrics, context_str=step['instruction'])
+                                st.markdown(story)
+
+                    elif step['tool'] == 'Visualization':
+                        if context_df.empty:
+                            st.warning("Skipping visualization (no data available).")
+                        else:
+                            rec = MLEngine.recommend_visualization(context_df)
+                            st.info(f"Recommended: {rec['title']} ({rec['type']}) - {rec['reasoning']}")
+                            
+                            if rec['type'] == 'time_series':
+                                fig = px.line(context_df, x=rec['x'], y=rec['y'])
+                                st.plotly_chart(fig, use_container_width=True)
+                            elif rec['type'] == 'bar':
+                                fig = px.bar(context_df, x=rec['x'], y=rec['y'])
+                                st.plotly_chart(fig, use_container_width=True)
+                            elif rec['type'] == 'scatter':
+                                fig = px.scatter(context_df, x=rec['x'], y=rec['y'])
+                                st.plotly_chart(fig, use_container_width=True)
+                            elif rec['type'] == 'histogram':
+                                fig = px.histogram(context_df, x=rec['x'])
+                                st.plotly_chart(fig, use_container_width=True)
+                            else:
+                                st.write("Table view is best for this data.")
+                                st.dataframe(context_df)
+
                 except Exception as e:
-                    st.error(f"Agent encountered an error during execution: {e}")
+                    st.error(f"Step failed: {e}")
 
 def page_ai_auto_dashboards():
     st.title("✨ AI Auto-Dashboards")
