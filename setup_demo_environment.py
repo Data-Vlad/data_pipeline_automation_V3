@@ -112,6 +112,7 @@ def create_tables(engine):
             );
         """))
 
+
 def generate_demo_data(engine):
     print("📊 Generating Synthetic Retail Data (365 Days)...")
     fake = Faker()

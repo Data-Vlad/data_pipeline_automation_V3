@@ -213,7 +213,7 @@ class MLEngine:
                 Keep it under 4 bullet points. Focus on the 'So What?'.
                 """
                 completion = client.chat.completions.create(
-                    model="gpt-3.5-turbo",
+                    model="gpt-4o",
                     messages=[{"role": "user", "content": prompt}]
                 )
                 return completion.choices[0].message.content.strip()
@@ -245,9 +245,9 @@ class MLEngine:
             
         client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         completion = client.chat.completions.create(
-            model="gpt-3.5-turbo",
+            model="gpt-4o",
             messages=[
-                {"role": "system", "content": f"You are a SQL Server expert. Return ONLY a valid SQL Server query (no markdown) to answer the question based on this schema:\n{schema_context}"},
+                {"role": "system", "content": f"You are an expert T-SQL developer. Return ONLY a raw SQL Server query (no markdown, no comments) to answer the question. Use the provided schema strictly:\n{schema_context}"},
                 {"role": "user", "content": question}
             ]
         )
@@ -258,6 +258,48 @@ class MLEngine:
             raise ValueError("Security Alert: The generated SQL contained forbidden keywords (e.g., DROP, DELETE). Execution blocked.")
             
         return sql
+
+    @staticmethod
+    def generate_analysis_plan(goal: str, schema_context: str) -> list:
+        """
+        Uses OpenAI to generate a real, step-by-step plan to achieve the analysis goal.
+        Returns a list of steps, where each step is a dict with 'tool', 'description', and 'instruction'.
+        """
+        if not OPENAI_INSTALLED or not os.getenv("OPENAI_API_KEY"):
+            return [{"tool": "Error", "description": "OpenAI API Key missing.", "instruction": ""}]
+
+        client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+        
+        prompt = f"""
+        You are an intelligent Data Analyst Agent.
+        Goal: {goal}
+        
+        Database Schema:
+        {schema_context}
+        
+        Available Tools:
+        1. SQL_Query: Generate and execute a SQL query to retrieve data.
+        2. Data_Summary: Analyze the retrieved data textually (calculate metrics, find patterns).
+        3. Visualization: Recommend and render a chart from the data.
+        
+        Create a logical plan. Return a JSON object with a key "steps", containing a list of steps.
+        Each step object must have:
+        - "tool": One of ["SQL_Query", "Data_Summary", "Visualization"]
+        - "description": Brief explanation of the step.
+        - "instruction": Specific instruction for the tool (e.g., "Query sales table for last month").
+        """
+        
+        try:
+            completion = client.chat.completions.create(
+                model="gpt-4o",
+                messages=[{"role": "user", "content": prompt}],
+                response_format={ "type": "json_object" }
+            )
+            response_content = completion.choices[0].message.content
+            plan_data = json.loads(response_content)
+            return plan_data.get("steps", [])
+        except Exception as e:
+            return [{"tool": "Error", "description": f"Planning failed: {str(e)}", "instruction": ""}]
 
     @staticmethod
     def recommend_visualization(df: pd.DataFrame) -> dict:
@@ -468,7 +510,7 @@ class MLEngine:
                 text_content = "\n".join([page.extract_text() for page in reader.pages])
                 
                 response = client.chat.completions.create(
-                    model="gpt-3.5-turbo",
+                    model="gpt-4o",
                     messages=[
                         {"role": "system", "content": "You are a data extraction assistant. Output JSON."},
                         {"role": "user", "content": f"Extract these fields: {extraction_schema}\n\nFrom this text:\n{text_content[:15000]}"} # Truncate for limits
@@ -480,5 +522,3 @@ class MLEngine:
                 return {"error": "pypdf library not installed. Cannot process PDFs."}
             except Exception as e:
                 return {"error": f"PDF processing failed: {str(e)}"}
-
-        return {"error": "Unsupported file type."}
