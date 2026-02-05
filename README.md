@@ -2307,6 +2307,28 @@ Your Dagster application is a hybrid. The orchestration and local file processin
 **In your specific project, you can run all your local file-based ELT pipelines offline, as long as your SQL Server instance is also running locally.** Any pipeline configured to use a web scraper will fail.
 Once you have saved the credential, you can simply **re-run the `run_elt_service.bat` script**. It will now automatically and securely retrieve the credentials it needs to connect to the database.
 
+## 11. Self-Service File Converter
+
+The **Self-Service File Converter** is a utility designed to democratize data transformation tasks. It allows business users to convert data files between common formats instantly, without writing code or waiting for data engineering support.
+
+### Why It Is Important
+
+1.  **Democratizes Data Transformation**: Business users often receive data in formats they cannot easily use (e.g., a JSON dump from an API or a Parquet file from a data lake) and need it in Excel or CSV for analysis. This tool bridges that gap.
+2.  **Interoperability**: It acts as a bridge between different systems. For example, converting a CSV export from a legacy system into a Parquet file for efficient storage.
+3.  **Quick Data Inspection**: The tool includes a preview function, serving as a quick viewer for file formats that are hard to open on a standard desktop (like Parquet or large JSON files).
+4.  **Standardization**: Loading data through the internal engine (Pandas) and exporting it often fixes minor formatting issues (like inconsistent date formats or quoting in CSVs).
+
+### How It Works
+
+The converter operates entirely within the Analytics Launchpad interface:
+
+1.  **Upload**: The user uploads a source file. Supported formats include **CSV**, **Excel (XLSX/XLS)**, **JSON**, and **Parquet**.
+2.  **Automatic Parsing & Preview**: The system automatically detects the file extension, loads the data into a pandas DataFrame, and displays a preview of the first few rows.
+3.  **Selection**: The user selects the desired output format (CSV, Excel, JSON, or Parquet).
+4.  **Conversion & Download**: Upon clicking "Convert", the system processes the dataframe in-memory and generates a downloadable file with the correct MIME type and extension.
+
+This feature runs statelessly; uploaded files are processed in memory and are not permanently stored on the server, ensuring data privacy.
+
 # Data and Analytics Launchpad
 
 This project provides a user-friendly web interface for triggering and monitoring data pipelines and accessing analytics.

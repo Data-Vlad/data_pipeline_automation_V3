@@ -10,6 +10,7 @@ from views.ai_analysts import page_conversational_analytics, page_agentic_analys
 from views.deep_dive import page_predictive_insights, page_root_cause_analysis, page_clustering_segmentation, page_prescriptive_optimization, page_what_if_simulator
 from views.advanced_ai import page_semantic_search, page_multi_modal_analysis
 from views.data_operations import page_data_explorer, page_data_steward, page_data_observability, page_autonomous_data_repair, page_configuration_manager
+from views.file_converter import page_file_converter
 
 # Load environment variables
 load_dotenv()
@@ -70,6 +71,7 @@ pg = st.navigation({
     ],
     "🛠️ Data Operations": [
         st.Page(page_data_explorer, title="Data Explorer", icon="🔎"),
+        st.Page(page_file_converter, title="File Converter", icon="🔄"),
         st.Page(page_data_steward, title="Data Steward", icon="🛡️"),
         st.Page(page_data_observability, title="Data Observability", icon="🩺"),
         st.Page(page_autonomous_data_repair, title="Autonomous Data Repair", icon="🔧"),
