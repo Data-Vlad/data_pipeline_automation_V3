@@ -2225,12 +2225,15 @@ The **Self-Service File Converter** is a powerful utility designed to democratiz
 
 The converter operates entirely within the Analytics Launchpad interface:
 
-1.  **Upload**: The user uploads a source file. Supported formats include **CSV**, **Excel (XLSX/XLS)**, **JSON**, and **Parquet**.
-2.  **Automatic Parsing & Profiling**: The system automatically detects the file extension, loads the data into a pandas DataFrame, and displays a data profile and a preview of the first few rows.
+1.  **Upload**: The user uploads a source file. Supported formats include **CSV**, **Excel (XLSX/XLS)**, **JSON**, **Parquet**, and **Images (PNG/JPG)** or **PDFs**.
+2.  **Automatic Parsing & Profiling**:
+    *   For structured files, the system loads the data into a pandas DataFrame and displays a profile.
+    *   For unstructured documents, the **AI Extractor** reads the image/PDF based on a user-defined schema and converts it to a table.
 3.  **Transform (Optional)**: The user can optionally use the transformation tools:
+    *   **AI Summary**: Generate a natural language overview of the dataset.
     *   **Data Profile & Quality**: Review the automated summary of each column.
     *   **Data Shaping**: Select specific columns to keep or filter rows based on conditions.
-    *   **Enrichment & Cleaning**: Add new columns with constant values or fill in missing data.
+    *   **Transformations & Cleaning**: Rename, re-type, clean, deduplicate, reshape (pivot), and use AI to repair typos.
 4.  **Convert & Download**: The user selects the desired output format (CSV, Excel, JSON, or Parquet) and clicks the download button. The system processes the transformed dataframe in-memory and generates a downloadable file.
 
 This feature runs statelessly; uploaded files are processed in memory and are not permanently stored on the server, ensuring data privacy.
@@ -2258,17 +2261,21 @@ A "Reset" button is available to revert all transformations and start over with 
 5.  **Value**: Enter the value to compare against.
 6.  Click **"Apply Filter"**. The data preview will update to show only the rows that match your condition. You can apply multiple filters sequentially.
 
-#### Enriching Data
-1.  Expand the **"🛠️ Enrichment & Cleaning"** section.
-2.  **To add a new column**:
-    *   Go to the **"➕ Add Column"** tab.
-    *   Enter a **New Column Name** and a **Constant Value**.
-    *   Click **"Add Field"**.
-3.  **To fill missing values**:
-    *   Go to the **"🩹 Fill Missing Values"** tab.
-    *   Select a column that has missing data from the dropdown.
-    *   Enter the **Fill Value** you want to use.
-    *   Click **"Apply Fill"**.
+#### Advanced Transformations & Cleaning
+Expand the **"🛠️ Transformations & Cleaning"** section to access advanced tools:
+
+*   **Rename & Re-type**: Rename columns or change data types (e.g., String to Integer, String to Datetime).
+*   **Add & Fill**: Add new columns with constant values or fill missing values in existing columns.
+*   **Clean & Deduplicate**: Remove duplicate rows or trim whitespace from text columns.
+*   **Reshape & Aggregate**:
+    *   **Calculated Columns**: Create new fields using formulas (e.g., `` `Price` * `Quantity` ``).
+    *   **Pivot Tables**: Summarize data by grouping and aggregating (similar to Excel PivotTables).
+*   **AI Repair Suggestions**: Uses fuzzy matching to detect and fix typos in categorical data (e.g., suggesting "California" for "Calfornia").
+
+#### AI-Powered Features
+
+*   **Document Extraction**: Upload an invoice or form (Image/PDF), define the fields you want in JSON format (e.g., `{"total": "number"}`), and let the AI convert it to structured data.
+*   **AI Summary**: Expand the "AI Summary & Insights" section and click "Generate" to get a text summary of your data's key characteristics.
 
 # Data and Analytics Launchpad
 
