@@ -292,11 +292,15 @@ If it fails, check the run logs for details on data quality issues or parsing er
             # --- Resolve wildcards/globs for ALL file types ---
             # This ensures that Excel, PSV, and custom parsers also support file patterns.
             import glob
-            if any(ch in str(file_to_parse) for ch in ["*", "?", "["]):
+            # Check if it is an existing file first. This prevents glob from breaking on paths with brackets [].
+            if not os.path.isfile(file_to_parse) and any(ch in str(file_to_parse) for ch in ["*", "?", "["]):
                 matches = glob.glob(file_to_parse, recursive=True)
                 if not matches and config.monitored_directory:
                     pattern2 = os.path.join(config.monitored_directory, os.path.basename(file_to_parse))
                     matches = glob.glob(pattern2, recursive=True)
+
+                # Filter out Excel temporary lock files (starting with ~$) which match *.xlsx but are not readable
+                matches = [m for m in matches if not os.path.basename(m).startswith("~$")]
 
                 if not matches:
                     context.log.warning(f"Source file not found for {config.import_name}: '{file_to_parse}'. Skipping.")
