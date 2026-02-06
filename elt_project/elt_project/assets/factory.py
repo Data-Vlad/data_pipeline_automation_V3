@@ -278,6 +278,20 @@ If it fails, check the run logs for details on data quality issues or parsing er
             # Determine the actual file path to parse
             if source_file_path:
                 file_to_parse = source_file_path
+                # --- WORKAROUND: Handle Excel Lock Files ---
+                # If the sensor triggers on a lock file (~$File.xlsx), redirect to the real file (File.xlsx).
+                # This ensures data is loaded even if the sensor picks up the lock file instead of the data file.
+                if os.path.basename(file_to_parse).startswith("~$"):
+                    real_filename = os.path.basename(file_to_parse)[2:] # Remove the ~$ prefix
+                    real_file_path = os.path.join(os.path.dirname(file_to_parse), real_filename)
+                    if os.path.isfile(real_file_path):
+                        context.log.info(f"Redirecting from lock file '{os.path.basename(file_to_parse)}' to real file '{real_filename}'")
+                        file_to_parse = real_file_path
+                    else:
+                        context.log.warning(f"Triggered on lock file '{file_to_parse}' but real file not found. Skipping.")
+                        log_details["status"] = "SKIPPED"
+                        log_details["message"] = "Ignored orphan Excel lock file."
+                        return pd.DataFrame()
             else:
                 # If source_file_path is not provided (e.g., manual run), construct the full path.
                 # SECURITY: Sanitize the file_pattern to prevent path traversal attacks.
@@ -650,6 +664,7 @@ This asset moves data from staging to the final, production-ready table.
 
                     if result:
                         current_load_method = result['load_method']
+                        current_load_method = result['load_method'].strip() if result['load_method'] else 'append'
                         current_is_active = bool(result['is_active'])
                         if result['staging_table']:
                             current_staging_table = result['staging_table']
