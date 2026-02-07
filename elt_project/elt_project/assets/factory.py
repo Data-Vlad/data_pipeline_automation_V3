@@ -5,6 +5,7 @@ import re
 import os # Ensure os is imported
 import json
 from typing import Optional, List
+import glob # Import glob at top level for reliability
 import traceback # Import traceback to capture detailed error info
 from sqlalchemy import create_engine
 from sqlalchemy import text, inspect
@@ -307,7 +308,6 @@ If it fails, check the run logs for details on data quality issues or parsing er
 
             # --- Resolve wildcards/globs for ALL file types ---
             # This ensures that Excel, PSV, and custom parsers also support file patterns.
-            import glob
             # Check if it is an existing file first. This prevents glob from breaking on paths with brackets [].
             if not os.path.isfile(file_to_parse) and any(ch in str(file_to_parse) for ch in ["*", "?", "["]):
                 matches = glob.glob(file_to_parse, recursive=True)

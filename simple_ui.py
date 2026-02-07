@@ -2,7 +2,6 @@ import os
 import argparse
 import sys
 import threading
-import re
 import logging
 from collections import defaultdict
 from typing import List, Optional, Any
@@ -37,8 +36,7 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)-8s - %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
-    # Log directly to simple_ui.log instead of stdout to avoid duplicate logs (e.g. ui-server.log)
-    handlers=[logging.FileHandler('simple_ui.log')]
+    # The launcher script will redirect stdout/stderr to a log file.
 )
 logger = logging.getLogger(__name__)
 
@@ -280,69 +278,37 @@ def favicon():
 def get_pipelines():
     """
     API endpoint to fetch all active pipelines and their associated imports from the database.
-    This data is used to populate the main checklist on the UI, with a clear separation
-    between file-based imports and web/SFTP scrapers.
+    This data is used to populate the main checklist on the UI.
     """
     logger.info("API     : Fetching pipeline configurations from database...")
-    
+    pipelines = []
     # Use a defaultdict to easily group imports under their parent pipeline.
-    # We now have separate lists for file-based imports and scrapers.
-    pipeline_groups = defaultdict(lambda: {
-        "load_imports": [], 
-        "ingest_imports": [], 
-        "monitored_directory": None
-    })
+    pipeline_groups = defaultdict(lambda: {"imports": [], "monitored_directory": None})
 
     for attempt in range(2):  # Allow one retry
         try:
             conn = get_db_connection()
             # Query to get all active pipeline configurations.
             query = text("""
-                SELECT pipeline_name, import_name, monitored_directory, parser_function
+                SELECT pipeline_name, import_name, monitored_directory
                 FROM elt_pipeline_configs
                 WHERE is_active = 1
                 ORDER BY pipeline_name, import_name
             """)
             results = conn.execute(query).fetchall()  # Eagerly fetch all results
 
-            # Group the flat SQL results into a nested structure with separation.
+            # Group the flat SQL results into a nested structure.
             for row in results:  # Iterate over the fetched results
-                is_scraper = row.parser_function in [
-                    'generic_selenium_scraper', 
-                    'generic_web_scraper', 
-                    'generic_sftp_downloader'
-                ]
-                
-                import_data = {"import_name": row.import_name}
-
-                if is_scraper:
-                    pipeline_groups[row.pipeline_name]["ingest_imports"].append(import_data)
-                else:
-                    pipeline_groups[row.pipeline_name]["load_imports"].append(import_data)
-
+                pipeline_groups[row.pipeline_name]["imports"].append(row.import_name)
                 if row.monitored_directory:
                     pipeline_groups[row.pipeline_name]["monitored_directory"] = os.path.normpath(
                         row.monitored_directory.strip()
                     )
 
             # Convert the grouped data into a list format for the JSON response.
-            # Filter out any pipeline groups that have no imports at all.
-            pipelines = [
-                {
-                    "pipeline_name": pipeline_name,
-                    "load_imports": data["load_imports"],
-                    "etl_imports": data["load_imports"], # Alias for frontend compatibility
-                    "ingest_imports": data["ingest_imports"],
-                    "ingestion_imports": data["ingest_imports"], # Alias for frontend compatibility
-                    "imports": [item["import_name"] for item in data["ingest_imports"] + data["load_imports"]],
-                    "monitored_directory": data["monitored_directory"]
-                }
-                for pipeline_name, data in pipeline_groups.items()
-                if data["load_imports"] or data["ingest_imports"]
-            ]
-            
+            for pipeline_name, data in pipeline_groups.items():
+                pipelines.append({"pipeline_name": pipeline_name, **data})
             logger.info(f"API     : Successfully fetched and processed {len(pipelines)} pipelines.")
-            # The frontend error "pipelines.forEach is not a function" indicates it expects a raw list.
             return jsonify(pipelines)
 
         except Exception as e:
@@ -363,10 +329,6 @@ def get_pipelines():
     # This line should not be reachable, but is here as a fallback.
     return jsonify({"error": "An unexpected error occurred in get_pipelines."}), 500
 
-def sanitize_name(name: str) -> str:
-    """Sanitizes a string to be a valid Dagster asset name."""
-    return re.sub(r'[^A-Za-z0-9_]', '_', name)
-
 @app.route("/api/run_imports", methods=["POST"])
 def run_imports():
     """
@@ -379,30 +341,7 @@ def run_imports():
             logger.warning("API     : 'run_imports' called with no imports selected.")
             return jsonify({"error": "No imports selected"}), 400
 
-        import_names = [item['import_name'] if isinstance(item, dict) else item for item in selected_imports]
-        logger.info(f"API     : Received request to run {len(selected_imports)} imports: {import_names}")
-
-        # --- Fix for Asset Renaming ---
-        # Identify "Ingestion" imports (scrapers) to patch their run_config keys.
-        # The sensors might still generate config for the old name '_extract_and_load_staging',
-        # but the assets are now named '_ingest'.
-        ingestion_imports = set()
-        try:
-            conn = get_db_connection()
-            query = text("SELECT import_name, parser_function FROM elt_pipeline_configs WHERE is_active = 1")
-            results = conn.execute(query).fetchall()
-            
-            INGESTION_FUNCTIONS = {
-                "generic_web_scraper",
-                "generic_selenium_scraper",
-                "generic_sftp_downloader"
-            }
-            
-            for row in results:
-                if row.import_name in import_names and row.parser_function in INGESTION_FUNCTIONS:
-                    ingestion_imports.add(row.import_name)
-        except Exception as e:
-            logger.warning(f"API     : Failed to check for ingestion types. Config patching may be skipped. Error: {e}")
+        logger.info(f"API     : Received request to run {len(selected_imports)} imports: {[item['import_name'] for item in selected_imports]}")
 
         workspace_file_path = os.path.join(dagster_home_path, "workspace.yaml")
         instance = DagsterInstance.get()
@@ -434,10 +373,7 @@ def run_imports():
             results = []
 
             for item in selected_imports:
-                if isinstance(item, dict):
-                    import_name = item["import_name"]
-                else:
-                    import_name = item
+                import_name = item["import_name"]
                 sensor_name = f"sensor_{import_name}"
                 logger.info(f"API     :  - Submitting tick for sensor '{sensor_name}'...")
 
@@ -468,25 +404,39 @@ def run_imports():
                     )
                     
                     # 2. Process the results and launch the actual runs
-                    if not tick_result.run_requests:
-                        logger.info(f"API     :  - Sensor '{sensor_name}' ticked but produced no run requests (conditions not met).")
-                        import_result["error"] = "Conditions not met (no new files?)"
-                        results.append(import_result)
-                        continue
+                    run_requests = tick_result.run_requests
 
-                    for run_req in tick_result.run_requests:
-                        # --- Patch Config for Ingestion Assets ---
-                        if import_name in ingestion_imports:
-                            old_op_name = sanitize_name(f"{import_name}_extract_and_load_staging")
-                            new_op_name = sanitize_name(f"{import_name}_ingest")
+                    # --- FORCE RUN LOGIC ---
+                    # If the sensor found no "new" files (e.g. timestamp hasn't changed),
+                    # but the user explicitly requested a run via the UI, we FORCE it.
+                    if not run_requests:
+                        logger.info(f"API     :  - Sensor '{sensor_name}' produced no requests. Attempting FORCE RUN.")
+                        
+                        # Try to resolve the job name from the sensor's targets
+                        job_name = None
+                        if external_sensor.targets:
+                            job_name = external_sensor.targets[0].job_name
+                        
+                        if job_name:
+                            logger.info(f"API     :  - Force launching job '{job_name}' with default config.")
+                            # Create a synthetic run request to force the job to run.
+                            # We pass an empty run_config. The Asset logic in factory.py is designed
+                            # to handle this by looking up the latest file in the directory.
+                            class ForceRunRequest:
+                                def __init__(self, job_name):
+                                    self.job_name = job_name
+                                    self.run_config = {}
+                                    self.tags = {"dagster/run_reason": "manual_force_run"}
+                                    self.run_key = None
                             
-                            if run_req.run_config and 'ops' in run_req.run_config:
-                                ops_config = run_req.run_config['ops']
-                                if old_op_name in ops_config:
-                                    logger.info(f"API     : Patching run_config. Renaming '{old_op_name}' to '{new_op_name}'.")
-                                    ops_config[new_op_name] = ops_config.pop(old_op_name)
-                        # -----------------------------------------
+                            run_requests = [ForceRunRequest(job_name)]
+                        else:
+                            logger.warning(f"API     :  - Could not resolve job name for sensor '{sensor_name}'. Cannot force run.")
+                            import_result["error"] = "No new data & could not resolve job."
+                            results.append(import_result)
+                            continue
 
+                    for run_req in run_requests:
                         # Resolve the job name (sensor might target a specific job or be dynamic)
                         job_name = run_req.job_name
                         if not job_name:
@@ -577,12 +527,10 @@ def get_run_status(run_id):
         if not run:
             return jsonify({"error": "Run not found"}), 404
             
-        response_data = {
+        return jsonify({
             "run_id": run_id,
             "status": run.status.value
-        }
-
-        return jsonify(response_data)
+        })
     except Exception as e:
         logger.error(f"API     : Failed to fetch status for run '{run_id}'.", exc_info=True)
         return jsonify({"error": str(e)}), 500
@@ -623,7 +571,6 @@ if __name__ == "__main__":
     init_thread.start()
 
     logger.info("Server  : Starting Data Importer UI on http://localhost:3000")
-    logger.info(f"Server  : Logging detailed errors to {os.path.abspath('simple_ui.log')}")
     logger.info("Server  : Initialization is running in the background...")
     
     # The server starts immediately. The launcher script (`.bat` file) is responsible
