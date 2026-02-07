@@ -73,11 +73,7 @@ def _initialize_app_thread():
     Updates the global APP_STATE with the result.
     """
     try:
-        logger.info("=" * 60)
-        logger.info("--- Application Initialization Started ---")
-
         # --- Step 1: Retrieve Database Credentials ---
-        logger.info("INIT(1/3): Retrieving database credentials from environment...")
         # These are set by the launcher script. Using a 'DAGSTER_' prefix is a good convention.
         username = os.getenv("DAGSTER_DB_USERNAME", "").strip()
         password = os.getenv("DAGSTER_DB_PASSWORD", "").strip()
@@ -90,27 +86,20 @@ def _initialize_app_thread():
             raise ValueError(
                 f"Database password for target '{cli_args.credential_target}' could not be retrieved."
             )
-        logger.info("INIT(1/3): Successfully retrieved database credentials.")
 
         # --- Step 2: Test Database Connection ---
-        logger.info("INIT(2/3): Testing database connection...")
         _test_db_connection(username, password)
-        logger.info("INIT(2/3): Database connection test successful.")
 
         # --- Step 3: Verify Dagster Workspace ---
-        logger.info("[3/3] Verifying Dagster workspace configuration...")
         workspace_file_path = os.path.join(dagster_home_path, "workspace.yaml")
         if not os.path.exists(workspace_file_path):
             raise FileNotFoundError(
                 f"Dagster workspace file not found at '{workspace_file_path}'. "
             )
-        logger.info("[3/3] Dagster workspace file found.")
 
         # --- Success! Mark app as ready. ---
         with APP_STATE.lock:
             APP_STATE.initialization_status = "SUCCESS"
-        logger.info("--- Application Initialization Succeeded ---")
-        logger.info("=" * 60)
 
     except Exception as e:
         # --- Failure: Update global state with error info ---
@@ -132,7 +121,6 @@ def _initialize_app_thread():
 
 def _test_db_connection(username, password):
     """Create a temporary engine to test the DB connection, then discard it."""
-    logger.info("DB      : Creating temporary engine to test connection...")
     db_driver_raw = os.getenv("DB_DRIVER", "ODBC Driver 17 for SQL Server")
     driver = db_driver_raw.strip('"').strip('{}').replace(' ', '+')
     conn_string = (
@@ -143,7 +131,7 @@ def _test_db_connection(username, password):
     temp_engine = create_engine(conn_string, poolclass=NullPool, connect_args={"timeout": 10})
     try:
         with temp_engine.connect():
-            logger.info("DB      : Connection test successful.")
+            pass
     except Exception as e:
         # This provides a highly specific error message if the connection itself fails.
         logger.error(
@@ -168,7 +156,6 @@ def _get_db_engine():
     # ensuring it is created in the correct thread context for the web server.
     with APP_STATE.lock:
         if APP_STATE.db_engine is None:
-            logger.info("DB      : Initializing persistent, thread-safe database engine...")
             password = os.getenv("DAGSTER_DB_PASSWORD", "").strip()
             username = os.getenv("DAGSTER_DB_USERNAME", "").strip()
             db_driver_raw = os.getenv("DB_DRIVER", "ODBC Driver 17 for SQL Server")
@@ -180,7 +167,6 @@ def _get_db_engine():
             # pool_pre_ping checks connection validity; connect_args prevents hangs on new connections.
             # A 10-second timeout is a reasonable default.
             APP_STATE.db_engine = create_engine(conn_string, pool_pre_ping=True, connect_args={"timeout": 10})
-            logger.info("DB      : Database engine initialized successfully.")
     return APP_STATE.db_engine
 
 
@@ -188,7 +174,6 @@ def _recreate_db_engine():
     """Disposes of the old engine and creates a new one."""
     with APP_STATE.lock:
         if APP_STATE.db_engine:
-            logger.warning("DB      : Disposing of existing database engine to force reconnection.")
             APP_STATE.db_engine.dispose()
         APP_STATE.db_engine = None  # Force re-initialization on next call
     return _get_db_engine()
@@ -223,7 +208,6 @@ def check_initialization():
     This middleware protects all endpoints from being accessed before the app is ready.
     """
     # Allow access to status/shutdown endpoints regardless of state
-    logger.info(f"--> {request.method} {request.path}")
     if request.path in ["/status", "/api/status", "/api/shutdown"]:
         return
 
@@ -237,7 +221,6 @@ def check_initialization():
 @app.after_request
 def log_response(response):
     """Log the status code of the response for each request."""
-    logger.info(f"<-- {request.method} {request.path} - {response.status}")
     return response
 
 
@@ -279,7 +262,6 @@ def get_pipelines():
     API endpoint to fetch all active pipelines and their associated imports from the database.
     This data is used to populate the main checklist on the UI.
     """
-    logger.info("API     : Fetching pipeline configurations from database...")
     pipelines = []
     # Use a defaultdict to easily group imports under their parent pipeline.
     pipeline_groups = defaultdict(lambda: {"imports": [], "monitored_directory": None})
@@ -307,15 +289,10 @@ def get_pipelines():
             # Convert the grouped data into a list format for the JSON response.
             for pipeline_name, data in pipeline_groups.items():
                 pipelines.append({"pipeline_name": pipeline_name, **data})
-            logger.info(f"API     : Successfully fetched and processed {len(pipelines)} pipelines.")
             return jsonify(pipelines)
 
         except Exception as e:
-            logger.warning(
-                f"API     : Attempt {attempt + 1} failed to fetch pipelines.", exc_info=True
-            )
             if attempt == 0:  # If this was the first attempt
-                logger.info("API     : Recreating database engine and retrying...")
                 _recreate_db_engine()
                 # The loop will now continue to the second attempt
             else:  # If this was the second attempt
@@ -337,7 +314,6 @@ def run_imports():
         data = request.json
         selected_imports = data.get("imports", [])
         if not selected_imports:
-            logger.warning("API     : 'run_imports' called with no imports selected.")
             return jsonify({"error": "No imports selected"}), 400
 
         logger.info(f"API     : Received request to run {len(selected_imports)} imports: {[item['import_name'] for item in selected_imports]}")
@@ -435,7 +411,6 @@ def run_imports():
                             
                             run_requests = [ForceRunRequest(job_name)]
                         else:
-                            logger.warning(f"API     :  - Could not resolve job name for sensor '{sensor_name}'. Cannot force run.")
                             import_result["error"] = "No new data & could not resolve job."
                             results.append(import_result)
                             continue
@@ -449,7 +424,6 @@ def run_imports():
                                 job_name = targets[0].job_name
                         
                         if not job_name:
-                            logger.warning(f"API     :  - Skipping request from '{sensor_name}': Could not resolve target job name.")
                             continue
 
                         # Create and submit the run
@@ -551,13 +525,11 @@ def shutdown():
     # For a simple UI application served by Waitress and launched from a script,
     # a direct exit is the most reliable way to ensure the process terminates
     # when the user closes the application via the UI button.
-    logger.info("--- Server Shutting Down ---")
     os._exit(0)
 
 @app.errorhandler(404)
 def not_found_error(error):
     """Custom 404 error handler to return JSON instead of HTML."""
-    logger.warning(f"404 Not Found: {request.url}")
     return jsonify({"error": "Not Found", "message": f"The requested URL {request.path} was not found on the server."}), 404
 
 
@@ -578,9 +550,6 @@ if __name__ == "__main__":
     init_thread = threading.Thread(target=_initialize_app_thread, daemon=True)
     init_thread.start()
 
-    logger.info("Server  : Starting Data Importer UI on http://localhost:3000")
-    logger.info("Server  : Initialization is running in the background...")
-    
     # The server starts immediately. The launcher script (`.bat` file) is responsible
     # for opening the web browser. The user will first see the status page.
     serve(app, host="0.0.0.0", port=3000)
