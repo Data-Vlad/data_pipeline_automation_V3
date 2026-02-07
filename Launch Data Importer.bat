@@ -23,7 +23,6 @@ set "DAGSTER_HOME_DIR=%SCRIPT_DIR%dagster_home"
 
 :: Clean up old log files
 if exist "%ERROR_LOG%" del "%ERROR_LOG%"
-if exist "simple_ui.log" del "simple_ui.log"
 
 
 :: ============================================================================
@@ -284,7 +283,7 @@ set "PYTHONPATH=%SCRIPT_DIR%"
 
 :: Launch the UI in a new background process, reliably passing environment variables.
 :: We use pythonw.exe to run the script without a console window for a better UX.
-:: The server will run silently in the background. Errors will be logged to ui-server.log
+:: The server will run silently in the background.
 set "UI_CMD=%PYTHONW_EXE% %UI_SCRIPT% --server %DB_SERVER% --database %DB_DATABASE% --credential-target %CREDENTIAL_TARGET%"
 
 :: ----------------------------------------------------------------------------
@@ -305,7 +304,7 @@ timeout /t 1 /nobreak >nul
 set /a wait_time+=1
 if %wait_time% lss 30 goto :wait_loop
 
-call :handle_error "The server failed to start after 30 seconds. Check simple_ui.log for details."
+call :handle_error "The server failed to start after 30 seconds."
 
 :launch_browser
 start http://localhost:3000
