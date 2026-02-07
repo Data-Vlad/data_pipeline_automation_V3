@@ -243,9 +243,6 @@ def index():
     """Renders the main UI page."""
     # The before_request handler ensures this only runs after successful initialization.
     response = make_response(render_template("index.html"))
-    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-    response.headers["Pragma"] = "no-cache"
-    response.headers["Expires"] = "0"
     return response
 
 @app.route("/favicon.ico")
