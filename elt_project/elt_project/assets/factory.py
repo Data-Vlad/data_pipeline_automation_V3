@@ -278,6 +278,15 @@ If it fails, check the run logs for details on data quality issues or parsing er
             # Determine the actual file path to parse
             if source_file_path:
                 file_to_parse = source_file_path
+                
+                # --- IGNORE INTERNAL TEMP FILES ---
+                # Prevent the sensor from triggering a duplicate run on the temporary CSV we just created.
+                if file_to_parse.endswith(".converted.csv"):
+                    context.log.info(f"Skipping internal temporary file: {file_to_parse}")
+                    log_details["status"] = "SKIPPED"
+                    log_details["message"] = "Ignored internal temporary file."
+                    return pd.DataFrame()
+
                 # --- WORKAROUND: Handle Excel Lock Files ---
                 # If the sensor triggers on a lock file (~$File.xlsx), redirect to the real file (File.xlsx).
                 # This ensures data is loaded even if the sensor picks up the lock file instead of the data file.
