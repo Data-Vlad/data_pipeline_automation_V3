@@ -32,15 +32,10 @@ os.environ['DAGSTER_HOME'] = dagster_home_path
 # --- Logging Configuration ---
 # Configure a logger to provide detailed error messages with tracebacks.
 # This will replace all `print(..., file=sys.stderr)` calls for errors.
-log_file_path = os.path.join(os.path.dirname(__file__), 'simple_ui.log')
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)-8s - %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
-    handlers=[
-        logging.FileHandler(log_file_path, mode='w'),
-        logging.StreamHandler(sys.stdout)
-    ]
 )
 logger = logging.getLogger(__name__)
 
