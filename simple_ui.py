@@ -404,13 +404,39 @@ def run_imports():
                     )
                     
                     # 2. Process the results and launch the actual runs
-                    if not tick_result.run_requests:
-                        logger.info(f"API     :  - Sensor '{sensor_name}' ticked but produced no run requests (conditions not met).")
-                        import_result["error"] = "Conditions not met (no new files?)"
-                        results.append(import_result)
-                        continue
+                    run_requests = tick_result.run_requests
 
-                    for run_req in tick_result.run_requests:
+                    # --- FORCE RUN LOGIC ---
+                    # If the sensor found no "new" files (e.g. timestamp hasn't changed),
+                    # but the user explicitly requested a run via the UI, we FORCE it.
+                    if not run_requests:
+                        logger.info(f"API     :  - Sensor '{sensor_name}' produced no requests. Attempting FORCE RUN.")
+                        
+                        # Try to resolve the job name from the sensor's targets
+                        job_name = None
+                        if external_sensor.targets:
+                            job_name = external_sensor.targets[0].job_name
+                        
+                        if job_name:
+                            logger.info(f"API     :  - Force launching job '{job_name}' with default config.")
+                            # Create a synthetic run request to force the job to run.
+                            # We pass an empty run_config. The Asset logic in factory.py is designed
+                            # to handle this by looking up the latest file in the directory.
+                            class ForceRunRequest:
+                                def __init__(self, job_name):
+                                    self.job_name = job_name
+                                    self.run_config = {}
+                                    self.tags = {"dagster/run_reason": "manual_force_run"}
+                                    self.run_key = None
+                            
+                            run_requests = [ForceRunRequest(job_name)]
+                        else:
+                            logger.warning(f"API     :  - Could not resolve job name for sensor '{sensor_name}'. Cannot force run.")
+                            import_result["error"] = "No new data & could not resolve job."
+                            results.append(import_result)
+                            continue
+
+                    for run_req in run_requests:
                         # Resolve the job name (sensor might target a specific job or be dynamic)
                         job_name = run_req.job_name
                         if not job_name:
