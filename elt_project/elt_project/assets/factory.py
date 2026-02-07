@@ -226,7 +226,6 @@ If it fails, check the run logs for details on data quality issues or parsing er
         engine = get_dynamic_engine(db_resource)
         source_file_path = context.op_config.get("source_file_path")
         resolved_path_for_feedback = source_file_path # Initialize for feedback logging
-        csv_path = None # Initialize for cleanup
         
         # --- Runtime Config Fetch ---
         # Fetch the latest staging table name to handle config updates without full restart
@@ -329,11 +328,15 @@ If it fails, check the run logs for details on data quality issues or parsing er
             
             resolved_path_for_feedback = file_to_parse
 
-            # --- NEW: Determine processing type (allows for overrides like Excel->CSV conversion) --            processing_file_type = config.file_type.lower()
+            # --- NEW: Determine processing type (allows for overrides like Excel->CSV conversion) ---
+            processing_file_type = config.file_type.strip().lower()
 
             # --- WORKAROUND: Auto-convert Excel to CSV for memory efficiency ---
-            # If the user configured 'excel' but we want to use the chunked CSV loader.
-            if processing_file_type == 'excel' and not config.parser_function:
+            # Check config OR file extension to catch all Excel files.
+            is_excel_config = processing_file_type in ['excel', 'xlsx', 'xls']
+            is_excel_file = file_to_parse.lower().endswith(('.xlsx', '.xls'))
+
+            if (is_excel_config or is_excel_file) and not config.parser_function:
                 try:
                     context.log.info(f"Auto-converting Excel file to CSV for memory-efficient loading: {file_to_parse}")
                     # Generate CSV path
@@ -532,14 +535,6 @@ If it fails, check the run logs for details on data quality issues or parsing er
             log_details["end_time"] = datetime.utcnow()
             # Write to the database log for long-term storage.
             _log_asset_run(engine, log_details)
-
-            # Cleanup temporary converted CSV if it exists
-            if csv_path and os.path.exists(csv_path):
-                try:
-                    os.remove(csv_path)
-                    context.log.info(f"Cleaned up temporary CSV file: {csv_path}")
-                except Exception as e:
-                    context.log.warning(f"Failed to delete temporary CSV file '{csv_path}': {e}")
         return df
 
     return extract_and_load_staging
@@ -1172,7 +1167,6 @@ def create_ddl_generation_utility_asset(config: PipelineConfig):
 
         dest_cols.append("    [load_timestamp] DATETIME DEFAULT GETUTCDATE()") # Add a load timestamp
 
-        dest_ddl = f"CREATE TABLE {config.destination_table} (\n" + ",\n".join(dest_cols) + "\n);"
         # Handle multiple destination tables
         dest_tables = [t.strip() for t in config.destination_table.split(',')]
         dest_ddl_parts = []
@@ -1184,6 +1178,12 @@ def create_ddl_generation_utility_asset(config: PipelineConfig):
         shared_columns = [f"    [{col_name}]" for col_name in df_sample.columns]
         shared_columns_str = ",\n".join(shared_columns)
         
+        # Generate INSERT statements for all destination tables
+        insert_statements = []
+        for dt in dest_tables:
+             insert_statements.append(f"INSERT INTO {dt} ({shared_columns_str.replace('    ', '')}) SELECT {shared_columns_str.replace('    ', '')} FROM {config.staging_table} WHERE dagster_run_id = @run_id;")
+        insert_block = "\n        ".join(insert_statements)
+
         sp_ddl = f"""CREATE OR ALTER PROCEDURE {config.transform_procedure}
     @run_id NVARCHAR(255),
     @tables_to_truncate NVARCHAR(MAX) = NULL
@@ -1197,8 +1197,7 @@ BEGIN
     END
     IF EXISTS (SELECT 1 FROM {config.staging_table} WHERE dagster_run_id = @run_id)
     BEGIN
-        INSERT INTO {config.destination_table} ({shared_columns_str.replace("    ", "")}) SELECT {shared_columns_str.replace("    ", "")} FROM {config.staging_table} WHERE dagster_run_id = @run_id;
-        INSERT INTO {dest_tables[0]} ({shared_columns_str.replace("    ", "")}) SELECT {shared_columns_str.replace("    ", "")} FROM {config.staging_table} WHERE dagster_run_id = @run_id;
+        {insert_block}
     END;
 END;"""
         
@@ -1317,20 +1316,30 @@ def create_pipeline_setup_utility_asset(pipeline_name: str, configs: List[Pipeli
                 # Destination Table DDL
                 dest_cols = [f"    [{col}] {pandas_dtype_to_sql(dtype)} NULL" for col, dtype in df_sample.dtypes.items()]
                 dest_cols.append("    [load_timestamp] DATETIME DEFAULT GETUTCDATE()")
-                all_dest_ddl.append(f"-- Destination table for {config.import_name}\nCREATE TABLE {config.destination_table} (\n" + ",\n".join(dest_cols) + "\n);")
+                
+                dest_tables = [t.strip() for t in config.destination_table.split(',')]
+                for dt in dest_tables:
+                    all_dest_ddl.append(f"-- Destination table for {config.import_name}\nCREATE TABLE {dt} (\n" + ",\n".join(dest_cols) + "\n);")
 
                 # Stored Procedure INSERT block
                 shared_cols = ",\n".join([f"        [{col}]" for col in df_sample.columns])
-                insert_block = f"""
-    -- Logic for import: {config.import_name}
-    IF EXISTS (SELECT 1 FROM {config.staging_table} WHERE dagster_run_id = @run_id)
-    BEGIN
-        INSERT INTO {config.destination_table} (
+                
+                insert_statements = []
+                for dt in dest_tables:
+                    insert_statements.append(f"""        INSERT INTO {dt} (
 {shared_cols.replace("    ", "")}
         ) 
         SELECT 
 {shared_cols}
-        FROM {config.staging_table} WHERE dagster_run_id = @run_id;
+        FROM {config.staging_table} WHERE dagster_run_id = @run_id;""")
+                
+                insert_block_body = "\n".join(insert_statements)
+
+                insert_block = f"""
+    -- Logic for import: {config.import_name}
+    IF EXISTS (SELECT 1 FROM {config.staging_table} WHERE dagster_run_id = @run_id)
+    BEGIN
+        {insert_block_body}
     END;"""
                 sp_insert_blocks.append(insert_block)
 
