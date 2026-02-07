@@ -328,6 +328,7 @@ def _monitor_run_status(run_id, job_name):
         # Create a fresh instance for this thread
         instance = DagsterInstance.get()
         last_status = None
+        logs_seen_count = 0
         
         # Poll for up to 2 hours
         for _ in range(7200): 
@@ -335,11 +336,36 @@ def _monitor_run_status(run_id, job_name):
             if not run:
                 break
             
+            # --- Status Updates ---
             current_status = run.status
             if current_status != last_status:
                 logger.info(f"API     : Run '{run_id}' ({job_name}) status changed to: {current_status.value}")
                 last_status = current_status
             
+            # --- Log Updates ---
+            # Fetch logs to show progress (Asset materializations, errors, user logs)
+            try:
+                all_logs = instance.all_logs(run_id)
+                if len(all_logs) > logs_seen_count:
+                    new_logs = all_logs[logs_seen_count:]
+                    logs_seen_count = len(all_logs)
+                    
+                    for record in new_logs:
+                        # Ensure the message passes the "API" filter in simple_ui.py
+                        prefix = f"API     : [{job_name}]"
+                        if hasattr(record, 'step_key') and record.step_key:
+                            prefix += f"[{record.step_key}]"
+                        
+                        clean_msg = record.message.replace('\n', ' ') if record.message else ""
+                        
+                        if hasattr(record, 'level') and record.level >= logging.ERROR:
+                            logger.error(f"{prefix} {clean_msg}")
+                        else:
+                            logger.info(f"{prefix} {clean_msg}")
+            except Exception as log_e:
+                # Don't crash the monitor thread if log fetching fails
+                logger.warning(f"API     : Failed to fetch logs for run '{run_id}': {log_e}")
+
             if run.is_finished:
                 logger.info(f"API     : Run '{run_id}' ({job_name}) finished with final status: {current_status.value}")
                 break
