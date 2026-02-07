@@ -1,6 +1,7 @@
 import os
 import argparse
 import sys
+import time
 import threading
 import logging
 from collections import defaultdict
@@ -318,6 +319,35 @@ def get_pipelines():
     # This line should not be reachable, but is here as a fallback.
     return jsonify({"error": "An unexpected error occurred in get_pipelines."}), 500
 
+def _monitor_run_status(run_id, job_name):
+    """
+    Background thread to poll for run status and log it to simple_ui.log.
+    This gives the user visibility into the execution phase.
+    """
+    try:
+        # Create a fresh instance for this thread
+        instance = DagsterInstance.get()
+        last_status = None
+        
+        # Poll for up to 2 hours
+        for _ in range(7200): 
+            run = instance.get_run_by_id(run_id)
+            if not run:
+                break
+            
+            current_status = run.status
+            if current_status != last_status:
+                logger.info(f"API     : Run '{run_id}' ({job_name}) status changed to: {current_status.value}")
+                last_status = current_status
+            
+            if run.is_finished:
+                logger.info(f"API     : Run '{run_id}' ({job_name}) finished with final status: {current_status.value}")
+                break
+                
+            time.sleep(2)
+    except Exception as e:
+        logger.error(f"API     : Error monitoring run '{run_id}': {e}")
+
 @app.route("/api/run_imports", methods=["POST"])
 def run_imports():
     """
@@ -486,6 +516,10 @@ def run_imports():
                         logger.info(f"API     :  - Launching run '{run_id}'...")
                         instance.launch_run(run.run_id, workspace=request_context)
                         logger.info(f"API     :  - Successfully launched run '{run.run_id}' for job '{job_name}'.")
+                        
+                        # Start background monitoring so logs show progress
+                        logger.info(f"API     :  - Starting background monitor for run '{run.run_id}'...")
+                        threading.Thread(target=_monitor_run_status, args=(run.run_id, job_name), daemon=True).start()
                         
                         # Success! Create a specific result entry for this run
                         success_result = import_result.copy()
