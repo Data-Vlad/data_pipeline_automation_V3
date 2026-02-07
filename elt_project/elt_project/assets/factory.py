@@ -801,7 +801,6 @@ This asset moves data from staging to the final, production-ready table.
                             dedupe_sql = text(f"""
                                 DELETE s
                                 FROM {current_staging_table} s
-                                JOIN {config.destination_table} d ON {join_conditions}
                                 JOIN {primary_dest_table} d ON {join_conditions}
                                 WHERE s.dagster_run_id = :run_id
                             """)
