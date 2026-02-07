@@ -23,6 +23,7 @@ set "DAGSTER_HOME_DIR=%SCRIPT_DIR%dagster_home"
 
 :: Clean up old log files
 if exist "%ERROR_LOG%" del "%ERROR_LOG%"
+if exist "simple_ui.log" del "simple_ui.log"
 
 
 :: ============================================================================
