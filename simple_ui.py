@@ -32,13 +32,25 @@ os.environ['DAGSTER_HOME'] = dagster_home_path
 # --- Logging Configuration ---
 # Configure a logger to provide detailed error messages with tracebacks.
 # This will replace all `print(..., file=sys.stderr)` calls for errors.
+class ApiOrErrorFilter(logging.Filter):
+    def filter(self, record):
+        return record.levelno >= logging.ERROR or "API" in record.getMessage()
+
+log_file_path = os.path.join(os.path.dirname(__file__), 'simple_ui.log')
+file_handler = logging.FileHandler(log_file_path, mode='w')
+stream_handler = logging.StreamHandler(sys.stdout)
+
+api_filter = ApiOrErrorFilter()
+file_handler.addFilter(api_filter)
+stream_handler.addFilter(api_filter)
+
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)-8s - %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
     handlers=[
-        logging.FileHandler(os.path.join(os.path.dirname(__file__), 'simple_ui.log'), mode='w'),
-        logging.StreamHandler(sys.stdout)
+        file_handler,
+        stream_handler
     ]
 )
 logger = logging.getLogger(__name__)
