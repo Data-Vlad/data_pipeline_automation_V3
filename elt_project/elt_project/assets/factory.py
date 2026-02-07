@@ -328,8 +328,37 @@ If it fails, check the run logs for details on data quality issues or parsing er
             
             resolved_path_for_feedback = file_to_parse
 
+            # --- NEW: Determine processing type (allows for overrides like Excel->CSV conversion) ---
+            processing_file_type = config.file_type.lower()
+
+            # --- WORKAROUND: Auto-convert Excel to CSV for memory efficiency ---
+            # If the user configured 'excel' but we want to use the chunked CSV loader.
+            if processing_file_type == 'excel' and not config.parser_function:
+                try:
+                    context.log.info(f"Auto-converting Excel file to CSV for memory-efficient loading: {file_to_parse}")
+                    # Generate CSV path
+                    csv_path = os.path.splitext(file_to_parse)[0] + ".converted.csv"
+                    
+                    # Read Excel
+                    df_temp = pd.read_excel(file_to_parse)
+                    
+                    # Save to CSV (using latin1 to match sql_loader default, errors='replace' to prevent crash)
+                    df_temp.to_csv(csv_path, index=False, encoding='latin1', errors='replace')
+                    
+                    # Cleanup memory
+                    del df_temp
+                    import gc
+                    gc.collect()
+                    
+                    context.log.info(f"Conversion successful. Switching processing mode to CSV using file: {csv_path}")
+                    file_to_parse = csv_path
+                    processing_file_type = 'csv'
+                    
+                except Exception as e:
+                    context.log.warning(f"Excel-to-CSV conversion failed: {e}. Falling back to standard Excel parsing.")
+
             # OPTIMIZATION: Use chunked loading for standard CSVs to save memory
-            if config.file_type.lower() == 'csv' and not config.parser_function:
+            if processing_file_type == 'csv' and not config.parser_function:
                 try:
                     context.log.info(f"Using memory-efficient chunked CSV loader for {file_to_parse}")
                     rows_processed = load_csv_to_sql_chunked(

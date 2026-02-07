@@ -440,6 +440,14 @@ This is the most common method. The framework monitors a local directory for new
     *   `file_type`: The type of file to parse (e.g., `'csv'`, `'excel'`, `'psv'`).
 3.  **Enable the Sensor**: In the Dagster UI, go to the **Sensors** tab and turn on the dynamically generated sensor for your pipeline.
 
+#### Performance Optimization: Automatic Excel Handling
+
+Processing large Excel files can be memory-intensive because standard parsers must load the entire file into RAM. To prevent system crashes and improve stability, the framework includes an **automatic optimization**:
+
+1.  **Auto-Conversion**: When an Excel file is detected, the system automatically converts it to a temporary CSV file.
+2.  **Chunked Loading**: It then uses the memory-efficient **Chunked CSV Loader** to stream the data into the database in small batches (e.g., 10,000 rows at a time).
+3.  **Stability**: This ensures that memory usage remains low and constant, regardless of the file size.
+
 ### Method 2: SFTP Server Download
 
 This method allows the framework to connect to an SFTP server, download one or more files matching a pattern, and then process them.
