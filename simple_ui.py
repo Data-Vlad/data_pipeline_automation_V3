@@ -32,11 +32,15 @@ os.environ['DAGSTER_HOME'] = dagster_home_path
 # --- Logging Configuration ---
 # Configure a logger to provide detailed error messages with tracebacks.
 # This will replace all `print(..., file=sys.stderr)` calls for errors.
+log_file_path = os.path.join(os.path.dirname(__file__), 'simple_ui.log')
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(levelname)-8s - %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
-    # The launcher script will redirect stdout/stderr to a log file.
+    handlers=[
+        logging.FileHandler(log_file_path, mode='w'),
+        logging.StreamHandler(sys.stdout)
+    ]
 )
 logger = logging.getLogger(__name__)
 
@@ -343,6 +347,7 @@ def run_imports():
 
         logger.info(f"API     : Received request to run {len(selected_imports)} imports: {[item['import_name'] for item in selected_imports]}")
 
+        logger.info("API     : Loading Dagster workspace context...")
         workspace_file_path = os.path.join(dagster_home_path, "workspace.yaml")
         instance = DagsterInstance.get()
         with WorkspaceProcessContext(
@@ -352,6 +357,7 @@ def run_imports():
             instance=instance,
             workspace_load_target=WorkspaceFileTarget(paths=[workspace_file_path]),
         ) as process_context:
+            logger.info("API     : Workspace context loaded successfully.")
             request_context = process_context.create_request_context()
             location_name = "elt_project"
             code_location = request_context.get_code_location(location_name)
@@ -362,6 +368,7 @@ def run_imports():
                 logger.error(f"API     : {error_msg} [RESOLUTION] Check 'dagster_home/workspace.yaml' for a correct 'module_name' and ensure 'definitions.py' exists. Run 'dagster dev' to debug code loading.")
                 raise RuntimeError(error_msg)
 
+            logger.info(f"API     : Found code location '{location_name}'.")
             repositories = code_location.get_repositories()
             if not repositories:
                 raise RuntimeError(f"No repositories found in code location '{location_name}'. Check your definitions file.")
@@ -375,7 +382,7 @@ def run_imports():
             for item in selected_imports:
                 import_name = item["import_name"]
                 sensor_name = f"sensor_{import_name}"
-                logger.info(f"API     :  - Submitting tick for sensor '{sensor_name}'...")
+                logger.info(f"API     : Processing import '{import_name}' (Sensor: '{sensor_name}')...")
 
                 # Default result object for this import
                 import_result = {
@@ -392,6 +399,7 @@ def run_imports():
                     external_sensor = external_repo.get_sensor(sensor_name)
 
                     # 1. Tick the sensor to get RunRequests (this does not launch them automatically)
+                    logger.info(f"API     :  - Ticking sensor '{sensor_name}'...")
                     tick_result = code_location.get_sensor_execution_data(
                         instance=instance,
                         repository_handle=external_repo.handle,
@@ -405,6 +413,7 @@ def run_imports():
                     
                     # 2. Process the results and launch the actual runs
                     run_requests = tick_result.run_requests
+                    logger.info(f"API     :  - Sensor tick complete. Generated {len(run_requests) if run_requests else 0} run requests.")
 
                     # --- FORCE RUN LOGIC ---
                     # If the sensor found no "new" files (e.g. timestamp hasn't changed),
@@ -456,9 +465,11 @@ def run_imports():
                         if run_req.run_key:
                             run_tags["dagster/run_key"] = run_req.run_key
 
+                        logger.info(f"API     :  - Preparing to launch job '{job_name}'...")
                         logger.info(f"API     :  - Run Config: {run_req.run_config}")
 
                         # Generate Execution Plan
+                        logger.info(f"API     :  - Generating execution plan for job '{job_name}'...")
                         execution_plan = code_location.get_execution_plan(
                             remote_job=external_job,
                             run_config=run_req.run_config or {},
@@ -469,6 +480,7 @@ def run_imports():
 
                         run_id = make_new_run_id()
 
+                        logger.info(f"API     :  - Creating run '{run_id}'...")
                         run = instance.create_run(
                             job_name=job_name,
                             run_id=run_id,
@@ -489,6 +501,7 @@ def run_imports():
                             asset_check_selection=None,
                             asset_graph=None
                         )
+                        logger.info(f"API     :  - Launching run '{run_id}'...")
                         instance.launch_run(run.run_id, workspace=request_context)
                         logger.info(f"API     :  - Successfully launched run '{run.run_id}' for job '{job_name}'.")
                         
