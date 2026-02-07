@@ -346,7 +346,9 @@ If it fails, check the run logs for details on data quality issues or parsing er
                     csv_path = os.path.splitext(file_to_parse)[0] + ".converted.csv"
                     
                     # Read Excel
-                    df_temp = pd.read_excel(file_to_parse)
+                    # Explicitly specify engine for .xlsx to avoid "format cannot be determined" errors
+                    engine = 'openpyxl' if file_to_parse.lower().endswith('.xlsx') else None
+                    df_temp = pd.read_excel(file_to_parse, engine=engine)
                     
                     # Save to CSV (using latin1 to match sql_loader default, errors='replace' to prevent crash)
                     df_temp.to_csv(csv_path, index=False, encoding='latin1', errors='replace')

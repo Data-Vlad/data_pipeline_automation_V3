@@ -47,6 +47,9 @@ class ExcelParser(Parser):
     """
     def parse(self, file_path: str) -> pd.DataFrame:
         # This requires the 'openpyxl' package for .xlsx files.
+        # Explicitly specify engine for .xlsx to avoid "format cannot be determined" errors
+        if file_path.lower().endswith('.xlsx'):
+            return pd.read_excel(file_path, engine='openpyxl')
         return pd.read_excel(file_path)
 
 class CsvToExcelConverterParser(Parser):
