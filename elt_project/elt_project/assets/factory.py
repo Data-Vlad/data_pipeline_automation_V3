@@ -348,8 +348,11 @@ If it fails, check the run logs for details on data quality issues or parsing er
                     # Read Excel
                     # Explicitly specify engine for .xlsx to avoid "format cannot be determined" errors
                     # Also handle .xlsm and .xltx
-                    ext = os.path.splitext(file_to_parse)[1].lower()
+                    # Strip whitespace to ensure extension detection works
+                    clean_path = file_to_parse.strip()
+                    ext = os.path.splitext(clean_path)[1].lower()
                     excel_engine = 'openpyxl' if ext in ['.xlsx', '.xlsm', '.xltx'] else None
+                    context.log.info(f"Reading Excel file with engine: {excel_engine}")
                     df_temp = pd.read_excel(file_to_parse, engine=excel_engine)
                     
                     # Save to CSV (using latin1 to match sql_loader default, errors='replace' to prevent crash)
