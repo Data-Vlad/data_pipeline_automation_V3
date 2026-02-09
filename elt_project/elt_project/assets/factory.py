@@ -1,6 +1,7 @@
 # elt_project/assets/factory.py
 import pandas as pd
 from datetime import datetime
+import time
 import re
 import os # Ensure os is imported
 import json
@@ -341,6 +342,7 @@ If it fails, check the run logs for details on data quality issues or parsing er
 
             if (is_excel_config or is_excel_file) and not config.parser_function:
                 try:
+                    conv_start_time = time.time()
                     context.log.info(f"Auto-converting Excel file to CSV for memory-efficient loading: {file_to_parse}")
                     # Generate CSV path
                     csv_path = os.path.splitext(file_to_parse)[0] + ".converted.csv"
@@ -420,7 +422,8 @@ If it fails, check the run logs for details on data quality issues or parsing er
                             # If both fail, raise the original Excel error
                             raise e
                     
-                    context.log.info(f"Conversion successful. Switching processing mode to CSV using file: {csv_path}")
+                    conv_duration = time.time() - conv_start_time
+                    context.log.info(f"Conversion successful in {conv_duration:.2f}s. Switching processing mode to CSV using file: {csv_path}")
                     file_to_parse = csv_path
                     processing_file_type = 'csv'
                     
@@ -433,16 +436,19 @@ If it fails, check the run logs for details on data quality issues or parsing er
             # OPTIMIZATION: Use chunked loading for standard CSVs to save memory
             if processing_file_type == 'csv' and not config.parser_function:
                 try:
-                    context.log.info(f"Using memory-efficient chunked CSV loader for {file_to_parse}")
+                    load_start_time = time.time()
+                    context.log.info(f"Using high-performance chunked CSV loader (Batch Size: 50,000) for {file_to_parse}")
                     rows_processed = load_csv_to_sql_chunked(
                         file_path=file_to_parse,
                         table_name=current_staging_table,
                         engine=engine,
                         run_id=context.run_id,
-                        column_mapping=config.get_column_mapping()
+                        column_mapping=config.get_column_mapping(),
+                        chunksize=50000 # Increased chunksize for speed with fast_executemany
                     )
                     log_details["rows_processed"] = rows_processed
-                    context.log.info(f"Successfully loaded {rows_processed} rows in chunks.")
+                    load_duration = time.time() - load_start_time
+                    context.log.info(f"Successfully loaded {rows_processed} rows in {load_duration:.2f}s.")
                     context.add_output_metadata({"num_rows": rows_processed, "staging_table": current_staging_table})
                 except FileNotFoundError:
                     context.log.warning(f"Source file not found for {config.import_name}: '{file_to_parse}'. Skipping.")
