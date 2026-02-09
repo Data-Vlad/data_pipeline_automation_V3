@@ -61,6 +61,9 @@ def create_file_sensor(config: PipelineConfig, job_name: str, db_resource: SQLSe
     # Ensure the sensor name is valid and unique per import
     sensor_name = sanitize_name(f"sensor_{config.import_name}")
 
+    # Sanitize the file pattern to ensure it only contains the filename/wildcard, not a directory path.
+    target_file_pattern = os.path.basename(config.file_pattern) if config.file_pattern else "*"
+
     @sensor(name=sensor_name, job_name=job_name, minimum_interval_seconds=30)
     def _file_sensor(context: SensorEvaluationContext):
         """
@@ -116,13 +119,13 @@ def create_file_sensor(config: PipelineConfig, job_name: str, db_resource: SQLSe
         max_mtime = last_mtime
 
         try:
-            matching_files = [f for f in os.listdir(config.monitored_directory) if fnmatch.fnmatch(f, config.file_pattern)]
+            matching_files = [f for f in os.listdir(config.monitored_directory) if fnmatch.fnmatch(f, target_file_pattern)]
         except Exception as e:
             print(f"  > ERROR reading directory: {e}")
             return
 
         if not matching_files:
-            print(f"  > No files match '{config.file_pattern}'.")
+            print(f"  > No files match '{target_file_pattern}' in '{config.monitored_directory}'.")
             return
 
         new_files_count = 0

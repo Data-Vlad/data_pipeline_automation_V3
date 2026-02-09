@@ -440,6 +440,22 @@ This is the most common method. The framework monitors a local directory for new
     *   `file_type`: The type of file to parse (e.g., `'csv'`, `'excel'`, `'psv'`).
 3.  **Enable the Sensor**: In the Dagster UI, go to the **Sensors** tab and turn on the dynamically generated sensor for your pipeline.
 
+#### High-Performance Loading Architecture
+
+The framework employs a multi-stage architecture designed to load large files (e.g., 500MB+ CSVs or Excels) quickly and without running out of memory (OOM).
+
+1.  **Streaming Excel Conversion**:
+    *   **Problem**: Standard Excel parsers load the entire file into RAM, causing crashes with large files.
+    *   **Solution**: The system uses `openpyxl` in **read-only streaming mode**. It iterates through the Excel file row-by-row and writes to a temporary CSV on disk. This keeps memory usage low and constant (~50MB), regardless of file size.
+
+2.  **Parallel Chunked Loading**:
+    *   **Problem**: Reading a large CSV into a single Pandas DataFrame consumes 5x-10x the file size in RAM. Serial uploads to SQL Server are slow due to network latency.
+    *   **Solution**:
+        *   **Chunking**: The CSV is read in small batches (e.g., 10,000 rows).
+        *   **Parallel Uploads**: A `ThreadPoolExecutor` spins up **4 background threads**. As the main thread reads chunks from disk, the worker threads upload them to SQL Server simultaneously. This saturates the I/O bandwidth and significantly reduces total load time.
+        *   **Fast Executemany**: The SQL connection uses `fast_executemany=True`, allowing the ODBC driver to pack thousands of rows into minimal network packets.
+        *   **Aggressive Garbage Collection**: Memory is explicitly freed (`gc.collect()`) after every chunk to prevent RAM spikes during long runs.
+
 ### Method 2: SFTP Server Download
 
 This method allows the framework to connect to an SFTP server, download one or more files matching a pattern, and then process them.
