@@ -345,6 +345,14 @@ If it fails, check the run logs for details on data quality issues or parsing er
                     # Generate CSV path
                     csv_path = os.path.splitext(file_to_parse)[0] + ".converted.csv"
                     
+                    # Pre-cleanup: Remove any stale CSV from a previous crashed run
+                    if os.path.exists(csv_path):
+                        try:
+                            os.remove(csv_path)
+                            context.log.info(f"Removed stale converted CSV file from previous run: {csv_path}")
+                        except Exception:
+                            pass
+                    
                     # Read Excel
                     # Explicitly specify engine for .xlsx to avoid "format cannot be determined" errors
                     # Also handle .xlsm and .xltx
@@ -372,12 +380,17 @@ If it fails, check the run logs for details on data quality issues or parsing er
                                 sheet = wb.active
                                 with open(csv_path, 'w', newline='', encoding='latin1', errors='replace') as f:
                                     writer = csv.writer(f)
-                                    for row in sheet.iter_rows(values_only=True):
+                                    # Use .values for cleaner iteration
+                                    for row in sheet.values:
                                         # Filter out completely empty rows to keep CSV clean
-                                        if any(cell is not None for cell in row):
+                                        if row and any(cell is not None for cell in row):
                                             writer.writerow(row)
                             finally:
                                 wb.close()
+                                import gc
+                                gc.collect()
+                            
+                            context.log.info(f"Excel to CSV conversion completed successfully. File size: {os.path.getsize(csv_path) / (1024*1024):.2f} MB")
                         else:
                             # Legacy/XLS handling via Pandas (loads into memory)
                             with pd.ExcelFile(file_to_parse, engine=excel_engine) as xls:
