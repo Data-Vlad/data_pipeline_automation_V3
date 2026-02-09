@@ -31,7 +31,8 @@ def load_df_to_sql(df: pd.DataFrame, table_name: str, engine: Engine):
 def _upload_chunk_worker(chunk, table_name, engine):
     """Helper function to upload a single chunk in a separate thread."""
     with engine.connect() as connection:
-        chunk.to_sql(name=table_name, con=connection, if_exists='append', index=False)
+        # Use chunksize within to_sql to ensure stable insertion batches inside the thread
+        chunk.to_sql(name=table_name, con=connection, if_exists='append', index=False, chunksize=1000)
     return len(chunk)
 
 def load_csv_to_sql_chunked(

@@ -351,66 +351,16 @@ If it fails, check the run logs for details on data quality issues or parsing er
                     if os.path.exists(csv_path):
                         try:
                             os.remove(csv_path)
-                            context.log.info(f"Removed stale converted CSV file from previous run: {csv_path}")
                         except Exception:
                             pass
                     
-                    # Read Excel
-                    # Explicitly specify engine for .xlsx to avoid "format cannot be determined" errors
-                    # Also handle .xlsm and .xltx
-                    # Strip whitespace to ensure extension detection works
-                    clean_path = file_to_parse.strip()
-                    ext = os.path.splitext(clean_path)[1].lower()
-                    excel_engine = 'openpyxl' if ext in ['.xlsx', '.xlsm', '.xltx'] else None
-                    
+                    # Use the optimized streaming converter from parsers.py
                     try:
-                        size_mb = os.path.getsize(file_to_parse) / (1024 * 1024)
-                        context.log.info(f"Reading Excel file: {file_to_parse} (Size: {size_mb:.2f} MB) with engine: {excel_engine}")
-                    except Exception:
-                        context.log.info(f"Reading Excel file: {file_to_parse} with engine: {excel_engine}")
-
-                    try:
-                        # OPTIMIZATION: Use openpyxl streaming for .xlsx to avoid OOM on large files (like 227MB)
-                        if excel_engine == 'openpyxl':
-                            import openpyxl
-                            import csv
-                            context.log.info("Using openpyxl read-only mode for streaming conversion (Memory Optimized).")
-                            
-                            # read_only=True and data_only=True ensure we don't load the whole file or formulas into RAM
-                            wb = openpyxl.load_workbook(file_to_parse, read_only=True, data_only=True)
-                            try:
-                                sheet = wb.active
-                                with open(csv_path, 'w', newline='', encoding='latin1', errors='replace') as f:
-                                    writer = csv.writer(f)
-                                    # Use .values for cleaner iteration
-                                    for row in sheet.values:
-                                        # Filter out completely empty rows to keep CSV clean
-                                        if row and any(cell is not None for cell in row):
-                                            writer.writerow(row)
-                            finally:
-                                wb.close()
-                                import gc
-                                gc.collect()
-                            
-                            context.log.info(f"Excel to CSV conversion completed successfully. File size: {os.path.getsize(csv_path) / (1024*1024):.2f} MB")
-                        else:
-                            # Legacy/XLS handling via Pandas (loads into memory)
-                            with pd.ExcelFile(file_to_parse, engine=excel_engine) as xls:
-                                df_temp = pd.read_excel(xls)
-                            
-                            # Save to CSV (using latin1 to match sql_loader default, errors='replace' to prevent crash)
-                            df_temp.to_csv(csv_path, index=False, encoding='latin1', errors='replace')
-                            
-                            # Cleanup memory
-                            del df_temp
-                            import gc
-                            gc.collect()
-
+                        parsers.stream_excel_to_csv(file_to_parse, csv_path, logger=context.log)
                     except Exception as e:
-                        context.log.warning(f"Excel conversion failed with engine {excel_engine}: {e}. Checking if file is actually CSV...")
-                        # Fallback: Try reading as CSV if Excel parse fails
+                        # Fallback: Try reading as CSV if Excel parse fails (sometimes CSVs are misnamed as .xls)
+                        context.log.warning(f"Excel conversion failed: {e}. Checking if file is actually CSV...")
                         try:
-                            # Verify it reads as CSV
                             df_temp = pd.read_csv(file_to_parse, encoding='latin1', errors='replace')
                             # Write standardized CSV
                             df_temp.to_csv(csv_path, index=False, encoding='latin1', errors='replace')
