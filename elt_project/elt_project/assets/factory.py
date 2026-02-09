@@ -1,10 +1,12 @@
 # elt_project/assets/factory.py
 import pandas as pd
 from datetime import datetime
+import time
 import re
 import os # Ensure os is imported
 import json
 from typing import Optional, List
+import glob # Import glob at top level for reliability
 import traceback # Import traceback to capture detailed error info
 from sqlalchemy import create_engine
 from sqlalchemy import text, inspect
@@ -12,7 +14,7 @@ from dagster import asset, AssetExecutionContext, AssetKey
 from dagster import MetadataValue, Config
 from .models import PipelineConfig # This is correct, models.py is in the same directory
 from .resources import SQLServerResource
-from . import parsers, custom_parsers, selenium_logic
+from . import parsers, custom_parsers
 from .sql_loader import load_df_to_sql, execute_stored_procedure, load_csv_to_sql_chunked
 
 def sanitize_name(name: str) -> str:
@@ -63,49 +65,8 @@ def _show_toast_notification(status: str, pipeline_name: str, import_name: str, 
         source_file (str): The basename of the file that was processed.
         message (str): A user-friendly message about the outcome.
     """
-    if os.name != 'nt':
-        return  # Only run on Windows
- 
-    import subprocess
-
-    try:
-        title = f"File Processed: {import_name.replace('stg_', '')}"
-        body = f"Status: {status.capitalize()}"
-        
-        icon = "imageres.dll,-101" # Default (Failure/Warning)
-        if status.upper() == 'SUCCESS':
-            icon = "imageres.dll,-119"
-        elif status.upper() == 'STARTED':
-            icon = "imageres.dll,-1004" # Generic Info/Run icon
-
-        # The `run_elt_service.bat` script ensures the BurntToast module is installed.
-        # We can directly call it without checking for its existence here.
-        # This is faster and removes redundant logic.
-        ps_title = title.replace("'", "''")
-        ps_body = body.replace("'", "''")
-        powershell_command = f"""
-        Import-Module BurntToast;
-        New-BurntToastNotification -AppLogo '{icon}' -Text '{ps_title}', '{ps_body}'
-        """
- 
-        # Configure startup info to hide the console window
-        startupinfo = subprocess.STARTUPINFO()
-        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        startupinfo.wShowWindow = 0 # SW_HIDE
-
-        # Execute the PowerShell command.
-        process = subprocess.run(
-            ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", powershell_command],
-            capture_output=True, text=True, startupinfo=startupinfo
-        )
- 
-        if process.returncode != 0:
-            print(f"Warning: Failed to show PowerShell toast notification. Error: {process.stderr.strip()}")
-
-    except Exception as e:
-        # Use traceback to get detailed error information for logging
-        detailed_error = traceback.format_exc()
-        print(f"Warning: An unexpected error occurred in _show_toast_notification. Error: {e}\n{detailed_error}")
+    # Toast notifications disabled as BurntToast module is not available.
+    pass
 
 def _write_user_feedback_log(monitored_directory: Optional[str], pipeline_name: str, import_name: str, status: str, source_file: str, message: str):
     """
@@ -203,26 +164,10 @@ def create_extract_and_load_asset(config: PipelineConfig):
         # Add other custom parser function names here as they are created, e.g., "parse_my_unique_data_file",
     }
     
-    # Define which parsers are considered "Ingestion" (Scrapers/Downloaders)
-    INGESTION_FUNCTIONS = {
-        "generic_web_scraper",
-        "generic_selenium_scraper",
-        "generic_sftp_downloader"
-    }
-
     # Sanitize the asset name to be valid in Dagster. This was the source of the error.
     # The old name format was "1. Extract & Stage: {config.import_name}" which is invalid.
     # We now use a sanitized, valid name.
-    
-    # Determine if this is an Ingestion asset or an ELT asset based on the parser
-    is_ingestion = config.parser_function in INGESTION_FUNCTIONS
-    
-    if is_ingestion:
-        asset_name = sanitize_name(f"{config.import_name}_ingest")
-        desc_action = "Ingests (Downloads/Scrapes)"
-    else:
-        asset_name = sanitize_name(f"{config.import_name}_extract_and_load_staging")
-        desc_action = "Extracts and Loads"
+    asset_name = sanitize_name(f"{config.import_name}_extract_and_load_staging")
 
     # --- NEW: Support for explicit dependencies via scraper_config ---
     deps = []
@@ -233,7 +178,7 @@ def create_extract_and_load_asset(config: PipelineConfig):
         deps=deps,
         compute_kind="python",
         description=f"""
-**{desc_action} data for the '{config.import_name}' import.**
+**Extracts, validates, and stages data for the '{config.import_name}' import.**
 
 This is the first step in the '{config.pipeline_name}' pipeline. It performs the following actions:
 
@@ -283,6 +228,8 @@ If it fails, check the run logs for details on data quality issues or parsing er
         engine = get_dynamic_engine(db_resource)
         source_file_path = context.op_config.get("source_file_path")
         resolved_path_for_feedback = source_file_path # Initialize for feedback logging
+        csv_path = None # Initialize for cleanup
+        file_to_parse = "N/A" # Initialize to prevent UnboundLocalError in finally/except blocks
         
         # --- Runtime Config Fetch ---
         # Fetch the latest staging table name to handle config updates without full restart
@@ -335,54 +282,174 @@ If it fails, check the run logs for details on data quality issues or parsing er
             # Determine the actual file path to parse
             if source_file_path:
                 file_to_parse = source_file_path
+                
+                # --- WORKAROUND: Handle Excel Lock Files ---
+                # If the sensor triggers on a lock file (~$File.xlsx), redirect to the real file (File.xlsx).
+                # This ensures data is loaded even if the sensor picks up the lock file instead of the data file.
+                if os.path.basename(file_to_parse).startswith("~$"):
+                    real_filename = os.path.basename(file_to_parse)[2:] # Remove the ~$ prefix
+                    real_file_path = os.path.join(os.path.dirname(file_to_parse), real_filename)
+                    if os.path.isfile(real_file_path):
+                        context.log.info(f"Redirecting from lock file '{os.path.basename(file_to_parse)}' to real file '{real_filename}'")
+                        file_to_parse = real_file_path
+                    else:
+                        context.log.warning(f"Triggered on lock file '{file_to_parse}' but real file not found. Skipping.")
+                        log_details["status"] = "SKIPPED"
+                        log_details["message"] = "Ignored orphan Excel lock file."
+                        return pd.DataFrame()
             else:
                 # If source_file_path is not provided (e.g., manual run), construct the full path.
                 # SECURITY: Sanitize the file_pattern to prevent path traversal attacks.
                 # We only want the filename, not any directory info that might be in the pattern.
-                if config.file_pattern:
-                    config.file_pattern = os.path.basename(config.file_pattern)
-                file_to_parse = os.path.join(config.monitored_directory, config.file_pattern) if config.monitored_directory else config.file_pattern
+                pattern_to_use = config.file_pattern
+                if pattern_to_use:
+                    pattern_to_use = os.path.basename(pattern_to_use)
+                file_to_parse = os.path.join(config.monitored_directory, pattern_to_use) if config.monitored_directory else pattern_to_use
             if not file_to_parse:
                 raise ValueError("No source file path provided or configured for extraction.")
 
-            # OPTIMIZATION: Use chunked loading for standard CSVs to save memory
-            if config.file_type.lower() == 'csv' and not config.parser_function:
+            # --- Resolve wildcards/globs for ALL file types ---
+            # This ensures that Excel, PSV, and custom parsers also support file patterns.
+            # Check if it is an existing file first. This prevents glob from breaking on paths with brackets [].
+            if not os.path.isfile(file_to_parse) and any(ch in str(file_to_parse) for ch in ["*", "?", "["]):
+                matches = glob.glob(file_to_parse, recursive=True)
+                if not matches and config.monitored_directory:
+                    pattern2 = os.path.join(config.monitored_directory, os.path.basename(file_to_parse))
+                    matches = glob.glob(pattern2, recursive=True)
+
+                # Filter out Excel temporary lock files (starting with ~$) which match *.xlsx but are not readable
+                matches = [m for m in matches if not os.path.basename(m).startswith("~$")]
+
+                if not matches:
+                    context.log.warning(f"Source file not found for {config.import_name}: '{file_to_parse}'. Skipping.")
+                    log_details["status"] = "SUCCESS"
+                    log_details["message"] = f"Source file not found: '{file_to_parse}'. No data loaded."
+                    return pd.DataFrame()
+                
+                resolved_path = max(matches, key=os.path.getmtime)
+                context.log.info(f"Resolved pattern '{file_to_parse}' to file '{resolved_path}'")
+                file_to_parse = resolved_path
+            
+            resolved_path_for_feedback = file_to_parse
+
+            # --- NEW: Determine processing type (allows for overrides like Excel->CSV conversion) ---
+            processing_file_type = config.file_type.strip().lower()
+
+            # --- WORKAROUND: Auto-convert Excel to CSV for memory efficiency ---
+            # Check config OR file extension to catch all Excel files.
+            is_excel_config = processing_file_type in ['excel', 'xlsx', 'xls']
+            is_excel_file = file_to_parse.lower().endswith(('.xlsx', '.xls'))
+
+            if (is_excel_config or is_excel_file) and not config.parser_function:
                 try:
-                    import glob
-                    # Resolve wildcards/globs to an actual file path (pandas cannot read a glob pattern)
-                    # This is the path that will be used for logging user feedback
-                    resolved_path = file_to_parse
-                    if any(ch in str(file_to_parse) for ch in ["*", "?", "["]):
-                        # If file_to_parse is already an absolute pattern keep it, otherwise join with monitored dir
-                        pattern = file_to_parse
-                        matches = glob.glob(pattern, recursive=True) # Use recursive for potential **/ patterns
-                        # If no matches, try joining with monitored_directory if available
-                        if not matches and config.monitored_directory:
-                            pattern2 = os.path.join(config.monitored_directory, os.path.basename(pattern))
-                            matches = glob.glob(pattern2, recursive=True)
+                    conv_start_time = time.time()
+                    context.log.info(f"Auto-converting Excel file to CSV for memory-efficient loading: {file_to_parse}")
+                    # Generate CSV path
+                    csv_path = os.path.splitext(file_to_parse)[0] + ".converted.csv"
+                    
+                    # Pre-cleanup: Remove any stale CSV from a previous crashed run
+                    if os.path.exists(csv_path):
+                        try:
+                            os.remove(csv_path)
+                            context.log.info(f"Removed stale converted CSV file from previous run: {csv_path}")
+                        except Exception:
+                            pass
+                    
+                    # Read Excel
+                    # Explicitly specify engine for .xlsx to avoid "format cannot be determined" errors
+                    # Also handle .xlsm and .xltx
+                    # Strip whitespace to ensure extension detection works
+                    clean_path = file_to_parse.strip()
+                    ext = os.path.splitext(clean_path)[1].lower()
+                    excel_engine = 'openpyxl' if ext in ['.xlsx', '.xlsm', '.xltx'] else None
+                    
+                    try:
+                        size_mb = os.path.getsize(file_to_parse) / (1024 * 1024)
+                        context.log.info(f"Reading Excel file: {file_to_parse} (Size: {size_mb:.2f} MB) with engine: {excel_engine}")
+                    except Exception:
+                        context.log.info(f"Reading Excel file: {file_to_parse} with engine: {excel_engine}")
 
-                        if not matches:
-                            raise FileNotFoundError(f"No files matched the pattern '{file_to_parse}'")
-                        # Choose the most recently modified file if multiple matches
-                        resolved_path = max(matches, key=os.path.getmtime)
-                        context.log.info(f"Resolved pattern '{file_to_parse}' to file '{resolved_path}'")
-                    else:
-                        # If it's not a glob, it might be a relative path. Join with monitored_directory if it exists.
-                        resolved_path = file_to_parse
+                    try:
+                        # OPTIMIZATION: Use openpyxl streaming for .xlsx to avoid OOM on large files (like 227MB)
+                        if excel_engine == 'openpyxl':
+                            import openpyxl
+                            import csv
+                            context.log.info("Using openpyxl read-only mode for streaming conversion (Memory Optimized).")
+                            
+                            # read_only=True and data_only=True ensure we don't load the whole file or formulas into RAM
+                            wb = openpyxl.load_workbook(file_to_parse, read_only=True, data_only=True)
+                            try:
+                                sheet = wb.active
+                                with open(csv_path, 'w', newline='', encoding='latin1', errors='replace') as f:
+                                    writer = csv.writer(f)
+                                    # Use .values for cleaner iteration
+                                    for row in sheet.values:
+                                        # Filter out completely empty rows to keep CSV clean
+                                        if row and any(cell is not None for cell in row):
+                                            writer.writerow(row)
+                            finally:
+                                wb.close()
+                                import gc
+                                gc.collect()
+                            
+                            context.log.info(f"Excel to CSV conversion completed successfully. File size: {os.path.getsize(csv_path) / (1024*1024):.2f} MB")
+                        else:
+                            # Legacy/XLS handling via Pandas (loads into memory)
+                            with pd.ExcelFile(file_to_parse, engine=excel_engine) as xls:
+                                df_temp = pd.read_excel(xls)
+                            
+                            # Save to CSV (using latin1 to match sql_loader default, errors='replace' to prevent crash)
+                            df_temp.to_csv(csv_path, index=False, encoding='latin1', errors='replace')
+                            
+                            # Cleanup memory
+                            del df_temp
+                            import gc
+                            gc.collect()
 
-                    # Ensure the path used for user feedback is the resolved one
-                    resolved_path_for_feedback = resolved_path
+                    except Exception as e:
+                        context.log.warning(f"Excel conversion failed with engine {excel_engine}: {e}. Checking if file is actually CSV...")
+                        # Fallback: Try reading as CSV if Excel parse fails
+                        try:
+                            # Verify it reads as CSV
+                            df_temp = pd.read_csv(file_to_parse, encoding='latin1', errors='replace')
+                            # Write standardized CSV
+                            df_temp.to_csv(csv_path, index=False, encoding='latin1', errors='replace')
+                            del df_temp
+                            import gc
+                            gc.collect()
+                            context.log.info("Fallback successful: File was actually a CSV.")
+                        except Exception as csv_e:
+                            # If both fail, raise the original Excel error
+                            raise e
+                    
+                    conv_duration = time.time() - conv_start_time
+                    context.log.info(f"Conversion successful in {conv_duration:.2f}s. Switching processing mode to CSV using file: {csv_path}")
+                    file_to_parse = csv_path
+                    processing_file_type = 'csv'
+                    
+                except Exception as e:
+                    # If the error is missing dependency, fail immediately instead of falling back
+                    if "openpyxl" in str(e) and "dependency" in str(e):
+                        raise e
+                    context.log.warning(f"Excel-to-CSV conversion failed: {e}. Falling back to standard Excel parsing.")
 
-                    context.log.info(f"Using memory-efficient chunked CSV loader for {resolved_path}")
+            # OPTIMIZATION: Use chunked loading for standard CSVs to save memory
+            if processing_file_type == 'csv' and not config.parser_function:
+                try:
+                    load_start_time = time.time()
+                    context.log.info(f"Using high-performance chunked CSV loader (Batch Size: 10,000) for {file_to_parse}")
                     rows_processed = load_csv_to_sql_chunked(
-                        file_path=resolved_path,
+                        file_path=file_to_parse,
                         table_name=current_staging_table,
                         engine=engine,
                         run_id=context.run_id,
-                        column_mapping=config.get_column_mapping()
+                        column_mapping=config.get_column_mapping(),
+                        chunksize=10000, # Reduced chunksize to prevent driver crashes/OOM
+                        logger=context.log
                     )
                     log_details["rows_processed"] = rows_processed
-                    context.log.info(f"Successfully loaded {rows_processed} rows in chunks.")
+                    load_duration = time.time() - load_start_time
+                    context.log.info(f"Successfully loaded {rows_processed} rows in {load_duration:.2f}s.")
                     context.add_output_metadata({"num_rows": rows_processed, "staging_table": current_staging_table})
                 except FileNotFoundError:
                     context.log.warning(f"Source file not found for {config.import_name}: '{file_to_parse}'. Skipping.")
@@ -399,34 +466,20 @@ If it fails, check the run logs for details on data quality issues or parsing er
                     df: pd.DataFrame
                     if config.parser_function:
                         # For custom parsers, the file_to_parse is what we have.
-                        resolved_path_for_feedback = file_to_parse
                         if config.parser_function not in ALLOWED_CUSTOM_PARSERS:
                             raise ValueError(f"Custom parser function '{config.parser_function}' is not whitelisted.")
                         context.log.info(f"Using custom parser function '{config.parser_function}' for file: {file_to_parse}")
-                        if config.parser_function == "generic_selenium_scraper":
-                            custom_parser_func = custom_parsers.generic_selenium_scraper
-                        else:
-                            custom_parser_func = getattr(custom_parsers, config.parser_function)
+                        custom_parser_func = getattr(custom_parsers, config.parser_function)
                         # SECURITY: Add an extra check to ensure the retrieved attribute is actually a function.
                         if not callable(custom_parser_func):
                             raise TypeError(f"The specified parser '{config.parser_function}' is not a callable function.")
 
                         # Differentiate between file-based parsers and config-based scrapers
-                        if config.parser_function in INGESTION_FUNCTIONS:
+                        if config.parser_function in ["generic_web_scraper", "generic_selenium_scraper"]:
                             if not config.scraper_config:
                                 raise ValueError(f"'{config.parser_function}' requires a non-null 'scraper_config' in the database.")
-                            
-                            # Inject import_name into the config JSON so the scraper can access it
-                            try:
-                                scraper_conf_dict = json.loads(config.scraper_config)
-                                scraper_conf_dict['import_name'] = config.import_name
-                                config_json_with_context = json.dumps(scraper_conf_dict)
-                            except Exception as e:
-                                context.log.warning(f"Failed to inject import_name into scraper config: {e}")
-                                config_json_with_context = config.scraper_config
-
                             # Scrapers can return one DataFrame or a dict of them
-                            scraped_result = custom_parser_func(config_json_with_context)
+                            scraped_result = custom_parser_func(config.scraper_config)
                             if isinstance(scraped_result, dict):
                                 # If it's a dict, find the DataFrame for the current asset's import_name
                                 df = scraped_result.get(config.import_name)
@@ -443,7 +496,6 @@ If it fails, check the run logs for details on data quality issues or parsing er
                             df = custom_parser_func(file_to_parse)
                     else:
                         # For factory parsers, the file_to_parse is what we have.
-                        resolved_path_for_feedback = file_to_parse
                         parser = parsers.parser_factory.get_parser(config.file_type)
                         context.log.info(f"Using '{config.file_type}' parser from factory for file: {file_to_parse}")
                         df = parser.parse(file_to_parse)
@@ -465,48 +517,6 @@ If it fails, check the run logs for details on data quality issues or parsing er
                 if bool_cols:
                     context.log.info(f"Filling NaN values with 0 for boolean columns: {bool_cols}")
                     df[bool_cols] = df[bool_cols].fillna(0)
-
-                # --- AUTOMATED DATA ENRICHMENT ---
-                # Dynamically fill missing fields using metadata-driven lookups defined in DB
-                try:
-                    # Check if enrichment rules table exists (it might not be set up yet)
-                    inspector = inspect(engine)
-                    if inspector.has_table("data_enrichment_rules"):
-                        with engine.connect() as conn:
-                            rules = conn.execute(
-                                text("SELECT * FROM data_enrichment_rules WHERE target_staging_table = :table"),
-                                {"table": current_staging_table}
-                            ).mappings().all()
-
-                        for rule in rules:
-                            target_col = rule['target_column_to_enrich']
-                            lookup_table = rule['lookup_table']
-                            lookup_key_staging = rule['lookup_key_column_staging']
-                            lookup_key_remote = rule['lookup_key_column_lookup']
-                            lookup_value_col = rule['lookup_value_column']
-
-                            if lookup_key_staging in df.columns:
-                                context.log.info(f"Applying enrichment: Filling '{target_col}' from '{lookup_table}' using '{lookup_key_staging}'")
-                                
-                                # Fetch lookup data (Dimension tables are usually small enough for this)
-                                lookup_df = pd.read_sql(f"SELECT {lookup_key_remote}, {lookup_value_col} FROM {lookup_table}", engine)
-                                
-                                # Perform left join to get the value
-                                merged = df.merge(
-                                    lookup_df, 
-                                    left_on=lookup_key_staging, 
-                                    right_on=lookup_key_remote, 
-                                    how='left', 
-                                    suffixes=('', '_lookup')
-                                )
-                                
-                                # If target column doesn't exist, create it. Then fill missing values.
-                                if target_col not in df.columns:
-                                    df[target_col] = None
-                                lookup_col_name = lookup_value_col if lookup_value_col not in df.columns else f"{lookup_value_col}_lookup"
-                                df[target_col] = df[target_col].fillna(merged[lookup_col_name])
-                except Exception as e:
-                    context.log.warning(f"Data enrichment process encountered an issue (skipping): {e}")
 
                 rows_processed = len(df)
                 log_details["rows_processed"] = rows_processed
@@ -549,9 +559,15 @@ If it fails, check the run logs for details on data quality issues or parsing er
             log_details["message"] = f"Successfully processed and loaded {log_details['rows_processed']} rows into {current_staging_table}."
 
         except Exception as e:
-            # --- Smart Error Handling for Column Mismatches ---
-            # Check if the error is the specific one we want to handle
-            if "Invalid column name" in str(e) or ("ProgrammingError" in str(type(e)) and "42S22" in str(e)):
+            # --- Smart Error Handling ---
+            error_msg = str(e)
+
+            # Check for missing dependencies (specifically openpyxl for Excel)
+            if "openpyxl" in error_msg and "dependency" in error_msg:
+                log_details["resolution_steps"] = "The 'openpyxl' library is required to process Excel files. Please install it by running: pip install openpyxl"
+                log_details["error_details"] = error_msg
+            # Check for Column Mismatches
+            elif "Invalid column name" in error_msg or ("ProgrammingError" in str(type(e)) and "42S22" in error_msg):
                 try:
                     # Introspect the database to get the actual table columns
                     from sqlalchemy import inspect
@@ -573,7 +589,7 @@ If it fails, check the run logs for details on data quality issues or parsing er
                 # SECURITY: Avoid logging full stack traces to the database to prevent information disclosure.
                 # The full trace is still available in the Dagster UI/console for developers.
                 log_details["error_details"] = f"An unexpected error of type {type(e).__name__} occurred."
-            log_details["resolution_steps"] = f"Review Dagster logs and stack trace for '{config.import_name}_extract_and_load_staging'. Check source file format, path ('{file_to_parse}'), and custom parser logic if applicable. Ensure staging table schema matches parsed data."
+                log_details["resolution_steps"] = f"Review Dagster logs and stack trace for '{config.import_name}_extract_and_load_staging'. Check source file format, path ('{file_to_parse}'), and custom parser logic if applicable. Ensure staging table schema matches parsed data."
             log_details["message"] = str(e)
             context.log.error(f"Error during extraction for {config.import_name}: {e}")
             
@@ -602,6 +618,14 @@ If it fails, check the run logs for details on data quality issues or parsing er
             log_details["end_time"] = datetime.utcnow()
             # Write to the database log for long-term storage.
             _log_asset_run(engine, log_details)
+
+            # Cleanup temporary converted CSV if it exists
+            if csv_path and os.path.exists(csv_path):
+                try:
+                    os.remove(csv_path)
+                    context.log.info(f"Cleaned up temporary CSV file: {csv_path}")
+                except Exception as e:
+                    context.log.warning(f"Failed to delete temporary CSV file '{csv_path}': {e}")
         return df
 
     return extract_and_load_staging
@@ -635,21 +659,16 @@ def create_transform_asset(config: PipelineConfig):
     transform_procedure = config.transform_procedure
     pipeline_group_name = pipeline_name.strip().lower()
 
-    # Define which parsers are considered "Ingestion" to resolve the upstream dependency name
-    INGESTION_FUNCTIONS = {
-        "generic_web_scraper",
-        "generic_selenium_scraper",
-        "generic_sftp_downloader"
-    }
-    is_ingestion = config.parser_function in INGESTION_FUNCTIONS
+    # Handle multiple destination tables (comma-separated).
+    # The first one is treated as the "primary" for locking, smart replace checks, and deduplication.
+    all_dest_tables = [t.strip() for t in config.destination_table.split(',')]
+    primary_dest_table = all_dest_tables[0]
 
     # Sanitize the asset name to be valid in Dagster.
     sanitized_transform_name = sanitize_name(f"{import_name}_transform")
 
     # Define dependencies on the specific extract asset
-    # We must match the name generated in create_extract_and_load_asset
-    upstream_suffix = "_ingest" if is_ingestion else "_extract_and_load_staging"
-    deps = [AssetKey(sanitize_name(f"{import_name}{upstream_suffix}"))]
+    deps = [AssetKey(sanitize_name(f"{import_name}_extract_and_load_staging"))]
 
     # --- NEW: Support for explicit dependencies via scraper_config ---
     # This allows users to chain imports (e.g., ensure 'replace' runs before 'append')
@@ -730,9 +749,10 @@ This asset moves data from staging to the final, production-ready table.
         # This prevents parallel runs (e.g. Replace vs Append) from overwriting each other.
         # We use a dedicated connection for the lock that stays open for the duration of the asset.
         lock_conn = engine.connect()
-        lock_resource = f"lock_{config.destination_table.lower()}"
+        lock_resource = f"lock_{primary_dest_table.lower()}"
         try:
             context.log.info(f"Acquiring serialization lock for table '{config.destination_table}'...")
+            context.log.info(f"Acquiring serialization lock for table '{primary_dest_table}'...")
             # LockTimeout = -1 means wait indefinitely until the lock is available.
             lock_stmt = text("DECLARE @res INT; EXEC @res = sp_getapplock @Resource = :res, @LockMode = 'Exclusive', @LockOwner = 'Session', @LockTimeout = -1; SELECT @res;")
             lock_result = lock_conn.execute(lock_stmt, {"res": lock_resource}).scalar()
@@ -766,7 +786,7 @@ This asset moves data from staging to the final, production-ready table.
                         ).mappings().one_or_none()
 
                     if result:
-                        current_load_method = result['load_method']
+                        current_load_method = result['load_method'].strip() if result['load_method'] else 'append'
                         current_is_active = bool(result['is_active'])
                         if result['staging_table']:
                             current_staging_table = result['staging_table']
@@ -845,7 +865,7 @@ This asset moves data from staging to the final, production-ready table.
                     # The table hint forces SQL Server to ignore Snapshot Isolation (RCSI) and acquire 
                     # a shared lock to read the absolute latest committed data.
                     with engine.connect() as check_conn:
-                        check_time_stmt = text(f"SELECT MAX(load_timestamp), GETUTCDATE() FROM {config.destination_table} WITH (READCOMMITTEDLOCK)")
+                        check_time_stmt = text(f"SELECT MAX(load_timestamp), GETUTCDATE() FROM {primary_dest_table} WITH (READCOMMITTEDLOCK)")
                         time_check_row = check_conn.execute(check_time_stmt).fetchone()
                     
                     if time_check_row and time_check_row[0]:
@@ -864,8 +884,10 @@ This asset moves data from staging to the final, production-ready table.
                 except Exception as e:
                     context.log.debug(f"Smart Replace check skipped (Table might not have load_timestamp): {e}")
                     context.log.warning(f"Smart Replace skipped. Destination table '{config.destination_table}' might be missing 'load_timestamp' column. Defaulting to TRUNCATE. Error: {e}")
+                    context.log.warning(f"Smart Replace skipped. Destination table '{primary_dest_table}' might be missing 'load_timestamp' column. Defaulting to TRUNCATE. Error: {e}")
                     if "Invalid column name" in str(e) or "Invalid object name" in str(e):
                         context.log.warning(f"Smart Replace SKIPPED: Destination table '{config.destination_table}' is missing 'load_timestamp' column or table does not exist. Defaulting to TRUNCATE.")
+                        context.log.warning(f"Smart Replace SKIPPED: Destination table '{primary_dest_table}' is missing 'load_timestamp' column or table does not exist. Defaulting to TRUNCATE.")
                     else:
                         context.log.debug(f"Smart Replace check skipped (Table might not have load_timestamp): {e}")
                         context.log.warning(f"Smart Replace skipped. Error: {e}")
@@ -903,6 +925,7 @@ This asset moves data from staging to the final, production-ready table.
                                 DELETE s
                                 FROM {current_staging_table} s
                                 JOIN {config.destination_table} d ON {join_conditions}
+                                JOIN {primary_dest_table} d ON {join_conditions}
                                 WHERE s.dagster_run_id = :run_id
                             """)
                             
@@ -1237,6 +1260,13 @@ def create_ddl_generation_utility_asset(config: PipelineConfig):
         dest_cols.append("    [load_timestamp] DATETIME DEFAULT GETUTCDATE()") # Add a load timestamp
 
         dest_ddl = f"CREATE TABLE {config.destination_table} (\n" + ",\n".join(dest_cols) + "\n);"
+        # Handle multiple destination tables
+        dest_tables = [t.strip() for t in config.destination_table.split(',')]
+        dest_ddl_parts = []
+        for dt in dest_tables:
+            dest_ddl_parts.append(f"CREATE TABLE {dt} (\n" + ",\n".join(dest_cols) + "\n);")
+        
+        dest_ddl = "\n\n".join(dest_ddl_parts)
         
         shared_columns = [f"    [{col_name}]" for col_name in df_sample.columns]
         shared_columns_str = ",\n".join(shared_columns)
@@ -1255,6 +1285,7 @@ BEGIN
     IF EXISTS (SELECT 1 FROM {config.staging_table} WHERE dagster_run_id = @run_id)
     BEGIN
         INSERT INTO {config.destination_table} ({shared_columns_str.replace("    ", "")}) SELECT {shared_columns_str.replace("    ", "")} FROM {config.staging_table} WHERE dagster_run_id = @run_id;
+        INSERT INTO {dest_tables[0]} ({shared_columns_str.replace("    ", "")}) SELECT {shared_columns_str.replace("    ", "")} FROM {config.staging_table} WHERE dagster_run_id = @run_id;
     END;
 END;"""
         
