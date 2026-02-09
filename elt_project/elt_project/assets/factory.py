@@ -15,7 +15,7 @@ from dagster import MetadataValue, Config
 from .models import PipelineConfig # This is correct, models.py is in the same directory
 from .resources import SQLServerResource
 from . import parsers, custom_parsers
-from .sql_loader import load_df_to_sql, execute_stored_procedure, load_csv_to_sql_chunked
+from .sql_loader import load_df_to_sql, execute_stored_procedure, load_csv_to_sql_chunked, load_excel_to_sql_streamed
 
 def sanitize_name(name: str) -> str:
     """
@@ -335,56 +335,40 @@ If it fails, check the run logs for details on data quality issues or parsing er
             # --- NEW: Determine processing type (allows for overrides like Excel->CSV conversion) ---
             processing_file_type = config.file_type.strip().lower()
 
-            # --- WORKAROUND: Auto-convert Excel to CSV for memory efficiency ---
-            # Check config OR file extension to catch all Excel files.
-            is_excel_config = processing_file_type in ['excel', 'xlsx', 'xls']
-            is_excel_file = file_to_parse.lower().endswith(('.xlsx', '.xls'))
-
-            if (is_excel_config or is_excel_file) and not config.parser_function:
+            # --- OPTIMIZED EXCEL LOADING (STREAMING) ---
+            # Use the new multi-threaded streaming loader for .xlsx files to avoid OOM and disk I/O
+            is_xlsx = file_to_parse.lower().endswith(('.xlsx', '.xlsm', '.xltx'))
+            
+            if is_xlsx and not config.parser_function:
                 try:
-                    conv_start_time = time.time()
-                    context.log.info(f"Auto-converting Excel file to CSV for memory-efficient loading: {file_to_parse}")
-                    # Generate CSV path
-                    csv_path = os.path.splitext(file_to_parse)[0] + ".converted.csv"
+                    load_start_time = time.time()
+                    context.log.info(f"Using high-performance streaming Excel loader for {file_to_parse}")
+                    rows_processed = load_excel_to_sql_streamed(
+                        file_path=file_to_parse,
+                        table_name=current_staging_table,
+                        engine=engine,
+                        run_id=context.run_id,
+                        column_mapping=config.get_column_mapping(),
+                        chunksize=10000,
+                        logger=context.log
+                    )
+                    log_details["rows_processed"] = rows_processed
+                    load_duration = time.time() - load_start_time
+                    context.log.info(f"Successfully loaded {rows_processed} rows in {load_duration:.2f}s.")
+                    context.add_output_metadata({"num_rows": rows_processed, "staging_table": current_staging_table})
                     
-                    # Pre-cleanup: Remove any stale CSV from a previous crashed run
-                    if os.path.exists(csv_path):
-                        try:
-                            os.remove(csv_path)
-                        except Exception:
-                            pass
-                    
-                    # Use the optimized streaming converter from parsers.py
-                    try:
-                        parsers.stream_excel_to_csv(file_to_parse, csv_path, logger=context.log)
-                    except Exception as e:
-                        # Fallback: Try reading as CSV if Excel parse fails (sometimes CSVs are misnamed as .xls)
-                        context.log.warning(f"Excel conversion failed: {e}. Checking if file is actually CSV...")
-                        try:
-                            df_temp = pd.read_csv(file_to_parse, encoding='latin1', errors='replace')
-                            # Write standardized CSV
-                            df_temp.to_csv(csv_path, index=False, encoding='latin1', errors='replace')
-                            del df_temp
-                            import gc
-                            gc.collect()
-                            context.log.info("Fallback successful: File was actually a CSV.")
-                        except Exception as csv_e:
-                            # If both fail, raise the original Excel error
-                            raise e
-                    
-                    conv_duration = time.time() - conv_start_time
-                    context.log.info(f"Conversion successful in {conv_duration:.2f}s. Switching processing mode to CSV using file: {csv_path}")
-                    file_to_parse = csv_path
-                    processing_file_type = 'csv'
-                    
+                    # Return empty DataFrame as we streamed directly
+                    df = pd.DataFrame()
+
                 except Exception as e:
                     # If the error is missing dependency, fail immediately instead of falling back
                     if "openpyxl" in str(e) and "dependency" in str(e):
                         raise e
-                    context.log.warning(f"Excel-to-CSV conversion failed: {e}. Falling back to standard Excel parsing.")
+                    context.log.warning(f"Streaming Excel load failed: {e}. Falling back to standard parsing.")
+                    # Fall through to standard parsing logic below
 
             # OPTIMIZATION: Use chunked loading for standard CSVs to save memory
-            if processing_file_type == 'csv' and not config.parser_function:
+            elif processing_file_type == 'csv' and not config.parser_function:
                 try:
                     load_start_time = time.time()
                     context.log.info(f"Using high-performance chunked CSV loader (Batch Size: 10,000) for {file_to_parse}")
