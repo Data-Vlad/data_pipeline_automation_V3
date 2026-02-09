@@ -437,14 +437,14 @@ If it fails, check the run logs for details on data quality issues or parsing er
             if processing_file_type == 'csv' and not config.parser_function:
                 try:
                     load_start_time = time.time()
-                    context.log.info(f"Using high-performance chunked CSV loader (Batch Size: 50,000) for {file_to_parse}")
+                    context.log.info(f"Using high-performance chunked CSV loader (Batch Size: 10,000) for {file_to_parse}")
                     rows_processed = load_csv_to_sql_chunked(
                         file_path=file_to_parse,
                         table_name=current_staging_table,
                         engine=engine,
                         run_id=context.run_id,
                         column_mapping=config.get_column_mapping(),
-                        chunksize=50000 # Increased chunksize for speed with fast_executemany
+                        chunksize=10000 # Reduced chunksize to prevent driver crashes/OOM
                     )
                     log_details["rows_processed"] = rows_processed
                     load_duration = time.time() - load_start_time

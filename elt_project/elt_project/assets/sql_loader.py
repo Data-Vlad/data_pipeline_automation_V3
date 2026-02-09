@@ -1,5 +1,6 @@
 # c:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation\elt_project\core\sql_loader.py
 import pandas as pd
+import gc
 from sqlalchemy import text
 from sqlalchemy import inspect
 from sqlalchemy.engine import Engine
@@ -81,6 +82,10 @@ def load_csv_to_sql_chunked(
 
                         total_rows += len(chunk)
                         chunk.to_sql(name=table_name, con=connection, if_exists='append', index=False)
+                        
+                        # Force garbage collection to prevent memory spikes during large loads
+                        del chunk
+                        gc.collect()
                 
                 transaction.commit()
                 return total_rows
