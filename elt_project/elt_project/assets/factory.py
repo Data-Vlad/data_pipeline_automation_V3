@@ -352,8 +352,25 @@ If it fails, check the run logs for details on data quality issues or parsing er
                     clean_path = file_to_parse.strip()
                     ext = os.path.splitext(clean_path)[1].lower()
                     excel_engine = 'openpyxl' if ext in ['.xlsx', '.xlsm', '.xltx'] else None
-                    context.log.info(f"Reading Excel file with engine: {excel_engine}")
-                    df_temp = pd.read_excel(file_to_parse, engine=excel_engine)
+                    
+                    try:
+                        size_mb = os.path.getsize(file_to_parse) / (1024 * 1024)
+                        context.log.info(f"Reading Excel file: {file_to_parse} (Size: {size_mb:.2f} MB) with engine: {excel_engine}")
+                    except Exception:
+                        context.log.info(f"Reading Excel file: {file_to_parse} with engine: {excel_engine}")
+
+                    try:
+                        with pd.ExcelFile(file_to_parse, engine=excel_engine) as xls:
+                            df_temp = pd.read_excel(xls)
+                    except Exception as e:
+                        context.log.warning(f"Excel read failed with engine {excel_engine}: {e}. Checking if file is actually CSV...")
+                        # Fallback: Try reading as CSV if Excel parse fails (common user error: naming CSV as .xlsx)
+                        try:
+                            df_temp = pd.read_csv(file_to_parse, encoding='latin1', errors='replace')
+                            context.log.info("Fallback successful: File was actually a CSV.")
+                        except Exception as csv_e:
+                            # If both fail, raise the original Excel error
+                            raise e
                     
                     # Save to CSV (using latin1 to match sql_loader default, errors='replace' to prevent crash)
                     df_temp.to_csv(csv_path, index=False, encoding='latin1', errors='replace')
