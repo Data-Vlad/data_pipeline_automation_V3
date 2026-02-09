@@ -48,7 +48,9 @@ class ExcelParser(Parser):
     def parse(self, file_path: str) -> pd.DataFrame:
         # This requires the 'openpyxl' package for .xlsx files.
         # Explicitly specify engine for .xlsx to avoid "format cannot be determined" errors
-        ext = os.path.splitext(file_path)[1].lower()
+        # Strip whitespace to ensure extension detection works
+        clean_path = file_path.strip()
+        ext = os.path.splitext(clean_path)[1].lower()
         if ext in ['.xlsx', '.xlsm', '.xltx']:
             return pd.read_excel(file_path, engine='openpyxl')
         return pd.read_excel(file_path)
