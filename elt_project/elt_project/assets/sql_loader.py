@@ -34,6 +34,7 @@ def load_csv_to_sql_chunked(
     run_id: str,
     column_mapping: dict = None,
     chunksize: int = 10000,
+    logger=None,
 ):
     """
     Reads a large CSV file in chunks and loads each chunk into a SQL table.
@@ -82,6 +83,9 @@ def load_csv_to_sql_chunked(
 
                         total_rows += len(chunk)
                         chunk.to_sql(name=table_name, con=connection, if_exists='append', index=False)
+                        
+                        if logger:
+                            logger.info(f"Loaded batch of {len(chunk)} rows. Total loaded: {total_rows}")
                         
                         # Force garbage collection to prevent memory spikes during large loads
                         del chunk

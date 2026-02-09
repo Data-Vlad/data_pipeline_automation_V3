@@ -444,7 +444,8 @@ If it fails, check the run logs for details on data quality issues or parsing er
                         engine=engine,
                         run_id=context.run_id,
                         column_mapping=config.get_column_mapping(),
-                        chunksize=10000 # Reduced chunksize to prevent driver crashes/OOM
+                        chunksize=10000, # Reduced chunksize to prevent driver crashes/OOM
+                        logger=context.log
                     )
                     log_details["rows_processed"] = rows_processed
                     load_duration = time.time() - load_start_time
