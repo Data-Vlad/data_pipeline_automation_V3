@@ -1,2 +1,45 @@
 2026-02-09 10:19:49 - INFO     - API     : Received request to run 1 imports: ['Grade_Distribution_DWWI']
 2026-02-09 10:19:49 - INFO     - API     : Loading Dagster workspace context...
+2026-02-09 10:20:19 - INFO     - API     : Workspace context loaded successfully.
+2026-02-09 10:20:19 - INFO     - API     : Found code location 'elt_project'.
+2026-02-09 10:20:19 - INFO     - API     : Using repository '__repository__' from location 'elt_project'
+2026-02-09 10:20:19 - INFO     - API     : Processing import 'Grade_Distribution_DWWI' (Sensor: 'sensor_Grade_Distribution_DWWI')...
+2026-02-09 10:20:19 - INFO     - API     :  - Ticking sensor 'sensor_Grade_Distribution_DWWI'...
+2026-02-09 10:20:20 - INFO     - API     :  - Sensor tick complete. Generated 1 run requests.
+2026-02-09 10:20:20 - INFO     - API     :  - Preparing to launch job 'Grade_Distribution_DWWI_job'...
+2026-02-09 10:20:20 - INFO     - API     :  - Run Config: {'ops': {'Grade_Distribution_DWWI_extract_and_load_staging': {'config': {'source_file_path': 'C:\\\\Pipelines\\\\IPRA\\Grade_Distribution_DWWI.xlsx'}}}}
+2026-02-09 10:20:20 - INFO     - API     :  - Generating execution plan for job 'Grade_Distribution_DWWI_job'...
+2026-02-09 10:20:20 - INFO     - API     :  - Creating run 'c459eb1a-83aa-4c43-92f1-7d5c1fe27855'...
+2026-02-09 10:20:21 - INFO     - API     :  - Launching run 'c459eb1a-83aa-4c43-92f1-7d5c1fe27855'...
+2026-02-09 10:20:27 - INFO     - API     :  - Successfully launched run 'c459eb1a-83aa-4c43-92f1-7d5c1fe27855' for job 'Grade_Distribution_DWWI_job'.
+2026-02-09 10:20:27 - INFO     - API     :  - Starting background monitor for run 'c459eb1a-83aa-4c43-92f1-7d5c1fe27855'...
+2026-02-09 10:20:28 - INFO     - API     : Run 'c459eb1a-83aa-4c43-92f1-7d5c1fe27855' (Grade_Distribution_DWWI_job) status changed to: STARTING
+2026-02-09 10:20:28 - INFO     - API     : [Grade_Distribution_DWWI_job][Grade_Distribution_DWWI_extract_and_load_staging] Grade_Distribution_DWWI_job intends to materialize asset ["Grade_Distribution_DWWI_extract_and_load_staging"]
+2026-02-09 10:20:28 - INFO     - API     : [Grade_Distribution_DWWI_job][Grade_Distribution_DWWI_transform] Grade_Distribution_DWWI_job intends to materialize asset ["Grade_Distribution_DWWI_transform"]
+2026-02-09 10:20:28 - INFO     - API     : [Grade_Distribution_DWWI_job] 
+2026-02-09 10:20:28 - INFO     - API     : [Grade_Distribution_DWWI_job] Started process for run (pid: 6484).
+2026-02-09 10:20:30 - INFO     - API     : Run 'c459eb1a-83aa-4c43-92f1-7d5c1fe27855' (Grade_Distribution_DWWI_job) status changed to: STARTED
+2026-02-09 10:20:30 - INFO     - API     : [Grade_Distribution_DWWI_job] Started execution of run for "Grade_Distribution_DWWI_job".
+2026-02-09 10:20:30 - INFO     - API     : [Grade_Distribution_DWWI_job] Executing steps using multiprocess executor: parent process (pid: 6484)
+2026-02-09 10:20:32 - INFO     - API     : [Grade_Distribution_DWWI_job][Grade_Distribution_DWWI_extract_and_load_staging] Launching subprocess for "Grade_Distribution_DWWI_extract_and_load_staging".
+2026-02-09 10:20:39 - INFO     - API     : [Grade_Distribution_DWWI_job][Grade_Distribution_DWWI_extract_and_load_staging] Executing step "Grade_Distribution_DWWI_extract_and_load_staging" in subprocess.
+2026-02-09 10:20:42 - INFO     - API     : [Grade_Distribution_DWWI_job][Grade_Distribution_DWWI_extract_and_load_staging] Starting initialization of resources [db_resource, io_manager].
+2026-02-09 10:20:42 - INFO     - API     : [Grade_Distribution_DWWI_job][Grade_Distribution_DWWI_extract_and_load_staging] Finished initialization of resources [db_resource, io_manager].
+2026-02-09 10:20:42 - INFO     - API     : [Grade_Distribution_DWWI_job] Started capturing logs in process (pid: 14000).
+2026-02-09 10:20:42 - INFO     - API     : [Grade_Distribution_DWWI_job][Grade_Distribution_DWWI_extract_and_load_staging] Started execution of step "Grade_Distribution_DWWI_extract_and_load_staging".
+2026-02-09 10:20:42 - INFO     - API     : [Grade_Distribution_DWWI_job][Grade_Distribution_DWWI_extract_and_load_staging] Starting extraction for Grade_Distribution_DWWI...
+2026-02-09 10:20:42 - INFO     - API     : [Grade_Distribution_DWWI_job][Grade_Distribution_DWWI_extract_and_load_staging] Auto-converting Excel file to CSV for memory-efficient loading: C:\\Pipelines\\IPRA\Grade_Distribution_DWWI.xlsx
+2026-02-09 10:20:42 - INFO     - API     : [Grade_Distribution_DWWI_job][Grade_Distribution_DWWI_extract_and_load_staging] Reading Excel file: C:\\Pipelines\\IPRA\Grade_Distribution_DWWI.xlsx (Size: 227.72 MB) with engine: openpyxl
+2026-02-09 10:20:46 - INFO     - API     : [Grade_Distribution_DWWI_job][Grade_Distribution_DWWI_extract_and_load_staging] Using openpyxl read-only mode for streaming conversion (Memory Optimized).
+2026-02-09 10:20:46 - INFO     - API     : [Grade_Distribution_DWWI_job][Grade_Distribution_DWWI_extract_and_load_staging] Excel conversion failed with engine openpyxl: [Errno 13] Permission denied: 'C:\\\\Pipelines\\\\IPRA\\Grade_Distribution_DWWI.xlsx'. Checking if file is actually CSV...
+2026-02-09 10:20:46 - INFO     - API     : [Grade_Distribution_DWWI_job][Grade_Distribution_DWWI_extract_and_load_staging] Excel-to-CSV conversion failed: [Errno 13] Permission denied: 'C:\\\\Pipelines\\\\IPRA\\Grade_Distribution_DWWI.xlsx'. Falling back to standard Excel parsing.
+2026-02-09 10:20:46 - INFO     - API     : [Grade_Distribution_DWWI_job][Grade_Distribution_DWWI_extract_and_load_staging] Using 'excel' parser from factory for file: C:\\Pipelines\\IPRA\Grade_Distribution_DWWI.xlsx
+2026-02-09 10:20:46 - ERROR    - API     : [Grade_Distribution_DWWI_job][Grade_Distribution_DWWI_extract_and_load_staging] Error during extraction for Grade_Distribution_DWWI: [Errno 13] Permission denied: 'C:\\\\Pipelines\\\\IPRA\\Grade_Distribution_DWWI.xlsx'
+2026-02-09 10:20:48 - ERROR    - API     : [Grade_Distribution_DWWI_job][Grade_Distribution_DWWI_extract_and_load_staging] Execution of step "Grade_Distribution_DWWI_extract_and_load_staging" failed.
+2026-02-09 10:20:48 - ERROR    - API     : [Grade_Distribution_DWWI_job][Grade_Distribution_DWWI_transform] Dependencies for step Grade_Distribution_DWWI_transform failed: ['Grade_Distribution_DWWI_extract_and_load_staging']. Not executing.
+2026-02-09 10:20:51 - INFO     - API     : Run 'c459eb1a-83aa-4c43-92f1-7d5c1fe27855' (Grade_Distribution_DWWI_job) status changed to: FAILURE
+2026-02-09 10:20:51 - INFO     - API     : [Grade_Distribution_DWWI_job] Exception while cleaning up compute log capture
+2026-02-09 10:20:51 - INFO     - API     : [Grade_Distribution_DWWI_job] Multiprocess executor: parent process exiting after 19.04s (pid: 6484)
+2026-02-09 10:20:51 - ERROR    - API     : [Grade_Distribution_DWWI_job] Execution of run for "Grade_Distribution_DWWI_job" failed. Steps failed: ['Grade_Distribution_DWWI_extract_and_load_staging'].
+2026-02-09 10:20:51 - INFO     - API     : [Grade_Distribution_DWWI_job] Process for run exited (pid: 6484).
+2026-02-09 10:20:51 - INFO     - API     : Run 'c459eb1a-83aa-4c43-92f1-7d5c1fe27855' (Grade_Distribution_DWWI_job) finished with final status: FAILURE
