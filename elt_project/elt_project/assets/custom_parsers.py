@@ -187,7 +187,7 @@ def generic_sftp_downloader(scraper_config_json: str) -> pd.DataFrame:
     """
     # --- Lazy Import SFTP and related libraries ---
     import pysftp
-    from .parsers import parser_factory # Use the existing parser factory
+    from .fast_data_loader import load_data_high_performance
     import fnmatch
 
     config = json.loads(scraper_config_json)
@@ -254,9 +254,8 @@ def generic_sftp_downloader(scraper_config_json: str) -> pd.DataFrame:
                 print(f"Downloading '{remote_filepath}' to '{local_filepath}'...")
                 sftp.get(remote_filepath, local_filepath)
 
-                # Use the existing parser factory to parse the downloaded file
-                parser = parser_factory.get_parser(parse_config["file_type"])
-                df_single = parser.parse(local_filepath)
+                # Use the high-performance loader to parse the downloaded file
+                df_single = load_data_high_performance(local_filepath)
                 all_dfs.append(df_single)
                 print(f"Successfully parsed {len(df_single)} rows from '{filename}'.")
 

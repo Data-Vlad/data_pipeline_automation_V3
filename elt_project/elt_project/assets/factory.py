@@ -927,9 +927,8 @@ def create_column_mapping_utility_asset(config: PipelineConfig):
             # Use the parser factory to handle different file types correctly.
             # We'll read the whole file, as some parsers (like Excel) don't support `nrows`.
             # This is acceptable for a utility asset that is run manually.
-            parser = parsers.parser_factory.get_parser(config.file_type)
-            context.log.info(f"Using '{config.file_type}' parser from factory to read headers from: {file_to_parse}")
-            df_sample = parser.parse(file_to_parse)
+            context.log.info(f"Using high-performance loader to read headers from: {file_to_parse}")
+            df_sample = load_data_high_performance(file_to_parse)
             source_columns = df_sample.columns.tolist()
             context.log.info(f"Found source columns: {source_columns}")
         except Exception as e:
@@ -1028,8 +1027,9 @@ def create_ddl_generation_utility_asset(config: PipelineConfig):
         # --- 2. Infer schema from the file ---
         try:
             # Read a sample of the file to infer data types
-            df_sample = pd.read_csv(file_to_parse, nrows=1000, encoding='latin1')
-            context.log.info(f"Inferred schema from the first 1000 rows of '{file_to_parse}'.")
+            # Use high-performance loader to support all file types (Excel, Parquet, etc.)
+            df_sample = load_data_high_performance(file_to_parse).head(1000)
+            context.log.info(f"Inferred schema from the first 1000 rows of '{file_to_parse}' using fast loader.")
         except Exception as e:
             context.log.error(f"Failed to read and infer schema from source file '{file_to_parse}': {e}")
             raise
@@ -1199,7 +1199,7 @@ def create_pipeline_setup_utility_asset(pipeline_name: str, configs: List[Pipeli
                 context.log.info(f"Found sample file: {file_to_parse}")
 
                 # --- 2. Infer schema and generate DDL ---
-                df_sample = pd.read_csv(file_to_parse, nrows=1000, encoding='latin1')
+                df_sample = load_data_high_performance(file_to_parse).head(1000)
                 source_columns = df_sample.columns.tolist()
 
                 # Staging Table DDL
@@ -1337,8 +1337,7 @@ def create_pipeline_column_mapping_utility_asset(pipeline_name: str, configs: Li
                     raise FileNotFoundError(f"No file matching pattern '{config.file_pattern}' found in '{search_path}'.")
 
                 # --- 2. Get source and table columns ---
-                parser = parsers.parser_factory.get_parser(config.file_type)
-                df_sample = parser.parse(file_to_parse)
+                df_sample = load_data_high_performance(file_to_parse)
                 source_columns = df_sample.columns.tolist()
 
                 table_columns = [col['name'] for col in inspector.get_columns(config.staging_table) if col['name'].lower() != 'dagster_run_id']
