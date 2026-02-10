@@ -1,4 +1,5 @@
 # c:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation\elt_project\core\sql_loader.py
+import time
 import pandas as pd
 import gc
 from sqlalchemy import text
@@ -12,7 +13,7 @@ def load_df_to_sql(df: pd.DataFrame, table_name: str, engine: Engine):
     Truncation for 'replace' load method is now handled in the asset factory.
     """
     total_rows = len(df)
-    chunksize = 10000 # OPTIMIZED: 10k is the sweet spot for fast_executemany
+    chunksize = 25000 # OPTIMIZED: 25k-50k is the sweet spot for fast_executemany in 2026+
 
     # For smaller datasets (<50k), use a single transaction for simplicity and atomicity
     if total_rows < 50000:
@@ -42,9 +43,15 @@ def load_df_to_sql(df: pd.DataFrame, table_name: str, engine: Engine):
 
 def _upload_chunk_worker(chunk, table_name, engine):
     """Helper function to upload a single chunk in a separate thread."""
-    with engine.connect() as connection:
-        chunk.to_sql(name=table_name, con=connection, if_exists='append', index=False)
-    return len(chunk)
+    # Retry logic for network resilience
+    for attempt in range(3):
+        try:
+            with engine.connect() as connection:
+                chunk.to_sql(name=table_name, con=connection, if_exists='append', index=False)
+            return len(chunk)
+        except Exception as e:
+            if attempt == 2: raise e
+            time.sleep(1)
 
 def load_csv_to_sql_chunked(
     file_path: str,
@@ -52,7 +59,7 @@ def load_csv_to_sql_chunked(
     engine: Engine,
     run_id: str,
     column_mapping: dict = None,
-    chunksize: int = 10000,
+    chunksize: int = 25000,
     logger=None,
 ):
     """
