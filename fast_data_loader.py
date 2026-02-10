@@ -1,6 +1,7 @@
 import logging
 import os
 import pandas as pd
+import sys
 
 # Configure logging
 logger = logging.getLogger(__name__)
@@ -16,15 +17,19 @@ def load_data_high_performance(file_path: str) -> pd.DataFrame:
     Supported Formats:
     - Excel (.xlsx, .xls, .xlsb): Uses 'calamine' (memory-mapped, zero-copy).
     - CSV/PSV/TXT: Uses Polars multi-threaded CSV reader.
-    - Parquet: Uses Polars memory-mapped reader.
+    - Parquet: Uses Polars memory-mapped reader (Native Arrow).
+    - JSON/NDJSON: Uses Polars JSON reader.
     - PDF: Uses pdfplumber (Note: significantly slower, not recommended for 1M+ rows).
     """
+    if not os.path.exists(file_path):
+        raise FileNotFoundError(f"File not found: {file_path}")
+
     ext = os.path.splitext(file_path)[1].lower()
     
     try:
         import polars as pl
     except ImportError:
-        error_msg = "High-performance library 'polars' missing."
+        error_msg = "High-performance library 'polars' missing. Please install via: pip install polars"
         logger.error(error_msg)
         raise ImportError(error_msg)
 
@@ -55,7 +60,15 @@ def load_data_high_performance(file_path: str) -> pd.DataFrame:
     elif ext == '.parquet':
         df_pl = pl.read_parquet(file_path)
 
-    # 4. PDF (Unstructured - Fallback)
+    # 4. JSON (Structured)
+    elif ext in ['.json', '.ndjson', '.jsonl']:
+        try:
+            # Try Newline Delimited JSON first (common for large data)
+            df_pl = pl.read_ndjson(file_path)
+        except Exception:
+            df_pl = pl.read_json(file_path)
+
+    # 5. PDF (Unstructured - Fallback)
     elif ext == '.pdf':
         return _load_pdf_tables(file_path)
 
@@ -66,7 +79,8 @@ def load_data_high_performance(file_path: str) -> pd.DataFrame:
     logger.info(f"Loaded {row_count} rows. Converting to Pandas for pipeline compatibility...")
     
     # Convert to Pandas for downstream compatibility
-    return df_pl.to_pandas()
+    # Uses pyarrow for zero-copy conversion if installed
+    return df_pl.to_pandas(use_pyarrow_extension_array=True) if row_count > 0 else pd.DataFrame()
 
 def _load_pdf_tables(file_path: str) -> pd.DataFrame:
     """
@@ -88,6 +102,7 @@ def _load_pdf_tables(file_path: str) -> pd.DataFrame:
         for i, page in enumerate(pdf.pages):
             tables = page.extract_tables()
             for table in tables:
+                if not table: continue
                 for row in table:
                     # Clean newlines which often break data structure
                     cleaned_row = [cell.replace('\n', ' ').strip() if cell else None for cell in row]
@@ -100,4 +115,30 @@ def _load_pdf_tables(file_path: str) -> pd.DataFrame:
         return pd.DataFrame()
 
     # Assume first row is header
-    return pd.DataFrame(all_rows[1:], columns=all_rows[0])
+    headers = all_rows[0]
+    # Deduplicate headers to prevent Pandas errors
+    seen = {}
+    deduped_headers = []
+    for h in headers:
+        h_str = str(h) if h else "Column"
+        if h_str in seen:
+            seen[h_str] += 1
+            deduped_headers.append(f"{h_str}_{seen[h_str]}")
+        else:
+            seen[h_str] = 0
+            deduped_headers.append(h_str)
+
+    return pd.DataFrame(all_rows[1:], columns=deduped_headers)
+
+if __name__ == "__main__":
+    # CLI Entry point for testing the mechanism
+    import time
+    logging.basicConfig(level=logging.INFO)
+    if len(sys.argv) < 2:
+        print("Usage: python fast_data_loader.py <file_path>")
+    else:
+        start_time = time.time()
+        df = load_data_high_performance(sys.argv[1])
+        elapsed = time.time() - start_time
+        print(f"Success! Loaded {len(df)} rows in {elapsed:.4f} seconds.")
+        print(df.head())

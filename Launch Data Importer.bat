@@ -155,7 +155,7 @@ if %errorlevel% neq 0 (
 "%PYTHON_EXE%" -m pip install openpyxl --upgrade --quiet --no-color
 
 :: Ensure high-performance Excel libraries (Polars/Calamine) are installed for large files
-"%PYTHON_EXE%" -m pip install polars fastexcel pdfplumber --upgrade --quiet --no-color
+"%PYTHON_EXE%" -m pip install polars fastexcel pdfplumber pyarrow --upgrade --quiet --no-color
 
 :: ----------------------------------------------------------------------------
 call :log INFO "Step 4/6: Loading application configuration and credentials..."
