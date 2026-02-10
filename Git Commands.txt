@@ -1,1 +1,132 @@
-Git pull (update the local source code)
+### STEP 1: INITIAL SETUP (DO THIS FIRST) ###
+
+Create a file named .gitignore in your project folder to prevent sensitive files (like passwords) from being uploaded.
+Common files to list in .gitignore:
+
+**** inside the .gitignore file
+# Environment Variables (Secrets)
+.env
+
+# Python
+__pycache__/
+*.pyc
+venv/
+*.egg-info/
+
+# Logs
+*.log
+launcher-error.log
+simple_ui.log
+
+# Dagster & Project Data
+dagster_home/
+generated_sql/
+backups/
+
+# IDE settings
+.vscode/
+.idea/
+**** inside the .gitignore file
+
+-----------------------------------------------------------------
+### EMERGENCY FIX: COMPLETE GIT RESET (NUCLEAR OPTION) ###
+
+Use this if you are stuck with merge errors and want to "escape" them and reconnect your local code to the repository.
+
+1. Close Visual Studio Code.
+2. Open your project folder in File Explorer.
+3. Enable "Hidden items" (View -> Show -> Hidden items).
+4. Delete the hidden folder named '.git'.
+5. Open Visual Studio Code.
+6. Open a Terminal (Ctrl + ~) and run these commands in order:
+   git init
+   git branch -M main
+   git remote add origin https://github.com/Data-Vlad/data_pipeline_automation.git
+   git add .
+   git commit -m "Emergency reset"
+   git push -u origin main
+   
+   An upstream branch in Git is the specific remote branch that a local 
+   branch is configured to track, allowing for streamlined syncing via git pull or git push without specifying remote names. Setting 
+   an upstream (often using git push -u) 
+   establishes a direct relationship, enabling tracking of changes and easier contribution to shared repositories. 
+   (Note: Replace the URL with your actual repository link. The -f flag forces the server to accept your local version).
+
+   NOTE: Difference between "Commit" and "Commit & Push"
+   - Commit: Saves a snapshot of your changes to your LOCAL computer only. The server (GitHub) does not see them yet.
+   - Commit & Push: Saves the snapshot locally AND uploads it to the server immediately.
+   
+   If you clicked "Commit" but not "Push", your work is safe but not online. You simply need to run: git push origin main
+
+-----------------------------------------------------------------
+### DAILY WORKFLOW: SAVE & UPLOAD (PUSH) ###
+
+Step 1: Check status (See what changed)
+   git status
+
+Step 2: Stage changes (Prepare files to be saved)
+   git add .
+
+Step 3: Commit changes (Save a snapshot)
+   git commit -m "Describe your changes here"
+
+Step 4: Push to GitHub (Upload to server)
+   git push origin main
+   (Note: If your branch is named 'master', use: git push origin master)
+
+----------------------------------------------------------------
+### DAILY WORKFLOW: GET UPDATES (PULL) ###
+
+Option 1: Standard Pull (Safe)
+   Use this to merge the latest updates from the team into your work.
+   git pull origin main
+
+Option 2: Force Overwrite (Destructive)
+   Use this ONLY if you want to delete your local work and match the server exactly.
+   git fetch origin
+   git reset --hard origin/main
+
+-----------------------------------------------------------------
+### TROUBLESHOOTING ###
+
+Error: ! [rejected] main -> main (fetch first)
+   Cause: The server has changes you don't have.
+   Fix: Run 'git pull origin main' first.
+
+Check your connection:
+   git remote -v
+
+Add the link if missing:
+   git remote add origin https://github.com/YourUsername/YourRepo.git
+
+Remove a remote link (if you added the wrong one):
+   git remote remove origin
+
+-----------------------------------------------------------------
+### ADVANCED: PUSH TO MULTIPLE REPOSITORIES ###
+
+You can configure a single remote (like 'origin') to push code to multiple places (e.g., GitHub and a backup server) simultaneously.
+
+1. Add your PRIMARY repository URL as a push target:
+   git remote set-url --add --push origin https://github.com/YourUsername/PrimaryRepo.git
+
+2. Add your SECONDARY repository URL as a push target:
+   git remote set-url --add --push origin https://github.com/YourUsername/BackupRepo.git
+
+3. Verify the configuration:
+   git remote -v
+   (You should see multiple lines for 'origin' marked as '(push)')
+
+4. Push:
+   git push origin main
+
+-----------------------------------------------------------------
+### HOW TO REMOVE FROM SOURCE CONTROL (VS CODE) ###
+
+To stop tracking a project in VS Code (remove the "U", "M" badges and empty the Source Control tab):
+
+1. Close Visual Studio Code.
+2. Open the project folder in your computer's file explorer.
+3. Enable "Hidden items" (View -> Show -> Hidden items).
+4. Delete the hidden folder named '.git'.
+5. Reopen VS Code. The project is no longer a Git repository.
