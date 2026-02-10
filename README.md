@@ -440,21 +440,26 @@ This is the most common method. The framework monitors a local directory for new
     *   `file_type`: The type of file to parse (e.g., `'csv'`, `'excel'`, `'psv'`).
 3.  **Enable the Sensor**: In the Dagster UI, go to the **Sensors** tab and turn on the dynamically generated sensor for your pipeline.
 
-#### High-Performance Loading Architecture
+#### High-Performance Loading Architecture (2026+ Standard)
 
-The framework employs a multi-stage architecture designed to load large files (e.g., 500MB+ CSVs or Excels) quickly and without running out of memory (OOM).
+The framework utilizes a cutting-edge, Rust-backed loading engine (`fast_data_loader.py`) to handle large datasets (1M+ records) with extreme speed and minimal memory footprint. This replaces legacy streaming methods with memory-mapped binary readers.
 
-1.  **Streaming Excel Conversion**:
-    *   **Problem**: Standard Excel parsers load the entire file into RAM, causing crashes with large files.
-    *   **Solution**: The system uses `openpyxl` in **read-only streaming mode**. It iterates through the Excel file row-by-row and writes to a temporary CSV on disk. This keeps memory usage low and constant (~50MB), regardless of file size.
+1.  **Polars & Arrow Engine**:
+    *   **Technology**: Instead of legacy Python parsers, we use **Polars**, a lightning-fast DataFrame library written in Rust.
+    *   **Benefit**: Polars uses SIMD (Single Instruction, Multiple Data) to process data in parallel, offering 10-50x speed improvements over standard Pandas/CSV parsing.
+    *   **Zero-Copy Conversion**: Data is converted to Pandas using **PyArrow**, ensuring that memory is not duplicated during the hand-off to the transformation layer.
 
-2.  **Parallel Chunked Loading**:
-    *   **Problem**: Reading a large CSV into a single Pandas DataFrame consumes 5x-10x the file size in RAM. Serial uploads to SQL Server are slow due to network latency.
-    *   **Solution**:
-        *   **Chunking**: The CSV is read in small batches (e.g., 10,000 rows).
-        *   **Parallel Uploads**: A `ThreadPoolExecutor` spins up **4 background threads**. As the main thread reads chunks from disk, the worker threads upload them to SQL Server simultaneously. This saturates the I/O bandwidth and significantly reduces total load time.
-        *   **Fast Executemany**: The SQL connection uses `fast_executemany=True`, allowing the ODBC driver to pack thousands of rows into minimal network packets.
-        *   **Aggressive Garbage Collection**: Memory is explicitly freed (`gc.collect()`) after every chunk to prevent RAM spikes during long runs.
+2.  **Rust-Based Excel Parsing**:
+    *   **Engine**: Excel files are read using the **Calamine** engine (via `fastexcel`), which treats Excel files as memory-mapped binary streams.
+    *   **Performance**: This bypasses the slow XML parsing of `openpyxl`, allowing for near-instant reads of massive Excel files without the OOM (Out of Memory) crashes associated with legacy libraries.
+
+3.  **Supported Formats**:
+    *   **Structured**: CSV, PSV, TXT, Parquet, JSON, NDJSON.
+    *   **Excel**: .xlsx, .xls, .xlsb, .xlsm.
+    *   **Unstructured**: PDF (via `pdfplumber` fallback).
+
+4.  **SQL Loading Optimization**:
+    *   **Fast Executemany**: The SQL loader uses `fast_executemany=True` with an optimized chunk size of 10,000 rows. This packs data into binary arrays for the ODBC driver, saturating network bandwidth and maximizing insertion throughput into SQL Server.
 
 ### Method 2: SFTP Server Download
 
