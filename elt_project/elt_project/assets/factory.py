@@ -381,7 +381,7 @@ If it fails, check the run logs for details on data quality issues or parsing er
             # --- Smart Error Handling ---
             error_msg = str(e)
             # Check for Column Mismatches
-            elif "Invalid column name" in error_msg or ("ProgrammingError" in str(type(e)) and "42S22" in error_msg):
+            if "Invalid column name" in error_msg or ("ProgrammingError" in str(type(e)) and "42S22" in error_msg):
                 try:
                     # Introspect the database to get the actual table columns
                     from sqlalchemy import inspect
