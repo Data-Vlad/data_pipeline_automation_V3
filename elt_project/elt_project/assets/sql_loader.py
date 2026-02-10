@@ -8,25 +8,37 @@ from concurrent.futures import ThreadPoolExecutor, wait, FIRST_COMPLETED
 
 def load_df_to_sql(df: pd.DataFrame, table_name: str, engine: Engine):
     """
-    Loads a DataFrame into a SQL table by appending.
+    Loads a DataFrame into a SQL table by appending, using parallel execution for speed.
     Truncation for 'replace' load method is now handled in the asset factory.
     """
-    with engine.connect() as connection:
-        # Use a transaction to ensure atomicity
-        with connection.begin() as transaction:
-            try:
-                # Use pandas to_sql for efficient bulk loading
-                df.to_sql(
-                    name=table_name,
-                    con=connection,
-                    if_exists="append",
-                    index=False,
-                    chunksize=10000, # OPTIMIZED: 10k is the sweet spot for fast_executemany
-                )
-                transaction.commit()
-            except Exception as e:
-                transaction.rollback()
-                raise e
+    total_rows = len(df)
+    chunksize = 10000 # OPTIMIZED: 10k is the sweet spot for fast_executemany
+
+    # For smaller datasets (<50k), use a single transaction for simplicity and atomicity
+    if total_rows < 50000:
+        with engine.connect() as connection:
+            with connection.begin() as transaction:
+                try:
+                    df.to_sql(
+                        name=table_name,
+                        con=connection,
+                        if_exists="append",
+                        index=False,
+                        chunksize=chunksize, 
+                    )
+                    transaction.commit()
+                except Exception as e:
+                    transaction.rollback()
+                    raise e
+    else:
+        # For large datasets, use parallel uploads to saturate I/O
+        chunks = [df[i:i + chunksize] for i in range(0, total_rows, chunksize)]
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            # Submit all chunks
+            futures = [executor.submit(_upload_chunk_worker, chunk, table_name, engine) for chunk in chunks]
+            # Wait for completion and propagate errors
+            for future in futures:
+                future.result()
 
 def _upload_chunk_worker(chunk, table_name, engine):
     """Helper function to upload a single chunk in a separate thread."""
