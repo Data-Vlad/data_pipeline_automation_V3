@@ -10,12 +10,13 @@ import glob # Import glob at top level for reliability
 import traceback # Import traceback to capture detailed error info
 from sqlalchemy import create_engine
 from sqlalchemy import text, inspect
-from dagster import asset, AssetExecutionContext, AssetKey
+from dagster import asset, AssetExecutionContext, AssetKey, DagsterInvariantViolationError
 from dagster import MetadataValue, Config
 from .models import PipelineConfig # This is correct, models.py is in the same directory
 from .resources import SQLServerResource
-from . import parsers, custom_parsers
-from .sql_loader import load_df_to_sql, execute_stored_procedure, load_csv_to_sql_chunked, load_excel_to_sql_streamed
+from . import custom_parsers
+from .sql_loader import load_df_to_sql, execute_stored_procedure
+from .fast_data_loader import load_data_high_performance
 
 def sanitize_name(name: str) -> str:
     """
@@ -154,14 +155,10 @@ def create_extract_and_load_asset(config: PipelineConfig):
 
     # Define a whitelist of allowed custom parser function names.
     # This list MUST be manually updated when new custom parser functions are added to custom_parsers.py.
+    # File-based parsers are removed as they are now handled by the high-performance loader.
     ALLOWED_CUSTOM_PARSERS = {
-        "parse_ri_dbt_custom",
-        "parse_report_with_footer",
         "generic_web_scraper",
         "generic_selenium_scraper",
-        "generic_sftp_downloader",
-        "generic_configurable_parser",
-        # Add other custom parser function names here as they are created, e.g., "parse_my_unique_data_file",
     }
     
     # Sanitize the asset name to be valid in Dagster. This was the source of the error.
@@ -228,7 +225,6 @@ If it fails, check the run logs for details on data quality issues or parsing er
         engine = get_dynamic_engine(db_resource)
         source_file_path = context.op_config.get("source_file_path")
         resolved_path_for_feedback = source_file_path # Initialize for feedback logging
-        csv_path = None # Initialize for cleanup
         file_to_parse = "N/A" # Initialize to prevent UnboundLocalError in finally/except blocks
         
         # --- Runtime Config Fetch ---
@@ -278,216 +274,116 @@ If it fails, check the run logs for details on data quality issues or parsing er
                 # but it can be useful for debugging.
                 # _write_user_feedback_log(..., "STARTED", ...) 
 
+            df: pd.DataFrame
 
-            # Determine the actual file path to parse
-            if source_file_path:
-                file_to_parse = source_file_path
+            # --- UNIFIED PARSING LOGIC ---
+            # Check if this is a web scraper that generates data in-memory instead of parsing a local file.
+            if config.parser_function and config.parser_function in ALLOWED_CUSTOM_PARSERS:
+                context.log.info(f"Using web scraper function '{config.parser_function}'")
+                custom_parser_func = getattr(custom_parsers, config.parser_function)
+                if not callable(custom_parser_func):
+                    raise TypeError(f"The specified parser '{config.parser_function}' is not a callable function.")
+                if not config.scraper_config:
+                    raise ValueError(f"'{config.parser_function}' requires a non-null 'scraper_config' in the database.")
                 
-                # --- WORKAROUND: Handle Excel Lock Files ---
-                # If the sensor triggers on a lock file (~$File.xlsx), redirect to the real file (File.xlsx).
-                # This ensures data is loaded even if the sensor picks up the lock file instead of the data file.
-                if os.path.basename(file_to_parse).startswith("~$"):
-                    real_filename = os.path.basename(file_to_parse)[2:] # Remove the ~$ prefix
-                    real_file_path = os.path.join(os.path.dirname(file_to_parse), real_filename)
-                    if os.path.isfile(real_file_path):
-                        context.log.info(f"Redirecting from lock file '{os.path.basename(file_to_parse)}' to real file '{real_filename}'")
-                        file_to_parse = real_file_path
-                    else:
-                        context.log.warning(f"Triggered on lock file '{file_to_parse}' but real file not found. Skipping.")
-                        log_details["status"] = "SKIPPED"
-                        log_details["message"] = "Ignored orphan Excel lock file."
-                        return pd.DataFrame()
+                scraped_result = custom_parser_func(config.scraper_config)
+                if isinstance(scraped_result, dict):
+                    df = scraped_result.get(config.import_name)
+                    if df is None:
+                        raise ValueError(f"Scraper did not return a DataFrame for target_import_name '{config.import_name}'.")
+                else:
+                    df = scraped_result
+                
+                rows_processed = len(df)
+                log_details["rows_processed"] = rows_processed
+                context.log.info(f"Successfully parsed {rows_processed} rows from web source.")
+            
             else:
-                # If source_file_path is not provided (e.g., manual run), construct the full path.
-                # SECURITY: Sanitize the file_pattern to prevent path traversal attacks.
-                # We only want the filename, not any directory info that might be in the pattern.
-                pattern_to_use = config.file_pattern
-                if pattern_to_use:
-                    pattern_to_use = os.path.basename(pattern_to_use)
-                file_to_parse = os.path.join(config.monitored_directory, pattern_to_use) if config.monitored_directory else pattern_to_use
-            if not file_to_parse:
-                raise ValueError("No source file path provided or configured for extraction.")
-
-            # --- Resolve wildcards/globs for ALL file types ---
-            # This ensures that Excel, PSV, and custom parsers also support file patterns.
-            # Check if it is an existing file first. This prevents glob from breaking on paths with brackets [].
-            if not os.path.isfile(file_to_parse) and any(ch in str(file_to_parse) for ch in ["*", "?", "["]):
-                matches = glob.glob(file_to_parse, recursive=True)
-                if not matches and config.monitored_directory:
-                    pattern2 = os.path.join(config.monitored_directory, os.path.basename(file_to_parse))
-                    matches = glob.glob(pattern2, recursive=True)
-
-                # Filter out Excel temporary lock files (starting with ~$) which match *.xlsx but are not readable
-                matches = [m for m in matches if not os.path.basename(m).startswith("~$")]
-
-                if not matches:
-                    context.log.warning(f"Source file not found for {config.import_name}: '{file_to_parse}'. Skipping.")
-                    log_details["status"] = "SUCCESS"
-                    log_details["message"] = f"Source file not found: '{file_to_parse}'. No data loaded."
-                    return pd.DataFrame()
-                
-                resolved_path = max(matches, key=os.path.getmtime)
-                context.log.info(f"Resolved pattern '{file_to_parse}' to file '{resolved_path}'")
-                file_to_parse = resolved_path
-            
-            resolved_path_for_feedback = file_to_parse
-
-            # --- NEW: Determine processing type (allows for overrides like Excel->CSV conversion) ---
-            processing_file_type = config.file_type.strip().lower()
-
-            # --- OPTIMIZED EXCEL LOADING (STREAMING) ---
-            # Use the new multi-threaded streaming loader for .xlsx files to avoid OOM and disk I/O
-            is_xlsx = file_to_parse.lower().endswith(('.xlsx', '.xlsm', '.xltx'))
-            
-            if is_xlsx and not config.parser_function:
-                try:
-                    load_start_time = time.time()
-                    context.log.info(f"Using high-performance streaming Excel loader for {file_to_parse}")
-                    rows_processed = load_excel_to_sql_streamed(
-                        file_path=file_to_parse,
-                        table_name=current_staging_table,
-                        engine=engine,
-                        run_id=context.run_id,
-                        column_mapping=config.get_column_mapping(),
-                        chunksize=10000,
-                        logger=context.log
-                    )
-                    log_details["rows_processed"] = rows_processed
-                    load_duration = time.time() - load_start_time
-                    context.log.info(f"Successfully loaded {rows_processed} rows in {load_duration:.2f}s.")
-                    context.add_output_metadata({"num_rows": rows_processed, "staging_table": current_staging_table})
+                # --- HIGH-PERFORMANCE FILE LOADING ---
+                # This path handles all standard file types (CSV, Excel, Parquet, PDF, etc.)
+                if source_file_path:
+                    file_to_parse = source_file_path
                     
-                    # Return empty DataFrame as we streamed directly
-                    df = pd.DataFrame()
+                    # NEW: Check for log files passed by sensor to prevent "Unsupported format" errors
+                    if file_to_parse.endswith(".log") or "__run_history" in file_to_parse:
+                        context.log.warning(f"Sensor triggered on a log file ('{os.path.basename(file_to_parse)}'). Skipping processing.")
+                        log_details["status"] = "SKIPPED"
+                        log_details["message"] = "Skipped log file."
+                        return pd.DataFrame()
 
-                except Exception as e:
-                    # If the error is missing dependency, fail immediately instead of falling back
-                    if "openpyxl" in str(e) and "dependency" in str(e):
-                        raise e
-                    context.log.warning(f"Streaming Excel load failed: {e}. Falling back to standard parsing.")
-                    # Fall through to standard parsing logic below
-
-            # OPTIMIZATION: Use chunked loading for standard CSVs to save memory
-            elif processing_file_type == 'csv' and not config.parser_function:
-                try:
-                    load_start_time = time.time()
-                    context.log.info(f"Using high-performance chunked CSV loader (Batch Size: 10,000) for {file_to_parse}")
-                    rows_processed = load_csv_to_sql_chunked(
-                        file_path=file_to_parse,
-                        table_name=current_staging_table,
-                        engine=engine,
-                        run_id=context.run_id,
-                        column_mapping=config.get_column_mapping(),
-                        chunksize=10000, # Reduced chunksize to prevent driver crashes/OOM
-                        logger=context.log
-                    )
-                    log_details["rows_processed"] = rows_processed
-                    load_duration = time.time() - load_start_time
-                    context.log.info(f"Successfully loaded {rows_processed} rows in {load_duration:.2f}s.")
-                    context.add_output_metadata({"num_rows": rows_processed, "staging_table": current_staging_table})
-                except FileNotFoundError:
-                    context.log.warning(f"Source file not found for {config.import_name}: '{file_to_parse}'. Skipping.")
-                    # No user feedback log here, as no file was found to be "processed". The sensor just moves on.
-                    log_details["status"] = "SUCCESS"
-                    log_details["message"] = f"Source file not found: '{file_to_parse}'. No data loaded."
-                    return pd.DataFrame()
-
-                # Return an empty DataFrame as we didn't load the whole thing into memory
-                df = pd.DataFrame()
-            else:
-                # --- Fallback to original in-memory parsing for other file types or custom parsers ---
-                try:
-                    df: pd.DataFrame
-                    if config.parser_function:
-                        # For custom parsers, the file_to_parse is what we have.
-                        if config.parser_function not in ALLOWED_CUSTOM_PARSERS:
-                            raise ValueError(f"Custom parser function '{config.parser_function}' is not whitelisted.")
-                        context.log.info(f"Using custom parser function '{config.parser_function}' for file: {file_to_parse}")
-                        custom_parser_func = getattr(custom_parsers, config.parser_function)
-                        # SECURITY: Add an extra check to ensure the retrieved attribute is actually a function.
-                        if not callable(custom_parser_func):
-                            raise TypeError(f"The specified parser '{config.parser_function}' is not a callable function.")
-
-                        # Differentiate between file-based parsers and config-based scrapers
-                        if config.parser_function in ["generic_web_scraper", "generic_selenium_scraper"]:
-                            if not config.scraper_config:
-                                raise ValueError(f"'{config.parser_function}' requires a non-null 'scraper_config' in the database.")
-                            # Scrapers can return one DataFrame or a dict of them
-                            scraped_result = custom_parser_func(config.scraper_config)
-                            if isinstance(scraped_result, dict):
-                                # If it's a dict, find the DataFrame for the current asset's import_name
-                                df = scraped_result.get(config.import_name)
-                                if df is None:
-                                    raise ValueError(f"Scraper did not return a DataFrame for target_import_name '{config.import_name}'. Available targets: {list(scraped_result.keys())}")
-                            else:
-                                df = scraped_result # It's a single DataFrame                        
-                        elif config.parser_function == "generic_configurable_parser":
-                            if not config.scraper_config: # We'll reuse the scraper_config column
-                                raise ValueError(f"'generic_configurable_parser' requires a non-null 'scraper_config' in the database to hold the parser JSON.")
-                            # This parser needs both the file path and the config
-                            df = custom_parser_func(file_to_parse, config.scraper_config)
+                    if os.path.basename(file_to_parse).startswith("~$"):
+                        real_filename = os.path.basename(file_to_parse)[2:]
+                        real_file_path = os.path.join(os.path.dirname(file_to_parse), real_filename)
+                        if os.path.isfile(real_file_path):
+                            context.log.info(f"Redirecting from lock file '{os.path.basename(file_to_parse)}' to real file '{real_filename}'")
+                            file_to_parse = real_file_path
                         else:
-                            df = custom_parser_func(file_to_parse)
-                    else:
-                        # For factory parsers, the file_to_parse is what we have.
-                        parser = parsers.parser_factory.get_parser(config.file_type)
-                        context.log.info(f"Using '{config.file_type}' parser from factory for file: {file_to_parse}")
-                        df = parser.parse(file_to_parse)
-                except FileNotFoundError:
-                    context.log.warning(f"Source file not found for {config.import_name}: '{file_to_parse}'. Skipping.")
-                    # No user feedback log here, as no file was found to be "processed".
-                    log_details["status"] = "SUCCESS"
-                    log_details["message"] = f"Source file not found: '{file_to_parse}'. No data loaded."
-                    return pd.DataFrame()
+                            raise DagsterInvariantViolationError(f"Triggered on lock file '{file_to_parse}' but real file not found. Skipping.")
+                else:
+                    pattern_to_use = os.path.basename(config.file_pattern) if config.file_pattern else None
+                    file_to_parse = os.path.join(config.monitored_directory, pattern_to_use) if config.monitored_directory and pattern_to_use else None
 
+                if not file_to_parse:
+                    raise ValueError("No source file path provided or configured for extraction.")
+
+                if not os.path.isfile(file_to_parse) and any(ch in str(file_to_parse) for ch in ["*", "?", "["]):
+                    matches = [
+                        m for m in glob.glob(file_to_parse, recursive=True) 
+                        if not os.path.basename(m).startswith("~$") and not m.endswith(".log")
+                    ]
+                    if not matches:
+                        raise FileNotFoundError(f"Source file pattern '{file_to_parse}' did not match any files.")
+                    file_to_parse = max(matches, key=os.path.getmtime)
+                    context.log.info(f"Resolved pattern to latest file: '{file_to_parse}'")
+                
+                resolved_path_for_feedback = file_to_parse
+                
+                context.log.info(f"Using high-performance loader for file: {file_to_parse}")
+                df = load_data_high_performance(file_to_parse)
+                
                 df["dagster_run_id"] = context.run_id
-
-                # --- Column Mapping Logic ---
-                # For in-memory loads, we only apply explicit mappings. The chunked loader handles auto-mapping.
-                if config.get_column_mapping():
-                    df.rename(columns=config.get_column_mapping(), inplace=True)
-
-                bool_cols = [col for col in df.columns if 'checkbox' in col.lower() or 'canbecompleted' in col.lower()]
-                if bool_cols:
-                    context.log.info(f"Filling NaN values with 0 for boolean columns: {bool_cols}")
-                    df[bool_cols] = df[bool_cols].fillna(0)
-
                 rows_processed = len(df)
                 log_details["rows_processed"] = rows_processed
                 context.log.info(f"Successfully parsed {rows_processed} rows.")
-                
-                context.log.info(f"Loading data into staging table: {current_staging_table}")
-                load_df_to_sql(df, current_staging_table, engine)
 
-                # --- DATA GOVERNANCE: Execute Data Quality Checks ---
-                context.log.info(f"Executing data quality checks for table: {current_staging_table}")
-                with engine.connect() as connection: # This was already correct, no change needed here.
-                    # We use a direct execution here to get the output value (total failing rows)
-                    result = connection.execute(
-                        text("EXEC sp_execute_data_quality_checks @run_id=:run_id, @target_table=:target_table"),
-                        {"run_id": context.run_id, "target_table": current_staging_table}
-                    ).scalar_one_or_none()
-                    total_failing_rows = result if result is not None else 0
-                    context.log.info(f"Data quality checks completed. Total failing rows: {total_failing_rows}")
+            # --- COMMON POST-PROCESSING LOGIC ---
+            if config.get_column_mapping():
+                df.rename(columns=config.get_column_mapping(), inplace=True)
 
-                    # Check if any 'FAIL' severity rules failed
-                    fail_rules_failed_count = connection.execute(
-                        text("""
-                            SELECT COUNT(*) FROM data_quality_run_logs l
-                            JOIN data_quality_rules r ON l.rule_id = r.rule_id
-                            WHERE l.run_id = :run_id AND r.target_table = :target_table AND l.status = 'FAIL' AND r.severity = 'FAIL'
-                        """),
-                        {"run_id": context.run_id, "target_table": current_staging_table}
-                    ).scalar()
-                    if fail_rules_failed_count > 0:
-                        raise Exception(f"{fail_rules_failed_count} critical data quality rule(s) failed. Halting pipeline run. Check 'data_quality_run_logs' for details.")
+            bool_cols = [col for col in df.columns if 'checkbox' in col.lower() or 'canbecompleted' in col.lower()]
+            if bool_cols:
+                context.log.info(f"Filling NaN values with 0 for boolean columns: {bool_cols}")
+                df[bool_cols] = df[bool_cols].fillna(0)
 
-                context.log.info("Load to staging complete.")
-                
-                context.add_output_metadata({
-                    "num_rows": rows_processed, "staging_table": current_staging_table,
-                    "preview": df.head().to_markdown(),
-                })
+            context.log.info(f"Loading data into staging table: {current_staging_table}")
+            load_df_to_sql(df, current_staging_table, engine)
+
+            # --- DATA GOVERNANCE: Execute Data Quality Checks ---
+            context.log.info(f"Executing data quality checks for table: {current_staging_table}")
+            with engine.connect() as connection:
+                result = connection.execute(
+                    text("EXEC sp_execute_data_quality_checks @run_id=:run_id, @target_table=:target_table"),
+                    {"run_id": context.run_id, "target_table": current_staging_table}
+                ).scalar_one_or_none()
+                total_failing_rows = result if result is not None else 0
+                context.log.info(f"Data quality checks completed. Total failing rows: {total_failing_rows}")
+
+                fail_rules_failed_count = connection.execute(
+                    text("""
+                        SELECT COUNT(*) FROM data_quality_run_logs l
+                        JOIN data_quality_rules r ON l.rule_id = r.rule_id
+                        WHERE l.run_id = :run_id AND r.target_table = :target_table AND l.status = 'FAIL' AND r.severity = 'FAIL'
+                    """),
+                    {"run_id": context.run_id, "target_table": current_staging_table}
+                ).scalar()
+                if fail_rules_failed_count > 0:
+                    raise Exception(f"{fail_rules_failed_count} critical data quality rule(s) failed. Halting pipeline run. Check 'data_quality_run_logs' for details.")
+
+            context.log.info("Load to staging complete.")
+            context.add_output_metadata({
+                "num_rows": len(df), "staging_table": current_staging_table,
+                "preview": MetadataValue.md(df.head().to_markdown()),
+            })
 
             log_details["status"] = "SUCCESS"
             log_details["message"] = f"Successfully processed and loaded {log_details['rows_processed']} rows into {current_staging_table}."
@@ -495,13 +391,8 @@ If it fails, check the run logs for details on data quality issues or parsing er
         except Exception as e:
             # --- Smart Error Handling ---
             error_msg = str(e)
-
-            # Check for missing dependencies (specifically openpyxl for Excel)
-            if "openpyxl" in error_msg and "dependency" in error_msg:
-                log_details["resolution_steps"] = "The 'openpyxl' library is required to process Excel files. Please install it by running: pip install openpyxl"
-                log_details["error_details"] = error_msg
             # Check for Column Mismatches
-            elif "Invalid column name" in error_msg or ("ProgrammingError" in str(type(e)) and "42S22" in error_msg):
+            if "Invalid column name" in error_msg or ("ProgrammingError" in str(type(e)) and "42S22" in error_msg):
                 try:
                     # Introspect the database to get the actual table columns
                     from sqlalchemy import inspect
@@ -552,14 +443,6 @@ If it fails, check the run logs for details on data quality issues or parsing er
             log_details["end_time"] = datetime.utcnow()
             # Write to the database log for long-term storage.
             _log_asset_run(engine, log_details)
-
-            # Cleanup temporary converted CSV if it exists
-            if csv_path and os.path.exists(csv_path):
-                try:
-                    os.remove(csv_path)
-                    context.log.info(f"Cleaned up temporary CSV file: {csv_path}")
-                except Exception as e:
-                    context.log.warning(f"Failed to delete temporary CSV file '{csv_path}': {e}")
         return df
 
     return extract_and_load_staging
@@ -1055,9 +938,8 @@ def create_column_mapping_utility_asset(config: PipelineConfig):
             # Use the parser factory to handle different file types correctly.
             # We'll read the whole file, as some parsers (like Excel) don't support `nrows`.
             # This is acceptable for a utility asset that is run manually.
-            parser = parsers.parser_factory.get_parser(config.file_type)
-            context.log.info(f"Using '{config.file_type}' parser from factory to read headers from: {file_to_parse}")
-            df_sample = parser.parse(file_to_parse)
+            context.log.info(f"Using high-performance loader to read headers from: {file_to_parse}")
+            df_sample = load_data_high_performance(file_to_parse)
             source_columns = df_sample.columns.tolist()
             context.log.info(f"Found source columns: {source_columns}")
         except Exception as e:
@@ -1156,8 +1038,9 @@ def create_ddl_generation_utility_asset(config: PipelineConfig):
         # --- 2. Infer schema from the file ---
         try:
             # Read a sample of the file to infer data types
-            df_sample = pd.read_csv(file_to_parse, nrows=1000, encoding='latin1')
-            context.log.info(f"Inferred schema from the first 1000 rows of '{file_to_parse}'.")
+            # Use high-performance loader to support all file types (Excel, Parquet, etc.)
+            df_sample = load_data_high_performance(file_to_parse).head(1000)
+            context.log.info(f"Inferred schema from the first 1000 rows of '{file_to_parse}' using fast loader.")
         except Exception as e:
             context.log.error(f"Failed to read and infer schema from source file '{file_to_parse}': {e}")
             raise
@@ -1327,7 +1210,7 @@ def create_pipeline_setup_utility_asset(pipeline_name: str, configs: List[Pipeli
                 context.log.info(f"Found sample file: {file_to_parse}")
 
                 # --- 2. Infer schema and generate DDL ---
-                df_sample = pd.read_csv(file_to_parse, nrows=1000, encoding='latin1')
+                df_sample = load_data_high_performance(file_to_parse).head(1000)
                 source_columns = df_sample.columns.tolist()
 
                 # Staging Table DDL
@@ -1465,8 +1348,7 @@ def create_pipeline_column_mapping_utility_asset(pipeline_name: str, configs: Li
                     raise FileNotFoundError(f"No file matching pattern '{config.file_pattern}' found in '{search_path}'.")
 
                 # --- 2. Get source and table columns ---
-                parser = parsers.parser_factory.get_parser(config.file_type)
-                df_sample = parser.parse(file_to_parse)
+                df_sample = load_data_high_performance(file_to_parse)
                 source_columns = df_sample.columns.tolist()
 
                 table_columns = [col['name'] for col in inspector.get_columns(config.staging_table) if col['name'].lower() != 'dagster_run_id']

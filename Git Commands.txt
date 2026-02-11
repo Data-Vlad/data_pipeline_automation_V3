@@ -1,3 +1,12 @@
+### TABLE OF CONTENTS ###
+
+1. Initial Setup
+2. Daily Workflow: Push (Save & Upload)
+3. Force Pull (Overwrite Local with Server)
+4. Advanced: Push to Multiple Repositories
+5. How to Remove from Source Control
+
+-----------------------------------------------------------------
 ### STEP 1: INITIAL SETUP (DO THIS FIRST) ###
 
 Create a file named .gitignore in your project folder to prevent sensitive files (like passwords) from being uploaded.
@@ -29,32 +38,6 @@ backups/
 **** inside the .gitignore file
 
 -----------------------------------------------------------------
-### EMERGENCY FIX: COMPLETE GIT RESET (NUCLEAR OPTION) ###
-
-Use this if you are stuck with merge errors and want to "escape" them and reconnect your local code to the repository.
-
-1. Close Visual Studio Code.
-2. Open your project folder in File Explorer.
-3. Enable "Hidden items" (View -> Show -> Hidden items).
-4. Delete the hidden folder named '.git'.
-5. Open Visual Studio Code.
-6. Open a Terminal (Ctrl + ~) and run these commands in order:
-   git init
-   git branch -M main
-   git remote add origin https://github.com/Data-Vlad/data_pipeline_automation.git
-   git add .
-   git commit -m "Emergency reset"
-   git push -f origin main
-
-   (Note: Replace the URL with your actual repository link. The -f flag forces the server to accept your local version).
-
-   NOTE: Difference between "Commit" and "Commit & Push"
-   - Commit: Saves a snapshot of your changes to your LOCAL computer only. The server (GitHub) does not see them yet.
-   - Commit & Push: Saves the snapshot locally AND uploads it to the server immediately.
-   
-   If you clicked "Commit" but not "Push", your work is safe but not online. You simply need to run: git push origin main
-
------------------------------------------------------------------
 ### DAILY WORKFLOW: SAVE & UPLOAD (PUSH) ###
 
 Step 1: Check status (See what changed)
@@ -71,32 +54,13 @@ Step 4: Push to GitHub (Upload to server)
    (Note: If your branch is named 'master', use: git push origin master)
 
 ----------------------------------------------------------------
-### DAILY WORKFLOW: GET UPDATES (PULL) ###
+### FORCE PULL (OVERWRITE LOCAL WITH SERVER) ###
 
-Option 1: Standard Pull (Safe)
-   Use this to merge the latest updates from the team into your work.
-   git pull origin main
+Use this to completely discard your local changes and make your project an exact copy of what is on the server.
+WARNING: This is destructive and will delete any unsaved local work.
 
-Option 2: Force Overwrite (Destructive)
-   Use this ONLY if you want to delete your local work and match the server exactly.
    git fetch origin
    git reset --hard origin/main
-
------------------------------------------------------------------
-### TROUBLESHOOTING ###
-
-Error: ! [rejected] main -> main (fetch first)
-   Cause: The server has changes you don't have.
-   Fix: Run 'git pull origin main' first.
-
-Check your connection:
-   git remote -v
-
-Add the link if missing:
-   git remote add origin https://github.com/YourUsername/YourRepo.git
-
-Remove a remote link (if you added the wrong one):
-   git remote remove origin
 
 -----------------------------------------------------------------
 ### ADVANCED: PUSH TO MULTIPLE REPOSITORIES ###
