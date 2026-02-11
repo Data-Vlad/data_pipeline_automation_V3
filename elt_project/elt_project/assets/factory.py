@@ -5,6 +5,7 @@ import time
 import re
 import os # Ensure os is imported
 import json
+from collections import defaultdict
 from typing import Optional, List
 import glob # Import glob at top level for reliability
 import traceback # Import traceback to capture detailed error info
@@ -535,8 +536,20 @@ If it fails, check the run logs for details on data quality issues or parsing er
                 context.log.info(f"Successfully parsed {rows_processed} rows.")
 
             # --- COMMON POST-PROCESSING LOGIC ---
-            if config.get_column_mapping():
-                df.rename(columns=config.get_column_mapping(), inplace=True)
+            # Handle column mapping with support for duplicate source columns
+            mapping_list = config.get_column_mapping_as_list()
+            if mapping_list:
+                mapping_lookup = defaultdict(list)
+                for src, dst in mapping_list:
+                    mapping_lookup[src].append(dst)
+                
+                new_columns = []
+                for col in df.columns:
+                    if col in mapping_lookup and mapping_lookup[col]:
+                        new_columns.append(mapping_lookup[col].pop(0))
+                    else:
+                        new_columns.append(col)
+                df.columns = new_columns
 
             bool_cols = [col for col in df.columns if 'checkbox' in col.lower() or 'canbecompleted' in col.lower()]
             if bool_cols:
