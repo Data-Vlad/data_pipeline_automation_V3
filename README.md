@@ -1,95 +1,85 @@
-# Data Pipeline Automation Framework
+# Nexus Launchpad: ELT & AI Analytics
 
-**This version of the code includes ELT loading process.**
+**A robust, metadata-driven ELT framework (Launchpad) integrated with a modern AI Analytics Hub (Nexus).**
+
+## Table of Contents
+
+1.  Overview
+2.  System Architecture
+3.  Key Features
+4.  Installation & Setup
+5.  Running the Application
+6.  Hosting & Remote Access (The Tunnel)
+7.  User Guide: Data Importer
+8.  User Guide: Analytics & AI Hub
+9.  Developer Guide
+10. Security & Governance
+
+---
 
 ## Overview
-This project is a robust, metadata-driven ELT (Extract, Load, Transform) framework built on **Dagster** and **SQL Server**. It automates the ingestion of data from various sources (CSV, Excel, Web Scrapers, SFTP) into a centralized data warehouse, ensuring data integrity through strict locking and dependency management mechanisms.
 
-This project provides a one-click runner (`run_elt_service.bat`) to automate the setup and execution of the framework. It handles environment checks, code updates, dependency installation, and service startup, making it easy for end-users to run the data pipelines.
+This project automates the ingestion of data from various sources (CSV, Excel, Web Scrapers, SFTP) into a centralized SQL Server data warehouse. It pairs this robust ELT framework with a state-of-the-art **Analytics & AI Hub** that provides predictive insights, natural language querying, and automated data storytelling.
+
+The system is designed to be "Low Code" for operations but "High Code" for capabilities. Pipelines are defined via metadata in a database, while the logic is handled by reusable Python assets and SQL stored procedures.
+
+---
+
+## System Architecture
+
+The solution consists of four main components running in concert:
+
+1.  **Data Importer UI (Flask)**: A lightweight web interface (`simple_ui.py`) running on port `3000`. It serves as the entry point, handling user login and allowing users to trigger data imports manually.
+2.  **Analytics & AI Hub (Streamlit)**: A powerful dashboard (`analytics_ui.py`) running on port `8501`. It connects directly to the data warehouse to provide real-time insights, AI forecasting, and data exploration.
+3.  **Orchestration Engine (Dagster)**: Manages the execution of data pipelines, dependencies, sensors, and logging.
+4.  **Data Warehouse (SQL Server)**: Stores all configuration, raw data (Staging), transformed data (Destination), and logs.
+
+---
 
 ## Key Features
 
-### 1. Dynamic Pipeline Generation
-Pipelines are not hardcoded. They are defined in the `elt_pipeline_configs` database table. Adding a new data source is as simple as adding a row to this table; the framework automatically generates the necessary Dagster assets, sensors, and jobs.
+### ELT & Data Engineering
+*   **Metadata-Driven**: New pipelines are created by adding a row to a SQL table (`elt_pipeline_configs`). No new Python code is required for standard files.
+*   **Smart Batching**: Automatically detects batch file drops and switches from `REPLACE` to `APPEND` mode to prevent data loss.
+*   **Automated Enrichment**: Fills in missing data (e.g., looking up `Category` from `SKU`) before loading to staging.
+*   **Data Governance**: Defines quality rules (e.g., "Sales cannot be negative") in the database. Pipelines halt immediately if critical rules fail.
 
-### 2. 🛡️ Smart Batch Processing ("Smart Replace")
-The system intelligently handles batch file drops to prevent data loss when using the `REPLACE` load method.
-*   **The Problem**: If you drop multiple files simultaneously (e.g., a split CSV report) for a pipeline configured as `REPLACE`, standard logic might run them in parallel. This causes race conditions where each file truncates the table, leaving only the last file's data.
-*   **The Solution**:
-    1.  **Locking**: The first file run acquires an exclusive application lock (`sp_getapplock`) on the destination table.
-    2.  **Time Check**: Before truncating, the system checks the `load_timestamp` of the destination table.
-    3.  **Auto-Switch**: If the table was updated within the last **120 seconds**, the system assumes this file is part of the same batch and automatically downgrades the operation from `REPLACE` to `APPEND`.
-*   **Result**: You can drop 50 files at once, and they will all be loaded into the destination table seamlessly, with the first one clearing the old data.
+### Analytics & AI
+*   **Conversational Analytics**: Ask questions in plain English ("Why did sales drop?") and get SQL-generated answers.
+*   **Agentic Analyst**: An autonomous agent that plans and executes multi-step analysis strategies to solve complex goals.
+*   **Predictive Insights**: Automated forecasting and anomaly detection using Machine Learning.
+*   **Semantic Search**: Search your data by meaning (RAG), not just keywords.
+*   **Auto-Dashboards**: The AI analyzes your table schema and automatically generates the best visualization.
 
-### 3. 🔗 Dependency Management & Chaining
-You can explicitly chain pipelines to ensure correct execution order using the `depends_on` configuration.
-*   **Use Case**: You have a "Master" file that must replace the table, followed by several "Append" files (Deltas) that must add to it.
-*   **Configuration**: Set the `depends_on` column in `elt_pipeline_configs` for the child pipelines to the `import_name` of the parent.
-*   **Mechanism**:
-    *   **Dagster Graph**: Dagster creates an explicit dependency edge, ensuring the child asset waits for the parent asset to complete.
-    *   **Runtime Safety**: Even if triggered manually out of order, the child pipeline detects the dependency at runtime and **forces** `APPEND` mode to prevent accidental data loss.
+---
 
-### 4. 🔒 Robust Concurrency Control
-*   **Serialization Locking**: Uses `sp_getapplock` (SQL Server Application Locks) to ensure that only one process writes to a specific destination table at a time. This prevents race conditions and deadlocks, even if multiple Dagster runs overlap.
+## Installation & Setup
 
-### 5. Data Quality & Governance
-*   **Validation**: Automatically runs `sp_execute_data_quality_checks` immediately after loading data into staging.
-*   **Gatekeeping**: Pipelines halt immediately if critical data quality rules (severity 'FAIL') are violated, preventing bad data from reaching production tables.
+### 1. Prerequisites
+*   **OS**: Windows 10/11 or Server.
+*   **Python**: Version 3.8 or higher. Download Here.
+    *   *Important*: Check **"Add Python to PATH"** during installation.
+*   **Git**: Download Here.
+*   **SQL Server**: A running instance (Local or Azure SQL) and the **ODBC Driver 17 for SQL Server**.
 
-### 6. User Feedback
-*   **Toast Notifications**: (Windows) Instant desktop notifications upon file processing success or failure.
-*   **Local Logs**: Writes simple, readable success/failure logs back to the monitored directory (e.g., `2023-11-20__run_history.log`) for non-technical users.
+### 2. Database Setup
+1.  Create a new database (e.g., `DataPipelineDB`).
+2.  Execute the SQL scripts in `elt_project/sql/` in order:
+    *   `01_setup_log_table.sql`
+    *   `02_setup_data_governance.sql`
+    *   `03_manage_elt_pipeline_configs.sql`
+    *   `05_setup_data_enrichment.sql`
 
-## Core Concepts
+### 3. Environment Configuration
+Create a `.env` file in the project root:
 
-It's crucial to distinguish between data parsing and data transformation within this framework:
-
-*   **Data Parsing**: The process of interpreting a source file/stream and converting it into a structured format (like a Pandas DataFrame). It deals with the *physical structure* of the data.
-    *   **Where it's done**: At the **Python level** within the `extract_and_load_staging` asset, using generic (`core/parsers.py`), custom (`core/custom_parsers.py`), or configurable parsers.
-*   **Data Transformation**: The process of cleaning, enriching, and reshaping structured data to meet business requirements. It deals with the *content and meaning* of the data (e.g., applying business rules, joining tables, calculating metrics).
-    *   **Where it's done**: Exclusively at the **SQL stored procedure level** within the `transform` asset.
-
-This separation keeps the Python code focused on technical parsing, while business logic is centralized and managed within the database's powerful SQL capabilities.
-
-## 2. Features
-
-*   **Dynamic & Metadata-Driven**: New pipelines are created by adding a row to a SQL table. No new Python code is needed for most patterns.
-*   **Multiple Ingestion Methods**: Natively supports ingestion from:
-    *   **Local File Systems**: Monitors directories for new files.
-    *   **SFTP Servers**: Downloads files matching a pattern from remote servers.
-    *   **Web Scraping**: Ingests data from static HTML sites or complex, JavaScript-heavy web applications using Selenium.
-*   **Extensible & Configurable Parsers**:
-    *   **Generic**: Out-of-the-box support for CSV, PSV, and Excel.
-    *   **JSON-Configurable**: Handle variations in CSV-like files (delimiters, headers, footers) with a JSON configuration, avoiding new Python code.
-    *   **Custom Python**: Write bespoke Python functions for unique file formats.
-*   **Integrated Data Quality Framework**: Define data quality rules (e.g., `NOT_NULL`, `UNIQUE`, `REGEX_MATCH`) in a SQL table. The framework automatically validates staged data and can halt pipelines on critical failures.
-*   **Automated Data Enrichment for Missing Fields**: Dynamically fill missing or null values in staged data by performing lookups against existing database tables, configured via metadata.
-
-*   **Advanced Load Methods**: Supports both `replace` (full refresh) and `append` (incremental) load patterns, with built-in, automated deduplication for append-based pipelines.
-*   **Robust Logging & Auditing**: Logs detailed run information, row counts, errors, and data quality results to a dedicated SQL table for analytics and auditing.
-*   **Developer Acceleration Utilities**: A suite of one-click utility assets to accelerate development and maintenance.
-    *   **Consolidated Pipeline Setup**: Generate all DDL (tables and a single stored procedure) for an entire pipeline with a single asset materialization.
-    *   **Automated Column Mapping**: Generate and save column mappings for all imports in a pipeline with a single asset materialization.
-    *   **Database Backup**: A one-click asset that scripts out the data from critical configuration and log tables to `.sql` files for versioning or disaster recovery.
-    *   **Local Scraper Testing**: A command-line script (`test_scraper_config.py`) allows for rapid, local testing of complex scraper configurations before deployment to the database.
-*   **Security Hardening**: Includes built-in protections against common vulnerabilities like arbitrary code execution, path traversal, and SQL injection.
-
-## 3. Getting Started
-
-### 3.1. Prerequisites
-
-*   **Python 3.8+**
-*   A running **Microsoft SQL Server** instance.
-*   **ODBC Driver for SQL Server** installed on the machine where you will run Dagster.
-
-### Step 2: Project Installation
-
-Clone the repository and install the Python dependencies in "editable" mode. This is required for Dagster to discover your code location.
-
-```bash
-git clone <your-repo-url>
-cd data_pipeline_automation # Navigate into the project directory
-pip install -e .
+```ini
+DB_SERVER=localhost
+DB_DATABASE=DataPipelineDB
+DB_DRIVER={ODBC Driver 17 for SQL Server}
+CREDENTIAL_TARGET=DataLaunchpad/DB_Credentials
+OPENAI_API_KEY=sk-... (Optional: For AI features)
+ANALYTICS_PUBLIC_URL=http://localhost:8501
 ```
 
 ### Step 3: Database Setup
@@ -126,6 +116,54 @@ DB_TRUST_SERVER_CERTIFICATE="yes"
     dagster dev
     ```
 2.  **Open the UI**: Navigate to `http://localhost:3000` in your web browser. You should see the assets and jobs that have been dynamically generated.
+
+---
+
+## Hosting & Remote Access (The Tunnel)
+
+**Recommended for Demos & Remote Work**
+
+Since this application relies on **Local Resources** (your local SQL Server and local file system), you cannot simply deploy it to the cloud without moving your database. The best way to share it or access it remotely is using a secure tunnel like **ngrok**.
+
+### Step 1: Install Ngrok
+1.  Go to ngrok.com and sign up (free).
+2.  Download and unzip `ngrok`.
+3.  Connect your account: `ngrok config add-authtoken <YOUR_TOKEN>`
+
+### Step 2: Start the Application
+Run `Launch Data Importer.bat` as usual. Ensure both the Importer (Port 3000) and Analytics (Port 8501) are running.
+
+### Step 3: Create the Tunnels
+Open two separate command prompts (CMD or PowerShell).
+
+**Terminal 1 (Analytics Hub):**
+```bash
+# This exposes the Streamlit app.
+# --basic-auth adds a password layer for security.
+ngrok http 8501 --basic-auth="admin:CollegePassword123"
+```
+*Copy the Forwarding URL (e.g., `https://1111-analytics.ngrok-free.app`).*
+
+**Terminal 2 (Launchpad UI):**
+```bash
+# This exposes the main UI.
+ngrok http 3000 --basic-auth="admin:CollegePassword123"
+```
+*Copy this Forwarding URL (e.g., `https://2222-importer.ngrok-free.app`).*
+
+### Step 4: Link the Apps
+1.  Open your `.env` file.
+2.  Update the `ANALYTICS_PUBLIC_URL` variable with the **Analytics URL** from Terminal 1.
+    ```ini
+    ANALYTICS_PUBLIC_URL=https://1111-analytics.ngrok-free.app
+    ```
+3.  **Restart** the main launcher script.
+
+### Step 5: Share
+Send the **Launchpad UI URL** (from Terminal 2) to your users.
+*   They will be prompted for the ngrok password (`CollegePassword123`).
+*   They will see the login screen (`admin`/`admin123`).
+*   When they click "Go to Analytics", they will be seamlessly redirected to the Analytics tunnel.
 
 ## 4. How to Add a New Pipeline (The Easy Way)
 
@@ -439,27 +477,6 @@ This is the most common method. The framework monitors a local directory for new
     *   `file_pattern`: The pattern to match files (e.g., `'daily_sales_*.csv'`).
     *   `file_type`: The type of file to parse (e.g., `'csv'`, `'excel'`, `'psv'`).
 3.  **Enable the Sensor**: In the Dagster UI, go to the **Sensors** tab and turn on the dynamically generated sensor for your pipeline.
-
-#### High-Performance Loading Architecture (2026+ Standard)
-
-The framework utilizes a cutting-edge, Rust-backed loading engine (`fast_data_loader.py`) to handle large datasets (1M+ records) with extreme speed and minimal memory footprint. This replaces legacy streaming methods with memory-mapped binary readers.
-
-1.  **Polars & Arrow Engine**:
-    *   **Technology**: Instead of legacy Python parsers, we use **Polars**, a lightning-fast DataFrame library written in Rust.
-    *   **Benefit**: Polars uses SIMD (Single Instruction, Multiple Data) to process data in parallel, offering 10-50x speed improvements over standard Pandas/CSV parsing.
-    *   **Zero-Copy Conversion**: Data is converted to Pandas using **PyArrow**, ensuring that memory is not duplicated during the hand-off to the transformation layer.
-
-2.  **Rust-Based Excel Parsing**:
-    *   **Engine**: Excel files are read using the **Calamine** engine (via `fastexcel`), which treats Excel files as memory-mapped binary streams.
-    *   **Performance**: This bypasses the slow XML parsing of `openpyxl`, allowing for near-instant reads of massive Excel files without the OOM (Out of Memory) crashes associated with legacy libraries.
-
-3.  **Supported Formats**:
-    *   **Structured**: CSV, PSV, TXT, Parquet, JSON, NDJSON.
-    *   **Excel**: .xlsx, .xls, .xlsb, .xlsm.
-    *   **Unstructured**: PDF (via `pdfplumber` fallback).
-
-4.  **SQL Loading Optimization**:
-    *   **Fast Executemany**: The SQL loader uses `fast_executemany=True` with an optimized chunk size of 10,000 rows. This packs data into binary arrays for the ODBC driver, saturating network bandwidth and maximizing insertion throughput into SQL Server.
 
 ### Method 2: SFTP Server Download
 
@@ -831,6 +848,121 @@ VALUES ('ri_dbt_position_not_null', 'Position must not be null.', 'stg_ri_dbt', 
 INSERT INTO data_quality_rules (rule_name, description, target_table, target_column, check_type, check_expression, severity) VALUES ('ri_dbt_status_in_set', 'Status must be A or I.', 'stg_ri_dbt', 'Status', 'IS_IN_SET', '''A'', ''I''', 'WARN');
 
 ---
+
+---
+
+## 7. Enterprise Analytics & AI Hub
+
+This framework includes a state-of-the-art **Analytics & AI Hub** (`analytics_ui.py`) that transforms raw data into actionable intelligence. It goes beyond static reporting by integrating Machine Learning, Natural Language Processing (NLP), and prescriptive simulation directly into the data platform.
+
+### 7.1. System Architecture & Connectivity
+
+The analytics module operates on a **Hybrid Compute** model, leveraging the best tool for each task:
+
+1.  **Storage Layer (SQL Server)**:
+    *   Stores raw data (`stg_`, `dim_`, `fact_` tables).
+    *   Stores configuration (`analytics_config`).
+    *   Stores ML results (`analytics_predictions`).
+    *   Performs heavy aggregations (SUM, COUNT) before data reaches Python.
+2.  **Logic Layer (`core/ml_engine.py`)**:
+    *   A stateless Python class containing all AI logic.
+    *   **Used by Dagster**: To run batch predictions (Forecasts, Anomalies) on a schedule.
+    *   **Used by Streamlit**: To run on-the-fly analysis (Clustering, NLQ) in the UI.
+3.  **Presentation Layer (`analytics_ui.py`)**:
+    *   A **Streamlit** web application.
+    *   Connects directly to SQL Server using `SQLAlchemy`.
+    *   Implements Role-Based Access Control (RBAC) using Streamlit Session State.
+4.  **Orchestration Layer (`analytics.py`)**:
+    *   A **Dagster Asset** (`run_predictive_analytics`) that runs periodically.
+    *   Reads active configs, trains models, and saves results back to SQL.
+
+### 7.2. Database Implementation (DDL)
+
+To implement the analytics module, you must create the following control tables.
+
+**1. Configuration Table (`analytics_config`)**
+This table drives the Dagster automation.
+```sql
+CREATE TABLE analytics_config (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    target_table NVARCHAR(255) NOT NULL,
+    date_column NVARCHAR(255) NOT NULL,
+    value_column NVARCHAR(255) NOT NULL,
+    model_type NVARCHAR(50) NOT NULL, -- 'anomaly_detection' or 'forecast'
+    alert_webhook_url NVARCHAR(MAX) NULL,
+    is_active BIT DEFAULT 1,
+    created_at DATETIME DEFAULT GETUTCDATE()
+);
+```
+
+**2. Predictions Table (`analytics_predictions`)**
+This table stores the output of the ML models for historical tracking and visualization.
+```sql
+CREATE TABLE analytics_predictions (
+    id INT IDENTITY(1,1) PRIMARY KEY,
+    run_id NVARCHAR(255),
+    target_table NVARCHAR(255),
+    model_type NVARCHAR(50),
+    prediction_date DATETIME,
+    actual_value FLOAT NULL,
+    predicted_value FLOAT NULL,
+    is_anomaly BIT DEFAULT 0,
+    anomaly_score FLOAT NULL,
+    created_at DATETIME DEFAULT GETUTCDATE()
+);
+```
+
+### 7.3. Core Components & Implementation
+
+#### 1. 💬 Conversational Analytics (Natural Language to SQL)
+*   **Implementation**: `MLEngine.generate_sql_from_question`
+*   **Workflow**:
+    1.  User types a question in `analytics_ui.py`.
+    2.  App fetches the database schema (table/column names) using `run_query`.
+    3.  App sends the schema + question to OpenAI (GPT-3.5/4).
+    4.  **Security**: The returned SQL is validated against a regex whitelist (blocking `DROP`, `DELETE`) in `MLEngine.validate_sql_safety`.
+    5.  The safe SQL is executed against the DB, and results are displayed.
+*   **Setup**: Ensure `OPENAI_API_KEY` is set in your `.env` file.
+
+#### 2. 🤖 Predictive Insights (Batch Processing)
+*   **Implementation**: `analytics.py` (Dagster Asset)
+*   **Workflow**:
+    1.  The `run_predictive_analytics` asset triggers.
+    2.  It queries `analytics_config` for active rules.
+    3.  For each rule, it fetches the last 50,000 rows from the target table.
+    4.  It calls `MLEngine.detect_anomalies` (Isolation Forest) or `MLEngine.generate_forecast` (Prophet/Holt-Winters).
+    5.  Results are saved to `analytics_predictions`.
+    6.  If anomalies are found and a webhook is configured, an alert is sent.
+
+#### 3. 🛡️ Data Steward (Safe Write-Back)
+*   **Implementation**: `analytics_ui.py` -> `Data Steward` Page
+*   **Safety Mechanism**:
+    *   Uses `st.data_editor` to allow Excel-like editing.
+    *   **Critical**: Does NOT use `DELETE` + `INSERT`.
+    *   **Implementation**: Uses a **SQL MERGE** strategy. It loads changes to a temp table (`#Staging_Edit`) and performs an atomic Upsert based on the Primary Key. This ensures data integrity even if the app crashes mid-operation.
+
+#### 4. 📉 Automated Root Cause Analysis
+*   **Function**: Automatically identifies the drivers behind a metric change (e.g., "Why did Sales drop yesterday?").
+*   **Workflow**:
+    1.  User selects a table and a metric (e.g., `TotalAmount`).
+    2.  User selects a target date (e.g., the date of an anomaly).
+    3.  The system compares that date to the previous period.
+    4.  It scans all categorical columns to find which segments (e.g., `Region=West`, `Product=WidgetA`) contributed most to the change.
+
+### 7.4. Developer Guide: How to Extend
+
+#### Adding a New ML Model
+1.  **Update Logic**: Add a new method to `elt_project/core/ml_engine.py` (e.g., `train_xgboost`).
+2.  **Update Orchestrator**: Modify `analytics.py` to handle a new `model_type` string (e.g., `'xgboost'`) and call your new method.
+3.  **Update UI**: Add `'xgboost'` to the `model_type` dropdown in `analytics_ui.py` (Configuration Manager page).
+
+#### Running the UI Locally
+The UI is a standalone Streamlit app.
+```bash
+# From the project root
+pip install streamlit plotly openai statsmodels
+streamlit run analytics_ui.py
+```
 
 ---
 
@@ -2174,9 +2306,9 @@ Your Dagster application is a hybrid. The orchestration and local file processin
 **In your specific project, you can run all your local file-based ELT pipelines offline, as long as your SQL Server instance is also running locally.** Any pipeline configured to use a web scraper will fail.
 Once you have saved the credential, you can simply **re-run the `run_elt_service.bat` script**. It will now automatically and securely retrieve the credentials it needs to connect to the database.
 
-# Data Import Service
+# Data and Analytics Launchpad
 
-This project provides a user-friendly web interface for triggering and monitoring Dagster data import pipelines.
+This project provides a user-friendly web interface for triggering and monitoring data pipelines and accessing analytics.
 
 ## How It Works
 
