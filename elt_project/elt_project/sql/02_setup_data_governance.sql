@@ -1,133 +1,131 @@
--- 04_setup_data_governance.sql
-
--- This script sets up the tables and stored procedure for the dynamic data governance framework.
-
--- 1. Table to store data quality rules
-CREATE TABLE data_quality_rules (
-    rule_id INT IDENTITY(1,1) PRIMARY KEY,
-    rule_name NVARCHAR(255) NOT NULL UNIQUE,
-    description NVARCHAR(1024) NULL,
-    target_table NVARCHAR(255) NOT NULL, -- The staging table to check (e.g., 'stg_ri_dbt')
-    target_column NVARCHAR(255) NOT NULL, -- The column to check
-    check_type NVARCHAR(50) NOT NULL, -- e.g., 'NOT_NULL', 'UNIQUE', 'REGEX_MATCH', 'IS_IN_SET'
-    check_expression NVARCHAR(MAX) NULL, -- The value for the check (e.g., a regex pattern, a list of values)
-    is_active BIT NOT NULL DEFAULT 1,
-    severity NVARCHAR(50) NOT NULL DEFAULT 'WARN', -- 'WARN' or 'FAIL'. 'FAIL' can stop the pipeline.
-    created_at DATETIME DEFAULT GETUTCDATE()
-);
-GO
-
--- 2. Table to log the results of data quality checks
-CREATE TABLE data_quality_run_logs (
-    log_id INT IDENTITY(1,1) PRIMARY KEY,
-    run_id NVARCHAR(255) NOT NULL,
-    rule_id INT NOT NULL,
-    rule_name NVARCHAR(255) NOT NULL,
-    check_timestamp DATETIME DEFAULT GETUTCDATE(),
-    status NVARCHAR(50) NOT NULL, -- 'PASS' or 'FAIL'
-    failing_row_count INT NOT NULL,
-    details NVARCHAR(MAX) NULL,
-    FOREIGN KEY (rule_id) REFERENCES data_quality_rules(rule_id)
-);
-GO
-
--- Helper function to safely split a string into a table of values.
--- This is used to prevent SQL injection in the 'IS_IN_SET' check.
-CREATE FUNCTION dbo.fn_split_string
-(
-    @string NVARCHAR(MAX),
-    @delimiter CHAR(1)
-)
-RETURNS @output TABLE(splitdata NVARCHAR(MAX))
+-- 1. Create Data Quality Rules Table
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[data_quality_rules]') AND type in (N'U'))
 BEGIN
-    DECLARE @start INT, @end INT
-    SELECT @start = 1, @end = CHARINDEX(@delimiter, @string)
-    WHILE @start < LEN(@string) + 1 BEGIN
-        IF @end = 0
-            SET @end = LEN(@string) + 1
-
-        INSERT INTO @output (splitdata)
-        VALUES(LTRIM(RTRIM(SUBSTRING(@string, @start, @end - @start))))
-
-        SET @start = @end + 1
-        SET @end = CHARINDEX(@delimiter, @string, @start)
-    END
-    RETURN
+    CREATE TABLE [dbo].[data_quality_rules](
+        [rule_id] [int] IDENTITY(1,1) NOT NULL,
+        [rule_name] [nvarchar](255) NOT NULL,
+        [description] [nvarchar](max) NULL,
+        [target_table] [nvarchar](255) NOT NULL,
+        [target_column] [nvarchar](255) NULL,
+        [check_type] [nvarchar](50) NOT NULL, -- 'NOT_NULL', 'UNIQUE', 'IS_IN_SET', 'CUSTOM_SQL'
+        [check_expression] [nvarchar](max) NULL,
+        [severity] [nvarchar](50) NOT NULL DEFAULT 'FAIL', -- 'FAIL', 'WARN'
+        [is_active] [bit] NOT NULL DEFAULT 1,
+        [created_at] [datetime] DEFAULT GETUTCDATE(),
+        PRIMARY KEY CLUSTERED ([rule_id] ASC)
+    );
 END
 GO
--- 3. Stored procedure to execute data quality checks
-CREATE OR ALTER PROCEDURE sp_execute_data_quality_checks
+
+-- 2. Create Data Quality Run Logs Table
+IF NOT EXISTS (SELECT * FROM sys.objects WHERE object_id = OBJECT_ID(N'[dbo].[data_quality_run_logs]') AND type in (N'U'))
+BEGIN
+    CREATE TABLE [dbo].[data_quality_run_logs](
+        [log_id] [int] IDENTITY(1,1) NOT NULL,
+        [run_id] [nvarchar](255) NOT NULL,
+        [rule_id] [int] NOT NULL,
+        [status] [nvarchar](50) NOT NULL, -- 'PASS', 'FAIL', 'ERROR'
+        [rows_failed] [int] DEFAULT 0,
+        [executed_at] [datetime] DEFAULT GETUTCDATE(),
+        [error_message] [nvarchar](max) NULL,
+        PRIMARY KEY CLUSTERED ([log_id] ASC)
+    );
+END
+GO
+
+-- 3. Create Stored Procedure to Execute Checks
+CREATE OR ALTER PROCEDURE [dbo].[sp_execute_data_quality_checks]
     @run_id NVARCHAR(255),
     @target_table NVARCHAR(255)
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    DECLARE @rule_id INT, @rule_name NVARCHAR(255), @target_column NVARCHAR(255), @check_type NVARCHAR(50), @check_expression NVARCHAR(MAX);
-    DECLARE @sql NVARCHAR(MAX), @params NVARCHAR(MAX), @failing_row_count INT;
+    -- If no active rules exist for this table, return 0 failures immediately
+    IF NOT EXISTS (SELECT 1 FROM data_quality_rules WHERE target_table = @target_table AND is_active = 1)
+    BEGIN
+        SELECT 0;
+        RETURN;
+    END
 
-    -- Cursor to iterate over all active rules for the specified target table
-    DECLARE rule_cursor CURSOR FOR
-    SELECT rule_id, rule_name, target_column, check_type, check_expression
+    DECLARE @rule_id INT;
+    DECLARE @check_type NVARCHAR(50);
+    DECLARE @target_column NVARCHAR(255);
+    DECLARE @check_expression NVARCHAR(MAX);
+    
+    DECLARE @sql NVARCHAR(MAX);
+    DECLARE @failed_count INT;
+    DECLARE @error_msg NVARCHAR(MAX);
+
+    -- Iterate through active rules for the target table
+    DECLARE rule_cursor CURSOR LOCAL FAST_FORWARD FOR
+    SELECT rule_id, check_type, target_column, check_expression
     FROM data_quality_rules
-    WHERE is_active = 1 AND target_table = @target_table;
+    WHERE target_table = @target_table AND is_active = 1;
 
     OPEN rule_cursor;
-    FETCH NEXT FROM rule_cursor INTO @rule_id, @rule_name, @target_column, @check_type, @check_expression;
+    FETCH NEXT FROM rule_cursor INTO @rule_id, @check_type, @target_column, @check_expression;
 
     WHILE @@FETCH_STATUS = 0
     BEGIN
-        SET @failing_row_count = 0;
+        SET @failed_count = 0;
         SET @sql = '';
-        SET @params = N'@count INT OUTPUT, @run_id NVARCHAR(255)';
+        SET @error_msg = NULL;
 
-        -- Dynamically build the SQL query for the check based on its type
-        -- All checks are performed only on the data from the current run
-        IF @check_type = 'NOT_NULL'
-            SET @sql = N'SELECT @count = COUNT(*) FROM ' + QUOTENAME(@target_table) + N' WHERE ' + QUOTENAME(@target_column) + N' IS NULL AND dagster_run_id = @run_id;';
-        
-        ELSE IF @check_type = 'UNIQUE'
-            SET @sql = N'SELECT @count = COUNT(*) FROM (SELECT 1 FROM ' + QUOTENAME(@target_table) + N' WHERE dagster_run_id = @run_id GROUP BY ' + QUOTENAME(@target_column) + N' HAVING COUNT(*) > 1) AS duplicates;';
-
-        ELSE IF @check_type = 'REGEX_MATCH' AND @check_expression IS NOT NULL
-            -- Note: SQL Server does not have a built-in REGEX function. This uses LIKE for simple patterns.
-            -- The check_expression is now parameterized to prevent SQL injection.
+        BEGIN TRY
+            -- Construct validation SQL based on check type
+            IF @check_type = 'NOT_NULL'
             BEGIN
-                SET @sql = N'SELECT @count = COUNT(*) FROM ' + QUOTENAME(@target_table) + N' WHERE ' + QUOTENAME(@target_column) + N' NOT LIKE @expr AND dagster_run_id = @run_id;';
-                SET @params = @params + N', @expr NVARCHAR(MAX)';
+                SET @sql = N'SELECT @cnt = COUNT(*) FROM ' + QUOTENAME(@target_table) + 
+                           N' WHERE dagster_run_id = @rid AND ' + QUOTENAME(@target_column) + N' IS NULL';
+            END
+            ELSE IF @check_type = 'UNIQUE'
+            BEGIN
+                SET @sql = N'SELECT @cnt = COUNT(*) FROM (SELECT ' + QUOTENAME(@target_column) + 
+                           N' FROM ' + QUOTENAME(@target_table) + N' WHERE dagster_run_id = @rid GROUP BY ' + QUOTENAME(@target_column) + 
+                           N' HAVING COUNT(*) > 1) as dupes';
+            END
+            ELSE IF @check_type = 'IS_IN_SET'
+            BEGIN
+                -- check_expression example: "'A','B','C'"
+                SET @sql = N'SELECT @cnt = COUNT(*) FROM ' + QUOTENAME(@target_table) + 
+                           N' WHERE dagster_run_id = @rid AND ' + QUOTENAME(@target_column) + N' NOT IN (' + @check_expression + N')';
+            END
+             ELSE IF @check_type = 'CUSTOM_SQL'
+            BEGIN
+                -- check_expression example: "Amount < 0"
+                SET @sql = N'SELECT @cnt = COUNT(*) FROM ' + QUOTENAME(@target_table) + 
+                           N' WHERE dagster_run_id = @rid AND (' + @check_expression + N')';
             END
 
-        ELSE IF @check_type = 'IS_IN_SET' AND @check_expression IS NOT NULL
-            -- This is now safe from SQL injection by using a table-valued function to parse the list.
+            -- Execute the check if SQL was generated
+            IF @sql <> ''
             BEGIN
-                SET @sql = N'SELECT @count = COUNT(*) FROM ' + QUOTENAME(@target_table) + N' WHERE ' + QUOTENAME(@target_column) + N' NOT IN (SELECT LTRIM(RTRIM(value)) FROM STRING_SPLIT(@expr, '','')) AND dagster_run_id = @run_id;';
-                SET @params = @params + N', @expr NVARCHAR(MAX)';
+                EXEC sp_executesql @sql, N'@rid NVARCHAR(255), @cnt INT OUTPUT', @rid = @run_id, @cnt = @failed_count OUTPUT;
             END
 
-        -- Execute the dynamically generated SQL
-        IF @sql != ''
-        BEGIN
-            EXEC sp_executesql @sql, @params, @count = @failing_row_count OUTPUT, @run_id = @run_id, @expr = @check_expression;
+            -- Log result
+            INSERT INTO data_quality_run_logs (run_id, rule_id, status, rows_failed, executed_at)
+            VALUES (@run_id, @rule_id, CASE WHEN @failed_count > 0 THEN 'FAIL' ELSE 'PASS' END, @failed_count, GETUTCDATE());
 
-            -- Log the result of the check
-            INSERT INTO data_quality_run_logs (run_id, rule_id, rule_name, status, failing_row_count, details)
-            VALUES (
-                @run_id,
-                @rule_id,
-                @rule_name,
-                CASE WHEN @failing_row_count = 0 THEN 'PASS' ELSE 'FAIL' END,
-                @failing_row_count,
-                CASE WHEN @failing_row_count > 0 THEN 'Check failed for ' + CAST(@failing_row_count AS NVARCHAR) + ' rows.' ELSE 'Check passed.' END
-            );
-        END
+        END TRY
+        BEGIN CATCH
+            -- Log error execution
+            SET @error_msg = ERROR_MESSAGE();
+            INSERT INTO data_quality_run_logs (run_id, rule_id, status, error_message, executed_at)
+            VALUES (@run_id, @rule_id, 'ERROR', @error_msg, GETUTCDATE());
+        END CATCH
 
-        FETCH NEXT FROM rule_cursor INTO @rule_id, @rule_name, @target_column, @check_type, @check_expression;
+        FETCH NEXT FROM rule_cursor INTO @rule_id, @check_type, @target_column, @check_expression;
     END
 
     CLOSE rule_cursor;
     DEALLOCATE rule_cursor;
 
-    -- Return the total number of failing rules for this run/table combination
-    SELECT SUM(failing_row_count) FROM data_quality_run_logs WHERE run_id = @run_id AND rule_id IN (SELECT rule_id FROM data_quality_rules WHERE target_table = @target_table);
+    -- Return total failing rows (FAIL severity) for immediate feedback to the pipeline
+    SELECT ISNULL(SUM(rows_failed), 0) 
+    FROM data_quality_run_logs l
+    JOIN data_quality_rules r ON l.rule_id = r.rule_id
+    WHERE l.run_id = @run_id AND l.status = 'FAIL' AND r.severity = 'FAIL';
 END;
 GO

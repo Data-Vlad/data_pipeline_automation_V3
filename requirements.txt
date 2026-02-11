@@ -1,5 +1,5 @@
 # --- Core Dagster Stack (Pinned to latest stable) ---
-dagster
+dagster==1.12.3
 dagster-webserver==1.12.3
 dagster-pipes==1.12.3
 
@@ -11,11 +11,6 @@ SQLAlchemy==2.0.31
 pandas==2.2.2
 python-dotenv==1.2.1
 keyring==25.7.0
-
-# --- Scraping & Automation ---
-pyotp==2.9.0
-selenium==4.21.0
-webdriver-manager==4.0.1
 
 # --- Web/Server (Compatible versions) ---
 Flask==3.0.3

@@ -49,4 +49,4 @@ class SQLServerResource(ConfigurableResource):
                 f"mssql+pyodbc://@{self.server}/{self.database}?driver={self.driver.replace(' ', '+')}"
                 f"&trusted_connection=yes&TrustServerCertificate={self.trust_server_certificate}"
             )
-        return create_engine(connection_string)
+        return create_engine(connection_string, fast_executemany=True)

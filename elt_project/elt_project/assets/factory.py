@@ -1,19 +1,22 @@
 # elt_project/assets/factory.py
 import pandas as pd
 from datetime import datetime
+import time
 import re
 import os # Ensure os is imported
 import json
 from typing import Optional, List
+import glob # Import glob at top level for reliability
 import traceback # Import traceback to capture detailed error info
 from sqlalchemy import create_engine
 from sqlalchemy import text, inspect
-from dagster import asset, AssetExecutionContext, AssetKey
+from dagster import asset, AssetExecutionContext, AssetKey, DagsterInvariantViolationError
 from dagster import MetadataValue, Config
 from .models import PipelineConfig # This is correct, models.py is in the same directory
 from .resources import SQLServerResource
-from . import parsers, custom_parsers, selenium_logic
-from .sql_loader import load_df_to_sql, execute_stored_procedure, load_csv_to_sql_chunked
+from . import custom_parsers
+from .sql_loader import load_df_to_sql, execute_stored_procedure
+from .fast_data_loader import load_data_high_performance
 
 def sanitize_name(name: str) -> str:
     """
@@ -63,49 +66,8 @@ def _show_toast_notification(status: str, pipeline_name: str, import_name: str, 
         source_file (str): The basename of the file that was processed.
         message (str): A user-friendly message about the outcome.
     """
-    if os.name != 'nt':
-        return  # Only run on Windows
- 
-    import subprocess
-
-    try:
-        title = f"File Processed: {import_name.replace('stg_', '')}"
-        body = f"Status: {status.capitalize()}"
-        
-        icon = "imageres.dll,-101" # Default (Failure/Warning)
-        if status.upper() == 'SUCCESS':
-            icon = "imageres.dll,-119"
-        elif status.upper() == 'STARTED':
-            icon = "imageres.dll,-1004" # Generic Info/Run icon
-
-        # The `run_elt_service.bat` script ensures the BurntToast module is installed.
-        # We can directly call it without checking for its existence here.
-        # This is faster and removes redundant logic.
-        ps_title = title.replace("'", "''")
-        ps_body = body.replace("'", "''")
-        powershell_command = f"""
-        Import-Module BurntToast;
-        New-BurntToastNotification -AppLogo '{icon}' -Text '{ps_title}', '{ps_body}'
-        """
- 
-        # Configure startup info to hide the console window
-        startupinfo = subprocess.STARTUPINFO()
-        startupinfo.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-        startupinfo.wShowWindow = 0 # SW_HIDE
-
-        # Execute the PowerShell command.
-        process = subprocess.run(
-            ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-Command", powershell_command],
-            capture_output=True, text=True, startupinfo=startupinfo
-        )
- 
-        if process.returncode != 0:
-            print(f"Warning: Failed to show PowerShell toast notification. Error: {process.stderr.strip()}")
-
-    except Exception as e:
-        # Use traceback to get detailed error information for logging
-        detailed_error = traceback.format_exc()
-        print(f"Warning: An unexpected error occurred in _show_toast_notification. Error: {e}\n{detailed_error}")
+    # Toast notifications disabled as BurntToast module is not available.
+    pass
 
 def _write_user_feedback_log(monitored_directory: Optional[str], pipeline_name: str, import_name: str, status: str, source_file: str, message: str):
     """
@@ -193,36 +155,16 @@ def create_extract_and_load_asset(config: PipelineConfig):
 
     # Define a whitelist of allowed custom parser function names.
     # This list MUST be manually updated when new custom parser functions are added to custom_parsers.py.
+    # File-based parsers are removed as they are now handled by the high-performance loader.
     ALLOWED_CUSTOM_PARSERS = {
-        "parse_ri_dbt_custom",
-        "parse_report_with_footer",
         "generic_web_scraper",
         "generic_selenium_scraper",
-        "generic_sftp_downloader",
-        "generic_configurable_parser",
-        # Add other custom parser function names here as they are created, e.g., "parse_my_unique_data_file",
     }
     
-    # Define which parsers are considered "Ingestion" (Scrapers/Downloaders)
-    INGESTION_FUNCTIONS = {
-        "generic_web_scraper",
-        "generic_selenium_scraper",
-        "generic_sftp_downloader"
-    }
-
     # Sanitize the asset name to be valid in Dagster. This was the source of the error.
     # The old name format was "1. Extract & Stage: {config.import_name}" which is invalid.
     # We now use a sanitized, valid name.
-    
-    # Determine if this is an Ingestion asset or an ELT asset based on the parser
-    is_ingestion = config.parser_function in INGESTION_FUNCTIONS
-    
-    if is_ingestion:
-        asset_name = sanitize_name(f"{config.import_name}_ingest")
-        desc_action = "Ingests (Downloads/Scrapes)"
-    else:
-        asset_name = sanitize_name(f"{config.import_name}_extract_and_load_staging")
-        desc_action = "Extracts and Loads"
+    asset_name = sanitize_name(f"{config.import_name}_extract_and_load_staging")
 
     # --- NEW: Support for explicit dependencies via scraper_config ---
     deps = []
@@ -233,7 +175,7 @@ def create_extract_and_load_asset(config: PipelineConfig):
         deps=deps,
         compute_kind="python",
         description=f"""
-**{desc_action} data for the '{config.import_name}' import.**
+**Extracts, validates, and stages data for the '{config.import_name}' import.**
 
 This is the first step in the '{config.pipeline_name}' pipeline. It performs the following actions:
 
@@ -283,6 +225,7 @@ If it fails, check the run logs for details on data quality issues or parsing er
         engine = get_dynamic_engine(db_resource)
         source_file_path = context.op_config.get("source_file_path")
         resolved_path_for_feedback = source_file_path # Initialize for feedback logging
+        file_to_parse = "N/A" # Initialize to prevent UnboundLocalError in finally/except blocks
         
         # --- Runtime Config Fetch ---
         # Fetch the latest staging table name to handle config updates without full restart
@@ -331,227 +274,125 @@ If it fails, check the run logs for details on data quality issues or parsing er
                 # but it can be useful for debugging.
                 # _write_user_feedback_log(..., "STARTED", ...) 
 
+            df: pd.DataFrame
 
-            # Determine the actual file path to parse
-            if source_file_path:
-                file_to_parse = source_file_path
+            # --- UNIFIED PARSING LOGIC ---
+            # Check if this is a web scraper that generates data in-memory instead of parsing a local file.
+            if config.parser_function and config.parser_function in ALLOWED_CUSTOM_PARSERS:
+                context.log.info(f"Using web scraper function '{config.parser_function}'")
+                custom_parser_func = getattr(custom_parsers, config.parser_function)
+                if not callable(custom_parser_func):
+                    raise TypeError(f"The specified parser '{config.parser_function}' is not a callable function.")
+                if not config.scraper_config:
+                    raise ValueError(f"'{config.parser_function}' requires a non-null 'scraper_config' in the database.")
+                
+                scraped_result = custom_parser_func(config.scraper_config)
+                if isinstance(scraped_result, dict):
+                    df = scraped_result.get(config.import_name)
+                    if df is None:
+                        raise ValueError(f"Scraper did not return a DataFrame for target_import_name '{config.import_name}'.")
+                else:
+                    df = scraped_result
+                
+                rows_processed = len(df)
+                log_details["rows_processed"] = rows_processed
+                context.log.info(f"Successfully parsed {rows_processed} rows from web source.")
+            
             else:
-                # If source_file_path is not provided (e.g., manual run), construct the full path.
-                # SECURITY: Sanitize the file_pattern to prevent path traversal attacks.
-                # We only want the filename, not any directory info that might be in the pattern.
-                if config.file_pattern:
-                    config.file_pattern = os.path.basename(config.file_pattern)
-                file_to_parse = os.path.join(config.monitored_directory, config.file_pattern) if config.monitored_directory else config.file_pattern
-            if not file_to_parse:
-                raise ValueError("No source file path provided or configured for extraction.")
+                # --- HIGH-PERFORMANCE FILE LOADING ---
+                # This path handles all standard file types (CSV, Excel, Parquet, PDF, etc.)
+                if source_file_path:
+                    file_to_parse = source_file_path
+                    
+                    # NEW: Check for log files passed by sensor to prevent "Unsupported format" errors
+                    if file_to_parse.endswith(".log") or "__run_history" in file_to_parse:
+                        context.log.warning(f"Sensor triggered on a log file ('{os.path.basename(file_to_parse)}'). Skipping processing.")
+                        log_details["status"] = "SKIPPED"
+                        log_details["message"] = "Skipped log file."
+                        return pd.DataFrame()
 
-            # OPTIMIZATION: Use chunked loading for standard CSVs to save memory
-            if config.file_type.lower() == 'csv' and not config.parser_function:
-                try:
-                    import glob
-                    # Resolve wildcards/globs to an actual file path (pandas cannot read a glob pattern)
-                    # This is the path that will be used for logging user feedback
-                    resolved_path = file_to_parse
-                    if any(ch in str(file_to_parse) for ch in ["*", "?", "["]):
-                        # If file_to_parse is already an absolute pattern keep it, otherwise join with monitored dir
-                        pattern = file_to_parse
-                        matches = glob.glob(pattern, recursive=True) # Use recursive for potential **/ patterns
-                        # If no matches, try joining with monitored_directory if available
-                        if not matches and config.monitored_directory:
-                            pattern2 = os.path.join(config.monitored_directory, os.path.basename(pattern))
-                            matches = glob.glob(pattern2, recursive=True)
-
-                        if not matches:
-                            raise FileNotFoundError(f"No files matched the pattern '{file_to_parse}'")
-                        # Choose the most recently modified file if multiple matches
-                        resolved_path = max(matches, key=os.path.getmtime)
-                        context.log.info(f"Resolved pattern '{file_to_parse}' to file '{resolved_path}'")
-                    else:
-                        # If it's not a glob, it might be a relative path. Join with monitored_directory if it exists.
-                        resolved_path = file_to_parse
-
-                    # Ensure the path used for user feedback is the resolved one
-                    resolved_path_for_feedback = resolved_path
-
-                    context.log.info(f"Using memory-efficient chunked CSV loader for {resolved_path}")
-                    rows_processed = load_csv_to_sql_chunked(
-                        file_path=resolved_path,
-                        table_name=current_staging_table,
-                        engine=engine,
-                        run_id=context.run_id,
-                        column_mapping=config.get_column_mapping()
-                    )
-                    log_details["rows_processed"] = rows_processed
-                    context.log.info(f"Successfully loaded {rows_processed} rows in chunks.")
-                    context.add_output_metadata({"num_rows": rows_processed, "staging_table": current_staging_table})
-                except FileNotFoundError:
-                    context.log.warning(f"Source file not found for {config.import_name}: '{file_to_parse}'. Skipping.")
-                    # No user feedback log here, as no file was found to be "processed". The sensor just moves on.
-                    log_details["status"] = "SUCCESS"
-                    log_details["message"] = f"Source file not found: '{file_to_parse}'. No data loaded."
-                    return pd.DataFrame()
-
-                # Return an empty DataFrame as we didn't load the whole thing into memory
-                df = pd.DataFrame()
-            else:
-                # --- Fallback to original in-memory parsing for other file types or custom parsers ---
-                try:
-                    df: pd.DataFrame
-                    if config.parser_function:
-                        # For custom parsers, the file_to_parse is what we have.
-                        resolved_path_for_feedback = file_to_parse
-                        if config.parser_function not in ALLOWED_CUSTOM_PARSERS:
-                            raise ValueError(f"Custom parser function '{config.parser_function}' is not whitelisted.")
-                        context.log.info(f"Using custom parser function '{config.parser_function}' for file: {file_to_parse}")
-                        if config.parser_function == "generic_selenium_scraper":
-                            custom_parser_func = custom_parsers.generic_selenium_scraper
+                    if os.path.basename(file_to_parse).startswith("~$"):
+                        real_filename = os.path.basename(file_to_parse)[2:]
+                        real_file_path = os.path.join(os.path.dirname(file_to_parse), real_filename)
+                        if os.path.isfile(real_file_path):
+                            context.log.info(f"Redirecting from lock file '{os.path.basename(file_to_parse)}' to real file '{real_filename}'")
+                            file_to_parse = real_file_path
                         else:
-                            custom_parser_func = getattr(custom_parsers, config.parser_function)
-                        # SECURITY: Add an extra check to ensure the retrieved attribute is actually a function.
-                        if not callable(custom_parser_func):
-                            raise TypeError(f"The specified parser '{config.parser_function}' is not a callable function.")
+                            raise DagsterInvariantViolationError(f"Triggered on lock file '{file_to_parse}' but real file not found. Skipping.")
+                else:
+                    pattern_to_use = os.path.basename(config.file_pattern) if config.file_pattern else None
+                    file_to_parse = os.path.join(config.monitored_directory, pattern_to_use) if config.monitored_directory and pattern_to_use else None
 
-                        # Differentiate between file-based parsers and config-based scrapers
-                        if config.parser_function in INGESTION_FUNCTIONS:
-                            if not config.scraper_config:
-                                raise ValueError(f"'{config.parser_function}' requires a non-null 'scraper_config' in the database.")
-                            
-                            # Inject import_name into the config JSON so the scraper can access it
-                            try:
-                                scraper_conf_dict = json.loads(config.scraper_config)
-                                scraper_conf_dict['import_name'] = config.import_name
-                                config_json_with_context = json.dumps(scraper_conf_dict)
-                            except Exception as e:
-                                context.log.warning(f"Failed to inject import_name into scraper config: {e}")
-                                config_json_with_context = config.scraper_config
+                if not file_to_parse:
+                    raise ValueError("No source file path provided or configured for extraction.")
 
-                            # Scrapers can return one DataFrame or a dict of them
-                            scraped_result = custom_parser_func(config_json_with_context)
-                            if isinstance(scraped_result, dict):
-                                # If it's a dict, find the DataFrame for the current asset's import_name
-                                df = scraped_result.get(config.import_name)
-                                if df is None:
-                                    raise ValueError(f"Scraper did not return a DataFrame for target_import_name '{config.import_name}'. Available targets: {list(scraped_result.keys())}")
-                            else:
-                                df = scraped_result # It's a single DataFrame                        
-                        elif config.parser_function == "generic_configurable_parser":
-                            if not config.scraper_config: # We'll reuse the scraper_config column
-                                raise ValueError(f"'generic_configurable_parser' requires a non-null 'scraper_config' in the database to hold the parser JSON.")
-                            # This parser needs both the file path and the config
-                            df = custom_parser_func(file_to_parse, config.scraper_config)
-                        else:
-                            df = custom_parser_func(file_to_parse)
-                    else:
-                        # For factory parsers, the file_to_parse is what we have.
-                        resolved_path_for_feedback = file_to_parse
-                        parser = parsers.parser_factory.get_parser(config.file_type)
-                        context.log.info(f"Using '{config.file_type}' parser from factory for file: {file_to_parse}")
-                        df = parser.parse(file_to_parse)
-                except FileNotFoundError:
-                    context.log.warning(f"Source file not found for {config.import_name}: '{file_to_parse}'. Skipping.")
-                    # No user feedback log here, as no file was found to be "processed".
-                    log_details["status"] = "SUCCESS"
-                    log_details["message"] = f"Source file not found: '{file_to_parse}'. No data loaded."
-                    return pd.DataFrame()
-
+                if not os.path.isfile(file_to_parse) and any(ch in str(file_to_parse) for ch in ["*", "?", "["]):
+                    matches = [
+                        m for m in glob.glob(file_to_parse, recursive=True) 
+                        if not os.path.basename(m).startswith("~$") and not m.endswith(".log")
+                    ]
+                    if not matches:
+                        raise FileNotFoundError(f"Source file pattern '{file_to_parse}' did not match any files.")
+                    file_to_parse = max(matches, key=os.path.getmtime)
+                    context.log.info(f"Resolved pattern to latest file: '{file_to_parse}'")
+                
+                resolved_path_for_feedback = file_to_parse
+                
+                context.log.info(f"Using high-performance loader for file: {file_to_parse}")
+                df = load_data_high_performance(file_to_parse)
+                
                 df["dagster_run_id"] = context.run_id
-
-                # --- Column Mapping Logic ---
-                # For in-memory loads, we only apply explicit mappings. The chunked loader handles auto-mapping.
-                if config.get_column_mapping():
-                    df.rename(columns=config.get_column_mapping(), inplace=True)
-
-                bool_cols = [col for col in df.columns if 'checkbox' in col.lower() or 'canbecompleted' in col.lower()]
-                if bool_cols:
-                    context.log.info(f"Filling NaN values with 0 for boolean columns: {bool_cols}")
-                    df[bool_cols] = df[bool_cols].fillna(0)
-
-                # --- AUTOMATED DATA ENRICHMENT ---
-                # Dynamically fill missing fields using metadata-driven lookups defined in DB
-                try:
-                    # Check if enrichment rules table exists (it might not be set up yet)
-                    inspector = inspect(engine)
-                    if inspector.has_table("data_enrichment_rules"):
-                        with engine.connect() as conn:
-                            rules = conn.execute(
-                                text("SELECT * FROM data_enrichment_rules WHERE target_staging_table = :table"),
-                                {"table": current_staging_table}
-                            ).mappings().all()
-
-                        for rule in rules:
-                            target_col = rule['target_column_to_enrich']
-                            lookup_table = rule['lookup_table']
-                            lookup_key_staging = rule['lookup_key_column_staging']
-                            lookup_key_remote = rule['lookup_key_column_lookup']
-                            lookup_value_col = rule['lookup_value_column']
-
-                            if lookup_key_staging in df.columns:
-                                context.log.info(f"Applying enrichment: Filling '{target_col}' from '{lookup_table}' using '{lookup_key_staging}'")
-                                
-                                # Fetch lookup data (Dimension tables are usually small enough for this)
-                                lookup_df = pd.read_sql(f"SELECT {lookup_key_remote}, {lookup_value_col} FROM {lookup_table}", engine)
-                                
-                                # Perform left join to get the value
-                                merged = df.merge(
-                                    lookup_df, 
-                                    left_on=lookup_key_staging, 
-                                    right_on=lookup_key_remote, 
-                                    how='left', 
-                                    suffixes=('', '_lookup')
-                                )
-                                
-                                # If target column doesn't exist, create it. Then fill missing values.
-                                if target_col not in df.columns:
-                                    df[target_col] = None
-                                lookup_col_name = lookup_value_col if lookup_value_col not in df.columns else f"{lookup_value_col}_lookup"
-                                df[target_col] = df[target_col].fillna(merged[lookup_col_name])
-                except Exception as e:
-                    context.log.warning(f"Data enrichment process encountered an issue (skipping): {e}")
-
                 rows_processed = len(df)
                 log_details["rows_processed"] = rows_processed
                 context.log.info(f"Successfully parsed {rows_processed} rows.")
-                
-                context.log.info(f"Loading data into staging table: {current_staging_table}")
-                load_df_to_sql(df, current_staging_table, engine)
 
-                # --- DATA GOVERNANCE: Execute Data Quality Checks ---
-                context.log.info(f"Executing data quality checks for table: {current_staging_table}")
-                with engine.connect() as connection: # This was already correct, no change needed here.
-                    # We use a direct execution here to get the output value (total failing rows)
-                    result = connection.execute(
-                        text("EXEC sp_execute_data_quality_checks @run_id=:run_id, @target_table=:target_table"),
-                        {"run_id": context.run_id, "target_table": current_staging_table}
-                    ).scalar_one_or_none()
-                    total_failing_rows = result if result is not None else 0
-                    context.log.info(f"Data quality checks completed. Total failing rows: {total_failing_rows}")
+            # --- COMMON POST-PROCESSING LOGIC ---
+            if config.get_column_mapping():
+                df.rename(columns=config.get_column_mapping(), inplace=True)
 
-                    # Check if any 'FAIL' severity rules failed
-                    fail_rules_failed_count = connection.execute(
-                        text("""
-                            SELECT COUNT(*) FROM data_quality_run_logs l
-                            JOIN data_quality_rules r ON l.rule_id = r.rule_id
-                            WHERE l.run_id = :run_id AND r.target_table = :target_table AND l.status = 'FAIL' AND r.severity = 'FAIL'
-                        """),
-                        {"run_id": context.run_id, "target_table": current_staging_table}
-                    ).scalar()
-                    if fail_rules_failed_count > 0:
-                        raise Exception(f"{fail_rules_failed_count} critical data quality rule(s) failed. Halting pipeline run. Check 'data_quality_run_logs' for details.")
+            bool_cols = [col for col in df.columns if 'checkbox' in col.lower() or 'canbecompleted' in col.lower()]
+            if bool_cols:
+                context.log.info(f"Filling NaN values with 0 for boolean columns: {bool_cols}")
+                df[bool_cols] = df[bool_cols].fillna(0)
 
-                context.log.info("Load to staging complete.")
-                
-                context.add_output_metadata({
-                    "num_rows": rows_processed, "staging_table": current_staging_table,
-                    "preview": df.head().to_markdown(),
-                })
+            context.log.info(f"Loading data into staging table: {current_staging_table}")
+            load_df_to_sql(df, current_staging_table, engine)
+
+            # --- DATA GOVERNANCE: Execute Data Quality Checks ---
+            context.log.info(f"Executing data quality checks for table: {current_staging_table}")
+            with engine.connect() as connection:
+                result = connection.execute(
+                    text("EXEC sp_execute_data_quality_checks @run_id=:run_id, @target_table=:target_table"),
+                    {"run_id": context.run_id, "target_table": current_staging_table}
+                ).scalar_one_or_none()
+                total_failing_rows = result if result is not None else 0
+                context.log.info(f"Data quality checks completed. Total failing rows: {total_failing_rows}")
+
+                fail_rules_failed_count = connection.execute(
+                    text("""
+                        SELECT COUNT(*) FROM data_quality_run_logs l
+                        JOIN data_quality_rules r ON l.rule_id = r.rule_id
+                        WHERE l.run_id = :run_id AND r.target_table = :target_table AND l.status = 'FAIL' AND r.severity = 'FAIL'
+                    """),
+                    {"run_id": context.run_id, "target_table": current_staging_table}
+                ).scalar()
+                if fail_rules_failed_count > 0:
+                    raise Exception(f"{fail_rules_failed_count} critical data quality rule(s) failed. Halting pipeline run. Check 'data_quality_run_logs' for details.")
+
+            context.log.info("Load to staging complete.")
+            context.add_output_metadata({
+                "num_rows": len(df), "staging_table": current_staging_table,
+                "preview": MetadataValue.md(df.head().to_markdown()),
+            })
 
             log_details["status"] = "SUCCESS"
             log_details["message"] = f"Successfully processed and loaded {log_details['rows_processed']} rows into {current_staging_table}."
 
         except Exception as e:
-            # --- Smart Error Handling for Column Mismatches ---
-            # Check if the error is the specific one we want to handle
-            if "Invalid column name" in str(e) or ("ProgrammingError" in str(type(e)) and "42S22" in str(e)):
+            # --- Smart Error Handling ---
+            error_msg = str(e)
+            # Check for Column Mismatches
+            if "Invalid column name" in error_msg or ("ProgrammingError" in str(type(e)) and "42S22" in error_msg):
                 try:
                     # Introspect the database to get the actual table columns
                     from sqlalchemy import inspect
@@ -573,7 +414,7 @@ If it fails, check the run logs for details on data quality issues or parsing er
                 # SECURITY: Avoid logging full stack traces to the database to prevent information disclosure.
                 # The full trace is still available in the Dagster UI/console for developers.
                 log_details["error_details"] = f"An unexpected error of type {type(e).__name__} occurred."
-            log_details["resolution_steps"] = f"Review Dagster logs and stack trace for '{config.import_name}_extract_and_load_staging'. Check source file format, path ('{file_to_parse}'), and custom parser logic if applicable. Ensure staging table schema matches parsed data."
+                log_details["resolution_steps"] = f"Review Dagster logs and stack trace for '{config.import_name}_extract_and_load_staging'. Check source file format, path ('{file_to_parse}'), and custom parser logic if applicable. Ensure staging table schema matches parsed data."
             log_details["message"] = str(e)
             context.log.error(f"Error during extraction for {config.import_name}: {e}")
             
@@ -635,21 +476,16 @@ def create_transform_asset(config: PipelineConfig):
     transform_procedure = config.transform_procedure
     pipeline_group_name = pipeline_name.strip().lower()
 
-    # Define which parsers are considered "Ingestion" to resolve the upstream dependency name
-    INGESTION_FUNCTIONS = {
-        "generic_web_scraper",
-        "generic_selenium_scraper",
-        "generic_sftp_downloader"
-    }
-    is_ingestion = config.parser_function in INGESTION_FUNCTIONS
+    # Handle multiple destination tables (comma-separated).
+    # The first one is treated as the "primary" for locking, smart replace checks, and deduplication.
+    all_dest_tables = [t.strip() for t in config.destination_table.split(',')]
+    primary_dest_table = all_dest_tables[0]
 
     # Sanitize the asset name to be valid in Dagster.
     sanitized_transform_name = sanitize_name(f"{import_name}_transform")
 
     # Define dependencies on the specific extract asset
-    # We must match the name generated in create_extract_and_load_asset
-    upstream_suffix = "_ingest" if is_ingestion else "_extract_and_load_staging"
-    deps = [AssetKey(sanitize_name(f"{import_name}{upstream_suffix}"))]
+    deps = [AssetKey(sanitize_name(f"{import_name}_extract_and_load_staging"))]
 
     # --- NEW: Support for explicit dependencies via scraper_config ---
     # This allows users to chain imports (e.g., ensure 'replace' runs before 'append')
@@ -730,9 +566,10 @@ This asset moves data from staging to the final, production-ready table.
         # This prevents parallel runs (e.g. Replace vs Append) from overwriting each other.
         # We use a dedicated connection for the lock that stays open for the duration of the asset.
         lock_conn = engine.connect()
-        lock_resource = f"lock_{config.destination_table.lower()}"
+        lock_resource = f"lock_{primary_dest_table.lower()}"
         try:
             context.log.info(f"Acquiring serialization lock for table '{config.destination_table}'...")
+            context.log.info(f"Acquiring serialization lock for table '{primary_dest_table}'...")
             # LockTimeout = -1 means wait indefinitely until the lock is available.
             lock_stmt = text("DECLARE @res INT; EXEC @res = sp_getapplock @Resource = :res, @LockMode = 'Exclusive', @LockOwner = 'Session', @LockTimeout = -1; SELECT @res;")
             lock_result = lock_conn.execute(lock_stmt, {"res": lock_resource}).scalar()
@@ -766,7 +603,7 @@ This asset moves data from staging to the final, production-ready table.
                         ).mappings().one_or_none()
 
                     if result:
-                        current_load_method = result['load_method']
+                        current_load_method = result['load_method'].strip() if result['load_method'] else 'append'
                         current_is_active = bool(result['is_active'])
                         if result['staging_table']:
                             current_staging_table = result['staging_table']
@@ -845,7 +682,7 @@ This asset moves data from staging to the final, production-ready table.
                     # The table hint forces SQL Server to ignore Snapshot Isolation (RCSI) and acquire 
                     # a shared lock to read the absolute latest committed data.
                     with engine.connect() as check_conn:
-                        check_time_stmt = text(f"SELECT MAX(load_timestamp), GETUTCDATE() FROM {config.destination_table} WITH (READCOMMITTEDLOCK)")
+                        check_time_stmt = text(f"SELECT MAX(load_timestamp), GETUTCDATE() FROM {primary_dest_table} WITH (READCOMMITTEDLOCK)")
                         time_check_row = check_conn.execute(check_time_stmt).fetchone()
                     
                     if time_check_row and time_check_row[0]:
@@ -864,8 +701,10 @@ This asset moves data from staging to the final, production-ready table.
                 except Exception as e:
                     context.log.debug(f"Smart Replace check skipped (Table might not have load_timestamp): {e}")
                     context.log.warning(f"Smart Replace skipped. Destination table '{config.destination_table}' might be missing 'load_timestamp' column. Defaulting to TRUNCATE. Error: {e}")
+                    context.log.warning(f"Smart Replace skipped. Destination table '{primary_dest_table}' might be missing 'load_timestamp' column. Defaulting to TRUNCATE. Error: {e}")
                     if "Invalid column name" in str(e) or "Invalid object name" in str(e):
                         context.log.warning(f"Smart Replace SKIPPED: Destination table '{config.destination_table}' is missing 'load_timestamp' column or table does not exist. Defaulting to TRUNCATE.")
+                        context.log.warning(f"Smart Replace SKIPPED: Destination table '{primary_dest_table}' is missing 'load_timestamp' column or table does not exist. Defaulting to TRUNCATE.")
                     else:
                         context.log.debug(f"Smart Replace check skipped (Table might not have load_timestamp): {e}")
                         context.log.warning(f"Smart Replace skipped. Error: {e}")
@@ -903,6 +742,7 @@ This asset moves data from staging to the final, production-ready table.
                                 DELETE s
                                 FROM {current_staging_table} s
                                 JOIN {config.destination_table} d ON {join_conditions}
+                                JOIN {primary_dest_table} d ON {join_conditions}
                                 WHERE s.dagster_run_id = :run_id
                             """)
                             
@@ -1098,9 +938,8 @@ def create_column_mapping_utility_asset(config: PipelineConfig):
             # Use the parser factory to handle different file types correctly.
             # We'll read the whole file, as some parsers (like Excel) don't support `nrows`.
             # This is acceptable for a utility asset that is run manually.
-            parser = parsers.parser_factory.get_parser(config.file_type)
-            context.log.info(f"Using '{config.file_type}' parser from factory to read headers from: {file_to_parse}")
-            df_sample = parser.parse(file_to_parse)
+            context.log.info(f"Using high-performance loader to read headers from: {file_to_parse}")
+            df_sample = load_data_high_performance(file_to_parse)
             source_columns = df_sample.columns.tolist()
             context.log.info(f"Found source columns: {source_columns}")
         except Exception as e:
@@ -1199,8 +1038,9 @@ def create_ddl_generation_utility_asset(config: PipelineConfig):
         # --- 2. Infer schema from the file ---
         try:
             # Read a sample of the file to infer data types
-            df_sample = pd.read_csv(file_to_parse, nrows=1000, encoding='latin1')
-            context.log.info(f"Inferred schema from the first 1000 rows of '{file_to_parse}'.")
+            # Use high-performance loader to support all file types (Excel, Parquet, etc.)
+            df_sample = load_data_high_performance(file_to_parse).head(1000)
+            context.log.info(f"Inferred schema from the first 1000 rows of '{file_to_parse}' using fast loader.")
         except Exception as e:
             context.log.error(f"Failed to read and infer schema from source file '{file_to_parse}': {e}")
             raise
@@ -1237,6 +1077,13 @@ def create_ddl_generation_utility_asset(config: PipelineConfig):
         dest_cols.append("    [load_timestamp] DATETIME DEFAULT GETUTCDATE()") # Add a load timestamp
 
         dest_ddl = f"CREATE TABLE {config.destination_table} (\n" + ",\n".join(dest_cols) + "\n);"
+        # Handle multiple destination tables
+        dest_tables = [t.strip() for t in config.destination_table.split(',')]
+        dest_ddl_parts = []
+        for dt in dest_tables:
+            dest_ddl_parts.append(f"CREATE TABLE {dt} (\n" + ",\n".join(dest_cols) + "\n);")
+        
+        dest_ddl = "\n\n".join(dest_ddl_parts)
         
         shared_columns = [f"    [{col_name}]" for col_name in df_sample.columns]
         shared_columns_str = ",\n".join(shared_columns)
@@ -1255,6 +1102,7 @@ BEGIN
     IF EXISTS (SELECT 1 FROM {config.staging_table} WHERE dagster_run_id = @run_id)
     BEGIN
         INSERT INTO {config.destination_table} ({shared_columns_str.replace("    ", "")}) SELECT {shared_columns_str.replace("    ", "")} FROM {config.staging_table} WHERE dagster_run_id = @run_id;
+        INSERT INTO {dest_tables[0]} ({shared_columns_str.replace("    ", "")}) SELECT {shared_columns_str.replace("    ", "")} FROM {config.staging_table} WHERE dagster_run_id = @run_id;
     END;
 END;"""
         
@@ -1362,7 +1210,7 @@ def create_pipeline_setup_utility_asset(pipeline_name: str, configs: List[Pipeli
                 context.log.info(f"Found sample file: {file_to_parse}")
 
                 # --- 2. Infer schema and generate DDL ---
-                df_sample = pd.read_csv(file_to_parse, nrows=1000, encoding='latin1')
+                df_sample = load_data_high_performance(file_to_parse).head(1000)
                 source_columns = df_sample.columns.tolist()
 
                 # Staging Table DDL
@@ -1500,8 +1348,7 @@ def create_pipeline_column_mapping_utility_asset(pipeline_name: str, configs: Li
                     raise FileNotFoundError(f"No file matching pattern '{config.file_pattern}' found in '{search_path}'.")
 
                 # --- 2. Get source and table columns ---
-                parser = parsers.parser_factory.get_parser(config.file_type)
-                df_sample = parser.parse(file_to_parse)
+                df_sample = load_data_high_performance(file_to_parse)
                 source_columns = df_sample.columns.tolist()
 
                 table_columns = [col['name'] for col in inspector.get_columns(config.staging_table) if col['name'].lower() != 'dagster_run_id']

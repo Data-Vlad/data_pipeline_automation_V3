@@ -1,41 +1,92 @@
-# ============================================================================
-# Git Command Reference & Workflow Guide
-# ============================================================================
+### TABLE OF CONTENTS ###
 
-# This file can be used to store common Git commands and workflow notes.
+1. Initial Setup
+2. Daily Workflow: Push (Save & Upload)
+3. Force Pull (Overwrite Local with Server)
+4. Advanced: Push to Multiple Repositories
+5. How to Remove from Source Control
 
+-----------------------------------------------------------------
+### STEP 1: INITIAL SETUP (DO THIS FIRST) ###
 
-# ============================================================================
-# Auto-Sync Watcher (`auto_sync_watch.bat`)
-# ============================================================================
+Create a file named .gitignore in your project folder to prevent sensitive files (like passwords) from being uploaded.
+Common files to list in .gitignore:
 
-## Purpose
-The `auto_sync_watch.bat` script is a utility designed to automate the synchronization of two local Git repositories. It performs two main functions:
-1.  **One-Way File Sync**: It copies any new or updated files from a source repository (V2) to a destination repository (V3).
-2.  **Auto-Commit & Push**: It monitors both repositories for any changes (including the files just copied) and automatically commits and pushes them to their respective remotes.
+**** inside the .gitignore file
+# Environment Variables (Secrets)
+.env
 
-This is useful for maintaining a mirror or for migrating from one repository version to another while keeping both in sync with their remotes.
+# Python
+__pycache__/
+*.pyc
+venv/
+*.egg-info/
 
-## How to Use
+# Logs
+*.log
+launcher-error.log
+simple_ui.log
 
-### 1. Configuration
-Before running the script, you must configure the repository paths inside the file.
+# Dagster & Project Data
+dagster_home/
+generated_sql/
+backups/
 
-1.  Open `auto_sync_watch.bat` in a text editor.
-2.  Locate the `CONFIGURATION` section at the top.
-3.  Modify the following variables:
-    - `set "REPO_1=C:\path\to\your\source\repo"`: Set this to the full path of your source repository (e.g., `data_pipeline_automation_V2`).
-    - `set "REPO_2=C:\path\to\your\destination\repo"`: Set this to the full path of your destination repository (e.g., `data_pipeline_automation_V3`).
-    - `set "INTERVAL=10"`: (Optional) Change the number of seconds between each check.
+# IDE settings
+.vscode/
+.idea/
+**** inside the .gitignore file
 
-### 2. Prerequisites
-- **Git**: The `git` command must be available in your system's PATH.
-- **Authentication**: Your local Git repositories must be configured to push to their remotes without requiring a password each time. This is typically handled by the Windows Credential Manager (for HTTPS with a Personal Access Token) or SSH Keys.
+-----------------------------------------------------------------
+### DAILY WORKFLOW: SAVE & UPLOAD (PUSH) ###
 
-### 3. Execution
-- Simply double-click on `auto_sync_watch.bat` or run it from a command prompt.
-- A console window will open and display monitoring status and any actions it takes (e.g., "Changes detected in Repo 1. Syncing...").
-- This window must remain open for the watcher to continue running. You can minimize it.
+Step 1: Check status (See what changed)
+   git status
 
-### 4. Stopping the Watcher
-- To stop the script, simply close the command prompt window that is running the watcher. You can do this by clicking the 'X' in the corner or by pressing `Ctrl+C` in the window.
+Step 2: Stage changes (Prepare files to be saved)
+   git add .
+
+Step 3: Commit changes (Save a snapshot)
+   git commit -m "Describe your changes here"
+
+Step 4: Push to GitHub (Upload to server)
+   git push origin main
+   (Note: If your branch is named 'master', use: git push origin master)
+
+----------------------------------------------------------------
+### FORCE PULL (OVERWRITE LOCAL WITH SERVER) ###
+
+Use this to completely discard your local changes and make your project an exact copy of what is on the server.
+WARNING: This is destructive and will delete any unsaved local work.
+
+   git fetch origin
+   git reset --hard origin/main
+
+-----------------------------------------------------------------
+### ADVANCED: PUSH TO MULTIPLE REPOSITORIES ###
+
+You can configure a single remote (like 'origin') to push code to multiple places (e.g., GitHub and a backup server) simultaneously.
+
+1. Add your PRIMARY repository URL as a push target:
+   git remote set-url --add --push origin https://github.com/YourUsername/PrimaryRepo.git
+
+2. Add your SECONDARY repository URL as a push target:
+   git remote set-url --add --push origin https://github.com/YourUsername/BackupRepo.git
+
+3. Verify the configuration:
+   git remote -v
+   (You should see multiple lines for 'origin' marked as '(push)')
+
+4. Push:
+   git push origin main
+
+-----------------------------------------------------------------
+### HOW TO REMOVE FROM SOURCE CONTROL (VS CODE) ###
+
+To stop tracking a project in VS Code (remove the "U", "M" badges and empty the Source Control tab):
+
+1. Close Visual Studio Code.
+2. Open the project folder in your computer's file explorer.
+3. Enable "Hidden items" (View -> Show -> Hidden items).
+4. Delete the hidden folder named '.git'.
+5. Reopen VS Code. The project is no longer a Git repository.
