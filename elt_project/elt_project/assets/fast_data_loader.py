@@ -12,9 +12,7 @@ def load_data_high_performance(file_path: str) -> pd.DataFrame:
     
     Industry Best Practice (2026+):
     - Structured Data: Uses the Polars engine (Rust-backed) for 10-50x speedups.
-    - Unstructured Data: The 2026+ industry standard is AI-driven extraction (e.g., using
-      multimodal LLMs), which is handled via custom parser functions in this framework.
-      This loader provides basic, non-AI fallbacks for table extraction from PDF and DOCX.
+    - Unstructured Data: This loader provides basic fallbacks for table extraction from PDF and DOCX.
     
     Supported Formats:
     - Excel (.xlsx, .xls, .xlsb): Uses 'calamine' (Rust-based, memory-mapped).
@@ -112,7 +110,6 @@ def _load_pdf_tables(file_path: str) -> pd.DataFrame:
     """
     Helper to extract tables from PDF.
     Performance Warning: PDF is not a data interchange format. This is slow.
-    The 2026+ industry standard is AI-driven extraction for complex documents.
     """
     try:
         import pdfplumber
@@ -161,7 +158,6 @@ def _load_docx_tables(file_path: str) -> pd.DataFrame:
     """
     Helper to extract tables from DOCX files.
     Performance Warning: Like PDF, DOCX is not a data interchange format. This is slow.
-    The 2026+ industry standard is AI-driven extraction for complex documents.
     """
     try:
         import docx
