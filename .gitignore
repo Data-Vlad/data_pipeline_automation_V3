@@ -1,13 +1,18 @@
-# Python virtual environment
-venv/
-
-# Python cache files
-__pycache__/
-*.pyc
-
-# Environment variables (Secrets)
+﻿# Secrets and Environment Variables
 .env
 
-# OS generated files
+# Python
+__pycache__/
+*.pyc
+venv/
+Lib/
+Scripts/
+
+# Project Specific
+backups/
+generated_sql/
+*.log
+
+# OS Specific
 .DS_Store
 Thumbs.db

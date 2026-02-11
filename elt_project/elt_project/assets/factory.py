@@ -10,7 +10,7 @@ import glob # Import glob at top level for reliability
 import traceback # Import traceback to capture detailed error info
 from sqlalchemy import create_engine
 from sqlalchemy import text, inspect
-from dagster import asset, AssetExecutionContext, AssetKey
+from dagster import asset, AssetExecutionContext, AssetKey, DagsterInvariantViolationError
 from dagster import MetadataValue, Config
 from .models import PipelineConfig # This is correct, models.py is in the same directory
 from .resources import SQLServerResource
@@ -154,14 +154,10 @@ def create_extract_and_load_asset(config: PipelineConfig):
 
     # Define a whitelist of allowed custom parser function names.
     # This list MUST be manually updated when new custom parser functions are added to custom_parsers.py.
+    # File-based parsers are removed as they are now handled by the high-performance loader.
     ALLOWED_CUSTOM_PARSERS = {
-        "parse_ri_dbt_custom",
-        "parse_report_with_footer",
         "generic_web_scraper",
         "generic_selenium_scraper",
-        "generic_sftp_downloader",
-        "generic_configurable_parser",
-        # Add other custom parser function names here as they are created, e.g., "parse_my_unique_data_file",
     }
     
     # Sanitize the asset name to be valid in Dagster. This was the source of the error.
@@ -278,6 +274,7 @@ If it fails, check the run logs for details on data quality issues or parsing er
                 # but it can be useful for debugging.
                 # _write_user_feedback_log(..., "STARTED", ...) 
 
+            df: pd.DataFrame
 
             # Determine the actual file path to parse
             if source_file_path:
@@ -506,6 +503,21 @@ If it fails, check the run logs for details on data quality issues or parsing er
                     log_details["message"] = f"Source file not found: '{file_to_parse}'. No data loaded."
                     return pd.DataFrame()
 
+                if not os.path.isfile(file_to_parse) and any(ch in str(file_to_parse) for ch in ["*", "?", "["]):
+                    matches = [
+                        m for m in glob.glob(file_to_parse, recursive=True) 
+                        if not os.path.basename(m).startswith("~$") and not m.endswith(".log")
+                    ]
+                    if not matches:
+                        raise FileNotFoundError(f"Source file pattern '{file_to_parse}' did not match any files.")
+                    file_to_parse = max(matches, key=os.path.getmtime)
+                    context.log.info(f"Resolved pattern to latest file: '{file_to_parse}'")
+                
+                resolved_path_for_feedback = file_to_parse
+                
+                context.log.info(f"Using high-performance loader for file: {file_to_parse}")
+                df = load_data_high_performance(file_to_parse)
+                
                 df["dagster_run_id"] = context.run_id
 
                 # --- Column Mapping Logic ---
@@ -521,39 +533,45 @@ If it fails, check the run logs for details on data quality issues or parsing er
                 rows_processed = len(df)
                 log_details["rows_processed"] = rows_processed
                 context.log.info(f"Successfully parsed {rows_processed} rows.")
-                
-                context.log.info(f"Loading data into staging table: {current_staging_table}")
-                load_df_to_sql(df, current_staging_table, engine)
 
-                # --- DATA GOVERNANCE: Execute Data Quality Checks ---
-                context.log.info(f"Executing data quality checks for table: {current_staging_table}")
-                with engine.connect() as connection: # This was already correct, no change needed here.
-                    # We use a direct execution here to get the output value (total failing rows)
-                    result = connection.execute(
-                        text("EXEC sp_execute_data_quality_checks @run_id=:run_id, @target_table=:target_table"),
-                        {"run_id": context.run_id, "target_table": current_staging_table}
-                    ).scalar_one_or_none()
-                    total_failing_rows = result if result is not None else 0
-                    context.log.info(f"Data quality checks completed. Total failing rows: {total_failing_rows}")
+            # --- COMMON POST-PROCESSING LOGIC ---
+            if config.get_column_mapping():
+                df.rename(columns=config.get_column_mapping(), inplace=True)
 
-                    # Check if any 'FAIL' severity rules failed
-                    fail_rules_failed_count = connection.execute(
-                        text("""
-                            SELECT COUNT(*) FROM data_quality_run_logs l
-                            JOIN data_quality_rules r ON l.rule_id = r.rule_id
-                            WHERE l.run_id = :run_id AND r.target_table = :target_table AND l.status = 'FAIL' AND r.severity = 'FAIL'
-                        """),
-                        {"run_id": context.run_id, "target_table": current_staging_table}
-                    ).scalar()
-                    if fail_rules_failed_count > 0:
-                        raise Exception(f"{fail_rules_failed_count} critical data quality rule(s) failed. Halting pipeline run. Check 'data_quality_run_logs' for details.")
+            bool_cols = [col for col in df.columns if 'checkbox' in col.lower() or 'canbecompleted' in col.lower()]
+            if bool_cols:
+                context.log.info(f"Filling NaN values with 0 for boolean columns: {bool_cols}")
+                df[bool_cols] = df[bool_cols].fillna(0)
 
-                context.log.info("Load to staging complete.")
-                
-                context.add_output_metadata({
-                    "num_rows": rows_processed, "staging_table": current_staging_table,
-                    "preview": df.head().to_markdown(),
-                })
+            context.log.info(f"Loading data into staging table: {current_staging_table}")
+            load_df_to_sql(df, current_staging_table, engine)
+
+            # --- DATA GOVERNANCE: Execute Data Quality Checks ---
+            context.log.info(f"Executing data quality checks for table: {current_staging_table}")
+            with engine.connect() as connection:
+                result = connection.execute(
+                    text("EXEC sp_execute_data_quality_checks @run_id=:run_id, @target_table=:target_table"),
+                    {"run_id": context.run_id, "target_table": current_staging_table}
+                ).scalar_one_or_none()
+                total_failing_rows = result if result is not None else 0
+                context.log.info(f"Data quality checks completed. Total failing rows: {total_failing_rows}")
+
+                fail_rules_failed_count = connection.execute(
+                    text("""
+                        SELECT COUNT(*) FROM data_quality_run_logs l
+                        JOIN data_quality_rules r ON l.rule_id = r.rule_id
+                        WHERE l.run_id = :run_id AND r.target_table = :target_table AND l.status = 'FAIL' AND r.severity = 'FAIL'
+                    """),
+                    {"run_id": context.run_id, "target_table": current_staging_table}
+                ).scalar()
+                if fail_rules_failed_count > 0:
+                    raise Exception(f"{fail_rules_failed_count} critical data quality rule(s) failed. Halting pipeline run. Check 'data_quality_run_logs' for details.")
+
+            context.log.info("Load to staging complete.")
+            context.add_output_metadata({
+                "num_rows": len(df), "staging_table": current_staging_table,
+                "preview": MetadataValue.md(df.head().to_markdown()),
+            })
 
             log_details["status"] = "SUCCESS"
             log_details["message"] = f"Successfully processed and loaded {log_details['rows_processed']} rows into {current_staging_table}."
@@ -1121,9 +1139,8 @@ def create_column_mapping_utility_asset(config: PipelineConfig):
             # Use the parser factory to handle different file types correctly.
             # We'll read the whole file, as some parsers (like Excel) don't support `nrows`.
             # This is acceptable for a utility asset that is run manually.
-            parser = parsers.parser_factory.get_parser(config.file_type)
-            context.log.info(f"Using '{config.file_type}' parser from factory to read headers from: {file_to_parse}")
-            df_sample = parser.parse(file_to_parse)
+            context.log.info(f"Using high-performance loader to read headers from: {file_to_parse}")
+            df_sample = load_data_high_performance(file_to_parse)
             source_columns = df_sample.columns.tolist()
             context.log.info(f"Found source columns: {source_columns}")
         except Exception as e:
@@ -1222,8 +1239,9 @@ def create_ddl_generation_utility_asset(config: PipelineConfig):
         # --- 2. Infer schema from the file ---
         try:
             # Read a sample of the file to infer data types
-            df_sample = pd.read_csv(file_to_parse, nrows=1000, encoding='latin1')
-            context.log.info(f"Inferred schema from the first 1000 rows of '{file_to_parse}'.")
+            # Use high-performance loader to support all file types (Excel, Parquet, etc.)
+            df_sample = load_data_high_performance(file_to_parse).head(1000)
+            context.log.info(f"Inferred schema from the first 1000 rows of '{file_to_parse}' using fast loader.")
         except Exception as e:
             context.log.error(f"Failed to read and infer schema from source file '{file_to_parse}': {e}")
             raise
@@ -1393,7 +1411,7 @@ def create_pipeline_setup_utility_asset(pipeline_name: str, configs: List[Pipeli
                 context.log.info(f"Found sample file: {file_to_parse}")
 
                 # --- 2. Infer schema and generate DDL ---
-                df_sample = pd.read_csv(file_to_parse, nrows=1000, encoding='latin1')
+                df_sample = load_data_high_performance(file_to_parse).head(1000)
                 source_columns = df_sample.columns.tolist()
 
                 # Staging Table DDL
@@ -1531,8 +1549,7 @@ def create_pipeline_column_mapping_utility_asset(pipeline_name: str, configs: Li
                     raise FileNotFoundError(f"No file matching pattern '{config.file_pattern}' found in '{search_path}'.")
 
                 # --- 2. Get source and table columns ---
-                parser = parsers.parser_factory.get_parser(config.file_type)
-                df_sample = parser.parse(file_to_parse)
+                df_sample = load_data_high_performance(file_to_parse)
                 source_columns = df_sample.columns.tolist()
 
                 table_columns = [col['name'] for col in inspector.get_columns(config.staging_table) if col['name'].lower() != 'dagster_run_id']
