@@ -55,10 +55,36 @@ def load_data_high_performance(file_path: str) -> pd.DataFrame:
     elif ext in ['.csv', '.txt', '.psv']:
         # Polars automatically handles CSV parsing much faster than pandas
         try:
-            df_pl = pl.read_csv(file_path, ignore_errors=True, try_parse_dates=True)
+            # Pre-process headers to handle duplicates (which cause Polars to crash or error)
+            import csv
+            with open(file_path, 'r', encoding='utf-8', errors='replace') as f:
+                header_line = f.readline()
+                # Simple separator detection
+                sep = '\t' if '\t' in header_line and ',' not in header_line else ','
+                
+                f.seek(0)
+                reader = csv.reader(f, delimiter=sep)
+                headers = next(reader)
+                
+                seen = {}
+                deduped_headers = []
+                for h in headers:
+                    h = str(h).strip()
+                    if h in seen:
+                        seen[h] += 1
+                        deduped_headers.append(f"{h}_{seen[h]}")
+                    else:
+                        seen[h] = 0
+                        deduped_headers.append(h)
+            
+            # Load with Polars using the deduped headers
+            df_pl = pl.read_csv(file_path, separator=sep, has_header=True, new_columns=deduped_headers, ignore_errors=True, try_parse_dates=True)
         except Exception:
-            # Fallback for common delimiter issues
-            df_pl = pl.read_csv(file_path, separator='\t', ignore_errors=True, try_parse_dates=True)
+            # Fallback to standard load if manual header parsing fails
+            try:
+                df_pl = pl.read_csv(file_path, ignore_errors=True, try_parse_dates=True)
+            except Exception:
+                df_pl = pl.read_csv(file_path, separator='\t', ignore_errors=True, try_parse_dates=True)
 
     # 3. Parquet (Native format for Arrow/Polars)
     elif ext == '.parquet':
