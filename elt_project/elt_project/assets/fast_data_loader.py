@@ -11,15 +11,21 @@ def load_data_high_performance(file_path: str) -> pd.DataFrame:
     Universal high-performance file loader for large datasets (1M+ records).
     
     Industry Best Practice (2026+):
-    Uses the Polars engine (Rust-backed) for structured data to achieve 10-50x speedups 
-    over legacy Python parsers.
+    - Structured Data: Uses the Polars engine (Rust-backed) for 10-50x speedups.
+    - Unstructured Data: The 2026+ industry standard is AI-driven extraction (e.g., using
+      multimodal LLMs), which is handled via custom parser functions in this framework.
+      This loader provides basic, non-AI fallbacks for table extraction from PDF and DOCX.
     
     Supported Formats:
-    - Excel (.xlsx, .xls, .xlsb): Uses 'calamine' (memory-mapped, zero-copy).
+    - Excel (.xlsx, .xls, .xlsb): Uses 'calamine' (Rust-based, memory-mapped).
     - CSV/PSV/TXT: Uses Polars multi-threaded CSV reader.
-    - Parquet: Uses Polars memory-mapped reader (Native Arrow).
-    - JSON/NDJSON: Uses Polars JSON reader.
-    - PDF: Uses pdfplumber (Note: significantly slower, not recommended for 1M+ rows).
+    - Parquet: Native Arrow/Polars format.
+    - Feather/Arrow IPC (.arrow, .feather): Native Arrow/Polars format.
+    - Avro (.avro): High-performance binary format.
+    - JSON/NDJSON: Optimized for structured and newline-delimited JSON.
+    - XML (.xml): Experimental Polars XML reader.
+    - PDF (.pdf): Basic table extraction via pdfplumber (slow, not for large volumes).
+    - DOCX (.docx): Basic table extraction via python-docx (slow, not for large volumes).
     """
     if not os.path.exists(file_path):
         raise FileNotFoundError(f"File not found: {file_path}")
@@ -68,12 +74,32 @@ def load_data_high_performance(file_path: str) -> pd.DataFrame:
         except Exception:
             df_pl = pl.read_json(file_path)
 
-    # 5. PDF (Unstructured - Fallback)
+    # 5. High-Performance Binary Formats (Arrow/Feather, Avro)
+    elif ext in ['.arrow', '.feather']:
+        df_pl = pl.read_ipc(file_path)
+    
+    elif ext == '.avro':
+        df_pl = pl.read_avro(file_path)
+
+    # 6. XML (Semi-structured)
+    elif ext == '.xml':
+        # Polars' XML reader is powerful but may require specific XPath expressions
+        # for complex files. This is a best-effort generic read.
+        try:
+            df_pl = pl.read_xml(file_path)
+        except Exception as e:
+            logger.error(f"Polars failed to auto-parse XML. For complex XML, a custom parser with a specific XPath is recommended. Error: {e}")
+            raise
+
+    # 7. Unstructured Document Fallbacks (PDF, DOCX)
     elif ext == '.pdf':
         return _load_pdf_tables(file_path)
+    
+    elif ext == '.docx':
+        return _load_docx_tables(file_path)
 
     else:
-        raise ValueError(f"Unsupported file format for high-performance loader: '{ext}' (File: {os.path.basename(file_path)}). Supported formats: Excel (.xlsx, .xls), CSV/TXT, Parquet, JSON, PDF.")
+        raise ValueError(f"Unsupported file format for high-performance loader: '{ext}' (File: {os.path.basename(file_path)}). Supported formats: Excel, CSV/TXT, Parquet, Arrow/Feather, Avro, JSON, XML, PDF, DOCX.")
 
     row_count = len(df_pl)
     logger.info(f"Loaded {row_count} rows. Converting to Pandas for pipeline compatibility...")
@@ -85,7 +111,8 @@ def load_data_high_performance(file_path: str) -> pd.DataFrame:
 def _load_pdf_tables(file_path: str) -> pd.DataFrame:
     """
     Helper to extract tables from PDF.
-    Performance Warning: PDF is not designed for large datasets. 
+    Performance Warning: PDF is not a data interchange format. This is slow.
+    The 2026+ industry standard is AI-driven extraction for complex documents.
     """
     try:
         import pdfplumber
@@ -115,6 +142,54 @@ def _load_pdf_tables(file_path: str) -> pd.DataFrame:
         return pd.DataFrame()
 
     # Assume first row is header
+    headers = all_rows[0]
+    # Deduplicate headers to prevent Pandas errors
+    seen = {}
+    deduped_headers = []
+    for h in headers:
+        h_str = str(h) if h else "Column"
+        if h_str in seen:
+            seen[h_str] += 1
+            deduped_headers.append(f"{h_str}_{seen[h_str]}")
+        else:
+            seen[h_str] = 0
+            deduped_headers.append(h_str)
+
+    return pd.DataFrame(all_rows[1:], columns=deduped_headers)
+
+def _load_docx_tables(file_path: str) -> pd.DataFrame:
+    """
+    Helper to extract tables from DOCX files.
+    Performance Warning: Like PDF, DOCX is not a data interchange format. This is slow.
+    The 2026+ industry standard is AI-driven extraction for complex documents.
+    """
+    try:
+        import docx
+    except ImportError:
+        raise ImportError("Library 'python-docx' is required for DOCX parsing. Install via: pip install python-docx")
+
+    logger.warning("Parsing DOCX with 1M+ records is highly inefficient. Recommended: Convert to a structured format like CSV/Parquet upstream.")
+    
+    doc = docx.Document(file_path)
+    all_rows = []
+    
+    if not doc.tables:
+        logger.warning(f"No tables found in DOCX file: {os.path.basename(file_path)}")
+        return pd.DataFrame()
+        
+    logger.info(f"Processing {len(doc.tables)} tables from DOCX file...")
+
+    # Assume all tables should be concatenated
+    for table in doc.tables:
+        for row in table.rows:
+            # Extract text from each cell in the row
+            cleaned_row = [cell.text.replace('\n', ' ').strip() for cell in row.cells]
+            all_rows.append(cleaned_row)
+
+    if not all_rows:
+        return pd.DataFrame()
+
+    # Assume first row of the first table is the header for all concatenated data
     headers = all_rows[0]
     # Deduplicate headers to prevent Pandas errors
     seen = {}
