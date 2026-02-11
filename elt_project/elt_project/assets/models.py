@@ -1,6 +1,6 @@
 # elt_project/assets/models.py
 from pydantic import BaseModel, Field, field_validator
-from typing import Optional, Dict, Any
+from typing import Optional, Dict, Any, List, Tuple
 import json
 
 class PipelineConfig(BaseModel):
@@ -57,6 +57,19 @@ class PipelineConfig(BaseModel):
         except (json.JSONDecodeError, IndexError):
             # If parsing fails, return an empty dict to prevent errors downstream.
             return {}
+
+    def get_column_mapping_as_list(self) -> List[Tuple[str, str]]:
+        """Parses the column_mapping string into a list of tuples to support duplicate keys."""
+        if not self.column_mapping:
+            return []
+        try:
+            return [
+                (item.split('>')[0].strip(), item.split('>')[1].strip())
+                for item in self.column_mapping.split(',')
+                if '>' in item
+            ]
+        except Exception:
+            return []
 
     class Config:
         # This allows the model to be created from ORM objects (like SQLAlchemy results)
