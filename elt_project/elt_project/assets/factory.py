@@ -545,10 +545,17 @@ If it fails, check the run logs for details on data quality issues or parsing er
                 
                 new_columns = []
                 for col in df.columns:
+                    # 1. Try exact match
                     if col in mapping_lookup and mapping_lookup[col]:
                         new_columns.append(mapping_lookup[col].pop(0))
+                    # 2. Try matching base name for duplicate columns (e.g. "ColA_1" -> "ColA")
                     else:
-                        new_columns.append(col)
+                        # Check for suffix pattern _\d+ added by fast_data_loader
+                        base_col = re.sub(r'_\d+$', '', col)
+                        if base_col != col and base_col in mapping_lookup and mapping_lookup[base_col]:
+                            new_columns.append(mapping_lookup[base_col].pop(0))
+                        else:
+                            new_columns.append(col)
                 df.columns = new_columns
 
             bool_cols = [col for col in df.columns if 'checkbox' in col.lower() or 'canbecompleted' in col.lower()]
