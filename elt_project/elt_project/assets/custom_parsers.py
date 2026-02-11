@@ -3,101 +3,8 @@ import os
 import json
 import time
 import tempfile
-import shutil
-import traceback
-import pickle
 
-def parse_ri_dbt_custom(file_path: str) -> pd.DataFrame:
-    """
-    Custom parser for a file that has a dynamic header and footer.
-    This is a good example of a true parsing task, as it deals with the
-    physical structure of the file to correctly extract the tabular data.
 
-    It assumes the file has:
-    - Some number of initial rows to be ignored (header).
-    - The actual CSV data.
-    - A known marker indicating the end of the data (e.g., "END OF REPORT").
-    """
-    # --- Start of Custom Parsing Logic ---
-
-    # This is where you would write the logic to handle the unique structure
-    # of your file before it can be read into a DataFrame.
-
-    # Example: Find how many rows to skip at the end of the file.
-    # This is useful if a file has a summary footer.
-    footer_skip = 0
-    with open(file_path, 'r', encoding='utf-8') as f:
-        lines = f.readlines()
-        for i, line in reversed(list(enumerate(lines))):
-            if "END OF REPORT" in line:
-                footer_skip = len(lines) - i
-                break
-
-    # Use pandas read_csv with parameters derived from the file's structure.
-    df = pd.read_csv(file_path, encoding='latin1', skiprows=2, skipfooter=footer_skip, engine='python')
-
-    # --- End of Custom Parsing Logic ---
-    return df
-
-def parse_report_with_footer(file_path: str) -> pd.DataFrame:
-    """
-    Parses a CSV that has a 2-line header and a dynamic footer.
-    """
-    # Find how many rows are in the footer to skip them
-    footer_skip = 0
-    with open(file_path, 'r', encoding='utf-8') as f:
-        lines = f.readlines()
-        for i, line in reversed(list(enumerate(lines))):
-            if "END OF REPORT" in line:
-                footer_skip = len(lines) - i
-                break
-
-    # Use pandas with the dynamically discovered parameters
-    df = pd.read_csv(file_path, encoding='latin1', skiprows=2, skipfooter=footer_skip, engine='python')
-    return df
-
-def generic_configurable_parser(file_path: str, parser_config_json: str) -> pd.DataFrame:
-    """
-    A generic, configuration-driven file parser.
-
-    Instead of writing a new Python function, you define the parsing logic in a JSON
-    object stored in the database. This function interprets that JSON to parse the file.
-
-    Args:
-        file_path (str): The path to the file to be parsed.
-        parser_config_json (str): A JSON string containing the parsing configuration.
-
-    Returns:
-        pd.DataFrame: The parsed data.
-    """
-    config = json.loads(parser_config_json)
-    
-    # Get the pandas read options from the config, default to an empty dict.
-    read_options = config.get("read_options", {})
-
-    # --- Handle Pre-processing Steps (like dynamic footers) ---
-    pre_processing = config.get("pre_processing", {})
-
-    if "skip_footer_until_string" in pre_processing:
-        # This logic is borrowed from the old custom parsers.
-        footer_marker = pre_processing["skip_footer_until_string"]
-        footer_skip = 0
-        # Use the specified encoding if available, otherwise default to utf-8 for inspection.
-        encoding_for_scan = read_options.get('encoding', 'utf-8')
-        try:
-            with open(file_path, 'r', encoding=encoding_for_scan) as f:
-                lines = f.readlines()
-                for i, line in reversed(list(enumerate(lines))):
-                    if footer_marker in line:
-                        footer_skip = len(lines) - i
-                        break
-            if footer_skip > 0:
-                read_options["skipfooter"] = footer_skip
-                read_options["engine"] = "python" # skipfooter requires the 'python' engine
-        except UnicodeDecodeError:
-            print(f"Warning: Could not scan file with encoding '{encoding_for_scan}' to find footer. Proceeding without skipfooter.")
-
-    return pd.read_csv(file_path, **read_options)
 
 def generic_selenium_scraper(scraper_config_json: str) -> dict[str, pd.DataFrame]:
     """
@@ -110,45 +17,15 @@ def generic_selenium_scraper(scraper_config_json: str) -> dict[str, pd.DataFrame
     Returns:
         A dictionary mapping target_import_name to its scraped pandas DataFrame.
     """
-    def _log_error_to_simple_ui(msg):
-        try:
-            # Path to simple_ui.log relative to this file: ../../../simple_ui.log
-            base_dir = os.path.dirname(os.path.abspath(__file__))
-            log_path = os.path.abspath(os.path.join(base_dir, "..", "..", "..", "simple_ui.log"))
-            
-            # Try writing to simple_ui.log; fallback to scraper_error.log if locked
-            target_file = log_path
-            try:
-                with open(target_file, "a") as f:
-                    f.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} - ERROR - generic_selenium_scraper - {msg}\n")
-            except PermissionError:
-                with open(os.path.join(os.path.dirname(log_path), "scraper_error.log"), "a") as f:
-                    f.write(f"{time.strftime('%Y-%m-%d %H:%M:%S')} - ERROR - generic_selenium_scraper - {msg}\n")
-        except Exception:
-            pass
-
-    try:
-        config = json.loads(scraper_config_json)
-        
-        # Automatically expose import_name as an environment variable
-        if "import_name" in config:
-            os.environ["IMPORT_NAME"] = str(config["import_name"])
-            
-    except json.JSONDecodeError as e:
-        _log_error_to_simple_ui(f"JSON Decode Error: {e}")
-        raise ValueError(f"Invalid JSON in scraper_config: {e}")
-
     # --- Lazy Import Selenium and related libraries ---
     # This ensures these packages are only imported when this function is actually called.
-    try:
-        from selenium import webdriver
-        from selenium.webdriver.common.by import By
-        from selenium.webdriver.support.ui import WebDriverWait
-        from selenium.webdriver.support import expected_conditions as EC
-        from webdriver_manager.chrome import ChromeDriverManager
-        from selenium.webdriver.chrome.service import Service as ChromeService
-    except ImportError as e:
-        raise ImportError(f"Missing required scraping library: {e}. Please ensure 'selenium' and 'webdriver-manager' are installed.")
+    import pyotp
+    from selenium import webdriver
+    from selenium.webdriver.common.by import By
+    from selenium.webdriver.support.ui import WebDriverWait
+    from selenium.webdriver.support import expected_conditions as EC
+    from webdriver_manager.chrome import ChromeDriverManager
+    from selenium.webdriver.chrome.service import Service as ChromeService
 
     # --- Helper function for data extraction ---
     def _extract_data(driver, extraction_config):
@@ -186,277 +63,94 @@ def generic_selenium_scraper(scraper_config_json: str) -> dict[str, pd.DataFrame
 
     # --- Recursive function to process a list of actions ---
     def _process_actions(driver, actions_list, scraped_data_accumulator):
-        for i, action in enumerate(actions_list):
-            try:
-                action_type = action["type"]
-                selector_map = {
-                    "id": By.ID, "name": By.NAME, "xpath": By.XPATH,
-                    "css_selector": By.CSS_SELECTOR, "link_text": By.LINK_TEXT, "class_name": By.CLASS_NAME,
-                }
+        for action in actions_list:
+            action_type = action["type"]
+            selector_map = {
+                "id": By.ID, "name": By.NAME, "xpath": By.XPATH,
+                "css_selector": By.CSS_SELECTOR, "link_text": By.LINK_TEXT, "class_name": By.CLASS_NAME,
+            }
 
-                element = None
-                # Pre-fetch element if a selector is present for standard actions
-                if "selector" in action:
-                    by = selector_map[action["selector"]]
-                    wait = WebDriverWait(driver, action.get("timeout", 10))
-                    element = wait.until(EC.presence_of_element_located((by, action["selector_value"])))
+            element = None
+            # Pre-fetch element if a selector is present for standard actions
+            if "selector" in action:
+                by = selector_map[action["selector"]]
+                wait = WebDriverWait(driver, action.get("timeout", 10))
+                element = wait.until(EC.presence_of_element_located((by, action["selector_value"])))
 
-                if action_type == "find_and_fill":
-                    value = None
-                    if "value" in action:
-                        value = action["value"]
-                    elif "value_env_var" in action:
-                        value = os.getenv(action["value_env_var"])
+            if action_type == "find_and_fill":
+                value = os.getenv(action["value_env_var"])
+                if value is None:
+                    raise ValueError(f"Environment variable '{action['value_env_var']}' not set.")
+                element.clear()
+                element.send_keys(value)
 
-                    if value is None:
-                        raise ValueError(f"Action 'find_and_fill' requires 'value' or 'value_env_var'.")
-                    element.clear()
-                    element.send_keys(value)
+            elif action_type == "find_and_fill_totp":
+                secret = os.getenv(action["totp_secret_env_var"])
+                if secret is None:
+                    raise ValueError(f"Environment variable '{action['totp_secret_env_var']}' for TOTP secret not set.")
+                totp = pyotp.TOTP(secret)
+                token = totp.now()
+                element.clear()
+                element.send_keys(token)
 
-                elif action_type == "find_and_fill_totp":
-                    import pyotp
-                    secret = os.getenv(action["totp_secret_env_var"])
-                    if secret is None:
-                        raise ValueError(f"Environment variable '{action['totp_secret_env_var']}' for TOTP secret not set.")
-                    totp = pyotp.TOTP(secret)
-                    token = totp.now()
-                    element.clear()
-                    element.send_keys(token)
+            elif action_type == "click":
+                # Wait for element to be clickable before clicking
+                wait.until(EC.element_to_be_clickable((by, action["selector_value"]))).click()
 
-                elif action_type == "fetch_db_value":
-                    # Lazy import pyodbc to avoid dependency issues if not used
-                    try:
-                        import pyodbc
-                    except ImportError:
-                        raise ImportError("The 'pyodbc' library is required for the 'fetch_db_value' action.")
+            elif action_type == "wait":
+                time.sleep(action["duration_seconds"])
 
-                    query = action.get("query")
-                    target_env_var = action.get("target_env_var")
-                    
-                    if not query or not target_env_var:
-                        raise ValueError("Action 'fetch_db_value' requires 'query' and 'target_env_var'.")
+            elif action_type == "wait_for_element":
+                # The element finding logic at the start of the loop already handles this.
+                # This action type is useful for explicitly waiting for a page transition to complete.
+                pass
 
-                    # Resolve credentials (checking both standard and Dagster-prefixed vars)
-                    server = os.getenv("DB_SERVER")
-                    database = os.getenv("DB_DATABASE")
-                    driver = os.getenv("DB_DRIVER", "ODBC Driver 17 for SQL Server")
-                    username = os.getenv("DB_USERNAME") or os.getenv("DAGSTER_DB_USERNAME")
-                    password = os.getenv("DB_PASSWORD") or os.getenv("DAGSTER_DB_PASSWORD")
-
-                    if not all([server, database, username, password]):
-                        raise ValueError("Database credentials are missing from environment variables.")
-
-                    conn_str = f"DRIVER={{{driver}}};SERVER={server};DATABASE={database};UID={username};PWD={password}"
-                    with pyodbc.connect(conn_str) as conn:
-                        with conn.cursor() as cursor:
-                            cursor.execute(query)
-                            row = cursor.fetchone()
-                            if row:
-                                # Store result in environment for subsequent actions to use
-                                os.environ[target_env_var] = str(row[0])
-                                print(f"DEBUG: 'fetch_db_value' set {target_env_var} = {row[0]}")
-                            else:
-                                print(f"WARNING: 'fetch_db_value' query returned no results: {query}")
-
-                elif action_type == "click":
-                    # Wait for element to be clickable before clicking
-                    wait.until(EC.element_to_be_clickable((by, action["selector_value"]))).click()
-
-                elif action_type == "switch_to_frame":
-                    # Switch context to the iframe identified by the selector
-                    wait.until(EC.frame_to_be_available_and_switch_to_it((by, action["selector_value"])))
-
-                elif action_type == "switch_to_default_content":
-                    # Switch context back to the main page
-                    driver.switch_to.default_content()
-
-                elif action_type == "select_radio_by_value":
-                    # Select a radio button by its group name and value
-                    group = action.get("group_name")
-                    val = action.get("value")
-                    if not group or not val:
-                        raise ValueError("Action 'select_radio_by_value' requires 'group_name' and 'value'.")
-                    xpath = f"//input[@name='{group}' and @value='{val}']"
-                    wait = WebDriverWait(driver, action.get("timeout", 10))
-                    wait.until(EC.element_to_be_clickable((By.XPATH, xpath))).click()
-
-                elif action_type == "navigate":
-                    driver.get(action["url"])
-
-                elif action_type == "wait":
-                    time.sleep(action["duration_seconds"])
-
-                elif action_type == "wait_for_element":
-                    # The element finding logic at the start of the loop already handles this.
-                    # This action type is useful for explicitly waiting for a page transition to complete.
-                    pass
-
-                elif action_type == "if":
-                    if _check_condition(driver, action["condition"]):
-                        _process_actions(driver, action.get("then", []), scraped_data_accumulator)
-                    else:
-                        _process_actions(driver, action.get("else", []), scraped_data_accumulator)
-
-                elif action_type == "while_loop":
-                    max_iterations = action.get("max_iterations", 10) # Safety break
-                    iterations = 0
-                    while iterations < max_iterations and _check_condition(driver, action["condition"]):
-                        _process_actions(driver, action.get("loop_actions", []), scraped_data_accumulator)
-                        iterations += 1
-
-                elif action_type == "extract_and_accumulate":
-                    target_name = action.get("target_import_name")
-                    if not target_name:
-                        raise ValueError("'extract_and_accumulate' action requires a 'target_import_name'.")
-                    
-                    new_df = _extract_data(driver, action)
-                    if not new_df.empty:
-                        if target_name not in scraped_data_accumulator:
-                            scraped_data_accumulator[target_name] = []
-                        scraped_data_accumulator[target_name].append(new_df)
-
+            elif action_type == "if":
+                if _check_condition(driver, action["condition"]):
+                    _process_actions(driver, action.get("then", []), scraped_data_accumulator)
                 else:
-                    raise ValueError(f"Unsupported Selenium action type: {action_type}")
-            
-            except Exception as e:
-                # If it's already a detailed error (from recursive call), just re-raise
-                if "SCRAPER ACTION FAILED" in str(e):
-                    raise e
+                    _process_actions(driver, action.get("else", []), scraped_data_accumulator)
+
+            elif action_type == "while_loop":
+                max_iterations = action.get("max_iterations", 10) # Safety break
+                iterations = 0
+                while iterations < max_iterations and _check_condition(driver, action["condition"]):
+                    _process_actions(driver, action.get("loop_actions", []), scraped_data_accumulator)
+                    iterations += 1
+
+            elif action_type == "extract_and_accumulate":
+                target_name = action.get("target_import_name")
+                if not target_name:
+                    raise ValueError("'extract_and_accumulate' action requires a 'target_import_name'.")
                 
-                # Otherwise, wrap it with details
-                try:
-                    action_json = json.dumps(action, indent=4)
-                except Exception:
-                    action_json = str(action)
-                
-                msg = f"SCRAPER ACTION FAILED at index {i}:\n{action_json}\nError: {str(e)}"
-                raise RuntimeError(msg) from e
+                new_df = _extract_data(driver, action)
+                if not new_df.empty:
+                    if target_name not in scraped_data_accumulator:
+                        scraped_data_accumulator[target_name] = []
+                    scraped_data_accumulator[target_name].append(new_df)
+
+            else:
+                raise ValueError(f"Unsupported Selenium action type: {action_type}")
+
+    config = json.loads(scraper_config_json)
 
     # --- 1. Setup Selenium WebDriver ---
     options = webdriver.ChromeOptions()
-    is_headless = config.get("driver_options", {}).get("headless", False)
-    if is_headless:
+    if config.get("driver_options", {}).get("headless", False):
         options.add_argument("--headless")
-        print("DEBUG: Running Selenium in HEADLESS mode.")
-    else:
-        print("DEBUG: Running Selenium in VISIBLE mode.")
-    
-    # NEW: Configure the browser's default download directory
-    driver_options = config.get("driver_options", {})
-    if "download_directory" in driver_options:
-        prefs = {"download.default_directory": driver_options["download_directory"]}
-        options.add_experimental_option("prefs", prefs)
-
     options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1920,1080")
 
-    def _get_driver_path_safe():
-        """Helper to ensure we get a valid executable path from webdriver-manager."""
-        path = ChromeDriverManager().install()
-        # WinError 193 fix: Ensure path ends in .exe
-        if not str(path).lower().endswith(".exe"):
-            # If it points to a directory or non-exe file, look for chromedriver.exe nearby
-            directory = os.path.dirname(path) if os.path.isfile(path) else path
-            potential_exe = os.path.join(directory, "chromedriver.exe")
-            if os.path.exists(potential_exe):
-                return potential_exe
-        return path
-
-    # --- WebDriver Initialization with Cache Clearing Retry ---
-    try:
-        print("DEBUG: Initializing Selenium WebDriver (Attempt 1)...")
-        driver = webdriver.Chrome(service=ChromeService(_get_driver_path_safe()), options=options)
-        print("DEBUG: WebDriver initialized successfully.")
-    except OSError as e:
-        if "[WinError 193]" in str(e):
-            _log_error_to_simple_ui(f"WebDriver Init Failed with WinError 193. Clearing cache and retrying. Error: {e}")
-            print("WARNING: WebDriver initialization failed with WinError 193. This often indicates a corrupt driver cache.")
-            print("WARNING: Clearing webdriver-manager cache and retrying...")
-            
-            # Define the default cache path and remove it
-            cache_path = os.path.join(os.path.expanduser("~"), ".wdm")
-            if os.path.exists(cache_path):
-                try:
-                    shutil.rmtree(cache_path)
-                    print(f"INFO: Successfully removed cache directory: {cache_path}")
-                except Exception as remove_err:
-                    _log_error_to_simple_ui(f"Failed to clear cache at {cache_path}. Error: {remove_err}")
-                    print(f"ERROR: Could not remove cache directory: {cache_path}. Please remove it manually. Error: {remove_err}")
-                    # Re-raise the original error if we can't even clear the cache
-                    raise e
-
-            # Retry initialization
-            try:
-                print("DEBUG: Initializing Selenium WebDriver (Attempt 2)...")
-                driver = webdriver.Chrome(service=ChromeService(_get_driver_path_safe()), options=options)
-                print("DEBUG: WebDriver initialized successfully on second attempt.")
-            except Exception as e2:
-                _log_error_to_simple_ui(f"WebDriver Init Failed on second attempt: {e2}\n{traceback.format_exc()}")
-                raise RuntimeError(f"Failed to initialize Selenium WebDriver after clearing cache. Error: {e2}")
-        else:
-            # It's a different OSError, so just log and raise it
-            _log_error_to_simple_ui(f"WebDriver Init Failed: {e}\n{traceback.format_exc()}")
-            raise RuntimeError(f"Failed to initialize Selenium WebDriver. Ensure Google Chrome is installed. Error: {e}")
-    except Exception as e:
-        # Catch any other non-OSError exceptions on the first try
-        _log_error_to_simple_ui(f"WebDriver Init Failed: {e}\n{traceback.format_exc()}")
-        raise RuntimeError(f"Failed to initialize Selenium WebDriver. Ensure Google Chrome is installed. Error: {e}")
+    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=options)
 
     scraped_data = {}
     scraped_data_accumulator = {} # For multi-page results
     try:
-        # --- Session Management: Restore ---
-        session_config = config.get("session_strategy")
-        skipped_login = False
+        # --- 2. Navigate to Login URL ---
+        driver.get(config["login_url"])
 
-        if session_config and session_config.get("type") == "local_file":
-            cookie_path = session_config.get("path")
-            if cookie_path and os.path.exists(cookie_path):
-                print(f"DEBUG: Attempting to restore session from {cookie_path}")
-                try:
-                    # Navigate to domain to allow setting cookies
-                    driver.get(config["login_url"])
-                    with open(cookie_path, "rb") as f:
-                        cookies = pickle.load(f)
-                    for cookie in cookies:
-                        try:
-                            driver.add_cookie(cookie)
-                        except Exception:
-                            pass # Ignore domain mismatch errors
-                    driver.refresh()
-                    
-                    # Validate session
-                    validation = session_config.get("validation")
-                    if validation:
-                        if _check_condition(driver, validation):
-                            print("DEBUG: Session validation successful. Skipping login actions.")
-                            skipped_login = True
-                        else:
-                            print("DEBUG: Session validation failed. Proceeding with login.")
-                    else:
-                        print("DEBUG: No session validation configured. Assuming session is valid.")
-                        skipped_login = True
-                except Exception as e:
-                    print(f"WARNING: Failed to restore session: {e}")
-
-        if not skipped_login:
-            # --- 2. Navigate to Login URL ---
-            driver.get(config["login_url"])
-
-            # --- 3. Execute Actions (now using the recursive processor) ---
-            _process_actions(driver, config.get("actions", []), scraped_data_accumulator)
-            
-            # --- Session Management: Save ---
-            if session_config and session_config.get("type") == "local_file":
-                cookie_path = session_config.get("path")
-                if cookie_path:
-                    try:
-                        os.makedirs(os.path.dirname(cookie_path), exist_ok=True)
-                        with open(cookie_path, "wb") as f:
-                            pickle.dump(driver.get_cookies(), f)
-                        print(f"DEBUG: Session cookies saved to {cookie_path}")
-                    except Exception as e:
-                        print(f"WARNING: Failed to save session: {e}")
+        # --- 3. Execute Actions (now using the recursive processor) ---
+        _process_actions(driver, config.get("actions", []), scraped_data_accumulator)
 
         # --- 4. Data Extraction ---
         # This now iterates over a list of extraction targets
@@ -464,28 +158,9 @@ def generic_selenium_scraper(scraper_config_json: str) -> dict[str, pd.DataFrame
             target_name = extraction_target.get("target_import_name")
             if not target_name:
                 raise ValueError("Each item in 'data_extraction' must have a 'target_import_name'.")
-            
-            # Execute specific actions for this extraction (e.g. navigation, clicking tabs)
-            if "actions" in extraction_target:
-                _process_actions(driver, extraction_target["actions"], scraped_data_accumulator)
-
             df = _extract_data(driver, extraction_target)
             if not df.empty:
-                # NEW: Save the extracted data to a file if 'output_file' is specified
-                if "output_file" in extraction_target:
-                    output_path = extraction_target["output_file"]
-                    # Ensure directory exists
-                    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-                    if output_path.lower().endswith('.xlsx'):
-                        df.to_excel(output_path, index=False)
-                    else:
-                        df.to_csv(output_path, index=False)
                 scraped_data[target_name] = df
-
-    except Exception as e:
-        import_name = config.get("import_name", "Unknown_Import") if 'config' in locals() else "Unknown"
-        _log_error_to_simple_ui(f"Scraping Runtime Error for '{import_name}':\n{e}\n\nStack Trace:\n{traceback.format_exc()}")
-        raise e
 
     finally:
         # --- 5. Cleanup ---
@@ -511,19 +186,11 @@ def generic_sftp_downloader(scraper_config_json: str) -> pd.DataFrame:
         A pandas DataFrame containing the data from the downloaded file.
     """
     # --- Lazy Import SFTP and related libraries ---
-    try:
-        import pysftp
-    except ImportError:
-        raise ImportError("The 'pysftp' library is required for SFTP downloads. Please install it via 'pip install pysftp'.")
-
-    from .parsers import parser_factory # Use the existing parser factory
+    import pysftp
+    from .fast_data_loader import load_data_high_performance
     import fnmatch
 
-    try:
-        config = json.loads(scraper_config_json)
-    except json.JSONDecodeError as e:
-        raise ValueError(f"Invalid JSON in scraper_config: {e}")
-
+    config = json.loads(scraper_config_json)
     sftp_config = config.get("sftp_details")
     parse_config = config.get("parse_details")
 
@@ -542,13 +209,7 @@ def generic_sftp_downloader(scraper_config_json: str) -> pd.DataFrame:
     # --- Production-Ready Host Key Handling ---
     # For development, you might disable host key checking.
     # For production, you should ALWAYS verify the host key.
-    try:
-        cnopts = pysftp.CnOpts()
-    except Exception:
-        # Fallback if known_hosts file is missing (common on Windows dev machines)
-        cnopts = pysftp.CnOpts(knownhosts=None)
-        cnopts.hostkeys = None
-
+    cnopts = pysftp.CnOpts()
     if os.getenv("APP_ENV", "development").lower() == "production":
         # In production, load known host keys to prevent man-in-the-middle attacks.
         cnopts.hostkeys.load(os.path.expanduser("~/.ssh/known_hosts"))
@@ -569,38 +230,34 @@ def generic_sftp_downloader(scraper_config_json: str) -> pd.DataFrame:
     # Create a temporary directory to download the file into
     with tempfile.TemporaryDirectory() as temp_dir:
         print(f"Connecting to SFTP server at {hostname}...")
-        try:
-            with pysftp.Connection(**sftp_params) as sftp:
-                remote_dir = sftp_config["remote_path"]
-                file_pattern = sftp_config.get("file_pattern", "*") # Default to all files if no pattern
+        with pysftp.Connection(**sftp_params) as sftp:
+            remote_dir = sftp_config["remote_path"]
+            file_pattern = sftp_config.get("file_pattern", "*") # Default to all files if no pattern
 
-                print(f"Listing files in remote directory '{remote_dir}' matching pattern '{file_pattern}'...")
+            print(f"Listing files in remote directory '{remote_dir}' matching pattern '{file_pattern}'...")
+            
+            # List files and filter by pattern
+            remote_files = sftp.listdir(remote_dir)
+            matching_files = [f for f in remote_files if fnmatch.fnmatch(f, file_pattern)]
+
+            if not matching_files:
+                print("No matching files found on SFTP server. Returning empty DataFrame.")
+                return pd.DataFrame()
+
+            print(f"Found {len(matching_files)} matching files to download.")
+
+            # Download and parse each matching file
+            for filename in matching_files:
+                remote_filepath = f"{remote_dir}/{filename}"
+                local_filepath = os.path.join(temp_dir, filename)
                 
-                # List files and filter by pattern
-                remote_files = sftp.listdir(remote_dir)
-                matching_files = [f for f in remote_files if fnmatch.fnmatch(f, file_pattern)]
+                print(f"Downloading '{remote_filepath}' to '{local_filepath}'...")
+                sftp.get(remote_filepath, local_filepath)
 
-                if not matching_files:
-                    print("No matching files found on SFTP server. Returning empty DataFrame.")
-                    return pd.DataFrame()
-
-                print(f"Found {len(matching_files)} matching files to download.")
-
-                # Download and parse each matching file
-                for filename in matching_files:
-                    remote_filepath = f"{remote_dir}/{filename}"
-                    local_filepath = os.path.join(temp_dir, filename)
-                    
-                    print(f"Downloading '{remote_filepath}' to '{local_filepath}'...")
-                    sftp.get(remote_filepath, local_filepath)
-
-                    # Use the existing parser factory to parse the downloaded file
-                    parser = parser_factory.get_parser(parse_config["file_type"])
-                    df_single = parser.parse(local_filepath)
-                    all_dfs.append(df_single)
-                    print(f"Successfully parsed {len(df_single)} rows from '{filename}'.")
-        except Exception as e:
-            raise RuntimeError(f"SFTP Operation Failed: {e}") from e
+                # Use the high-performance loader to parse the downloaded file
+                df_single = load_data_high_performance(local_filepath)
+                all_dfs.append(df_single)
+                print(f"Successfully parsed {len(df_single)} rows from '{filename}'.")
 
     # Concatenate all DataFrames into one
     if not all_dfs:
