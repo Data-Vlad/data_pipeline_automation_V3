@@ -1,3 +1,24 @@
+### TABLE OF CONTENTS ###
+
+1. Initial Setup
+2. Daily Workflow: Push (Save & Upload)
+3. Force Pull (Overwrite Local with Server)
+4. Advanced: Push to Multiple Repositories
+5. How to Remove from Source Control
+6. Troubleshooting
+
+
+
+### COMMANDS###
+
+git remote -v:(checks if your project is living on the internet and its permissions)
+git pull: Grabs changes from the remote and immediately merges them into your local branch.
+git push: Sends your committed changes to the remote repository.
+git fetch: The "safe" version of pull. It downloads the data from the remote but doesn't change your local files. It just lets you see what others have done.
+git remote add <name> <url>: Connects your local folder to a brand new online repository.
+
+
+-----------------------------------------------------------------
 ### STEP 1: INITIAL SETUP (DO THIS FIRST) ###
 
 Create a file named .gitignore in your project folder to prevent sensitive files (like passwords) from being uploaded.
@@ -29,32 +50,6 @@ backups/
 **** inside the .gitignore file
 
 -----------------------------------------------------------------
-### EMERGENCY FIX: COMPLETE GIT RESET (NUCLEAR OPTION) ###
-
-Use this if you are stuck with merge errors and want to "escape" them and reconnect your local code to the repository.
-
-1. Close Visual Studio Code.
-2. Open your project folder in File Explorer.
-3. Enable "Hidden items" (View -> Show -> Hidden items).
-4. Delete the hidden folder named '.git'.
-5. Open Visual Studio Code.
-6. Open a Terminal (Ctrl + ~) and run these commands in order:
-   git init
-   git branch -M main
-   git remote add origin https://github.com/Data-Vlad/data_pipeline_automation.git
-   git add .
-   git commit -m "Emergency reset"
-   git push -f origin main
-
-   (Note: Replace the URL with your actual repository link. The -f flag forces the server to accept your local version).
-
-   NOTE: Difference between "Commit" and "Commit & Push"
-   - Commit: Saves a snapshot of your changes to your LOCAL computer only. The server (GitHub) does not see them yet.
-   - Commit & Push: Saves the snapshot locally AND uploads it to the server immediately.
-   
-   If you clicked "Commit" but not "Push", your work is safe but not online. You simply need to run: git push origin main
-
------------------------------------------------------------------
 ### DAILY WORKFLOW: SAVE & UPLOAD (PUSH) ###
 
 Step 1: Check status (See what changed)
@@ -71,32 +66,13 @@ Step 4: Push to GitHub (Upload to server)
    (Note: If your branch is named 'master', use: git push origin master)
 
 ----------------------------------------------------------------
-### DAILY WORKFLOW: GET UPDATES (PULL) ###
+### FORCE PULL (OVERWRITE LOCAL WITH SERVER) ###
 
-Option 1: Standard Pull (Safe)
-   Use this to merge the latest updates from the team into your work.
-   git pull origin main
+Use this to completely discard your local changes and make your project an exact copy of what is on the server.
+WARNING: This is destructive and will delete any unsaved local work.
 
-Option 2: Force Overwrite (Destructive)
-   Use this ONLY if you want to delete your local work and match the server exactly.
    git fetch origin
    git reset --hard origin/main
-
------------------------------------------------------------------
-### TROUBLESHOOTING ###
-
-Error: ! [rejected] main -> main (fetch first)
-   Cause: The server has changes you don't have.
-   Fix: Run 'git pull origin main' first.
-
-Check your connection:
-   git remote -v
-
-Add the link if missing:
-   git remote add origin https://github.com/YourUsername/YourRepo.git
-
-Remove a remote link (if you added the wrong one):
-   git remote remove origin
 
 -----------------------------------------------------------------
 ### ADVANCED: PUSH TO MULTIPLE REPOSITORIES ###
@@ -126,3 +102,95 @@ To stop tracking a project in VS Code (remove the "U", "M" badges and empty the 
 3. Enable "Hidden items" (View -> Show -> Hidden items).
 4. Delete the hidden folder named '.git'.
 5. Reopen VS Code. The project is no longer a Git repository.
+
+
+-----------------------------------------------------------------
+### TROUBLESHOOTING###
+
+1. Fixing this error: error: failed to push some refs to 'https://github.com/Data-Vlad/data_pipeline_automation.git'
+   A. cd /d "..."
+   Goal: This moves your terminal into the specific folder where the code lives.
+   Success looks like: The prompt line changes to show your folder path.
+   B. git pull origin main --rebase --allow-unrelated-histories
+   Goal: This forces Git to download the files from GitHub (the "origin") and merge them with your local "main" branch, even if they have completely different histories.
+   Success looks like: A list of files being "unpacked" and a message saying Successfully rebased and updated.
+   C. git push origin main
+   Goal: Now that your computer is in sync with GitHub, this sends your local work up to the cloud.
+   Success looks like: Total 0 (delta 0), reused 0 (delta 0) followed by To https://github.com/...
+
+
+2. Fixing any merging issues:
+
+A. The "Emergency Brake"
+Run these to stop any "frozen" processes.
+git rebase --abort
+git merge --abort
+
+B. The "Safety Save"
+Run these to save your current work locally before trying to sync.
+git add .
+git commit -m "Safety save before sync"
+
+C. The "Smart Sync"
+Run this to pull from GitHub while automatically choosing your files if there is a conflict.
+git pull origin main --rebase -X ours
+
+D. The Final Push
+Run this to send your clean, updated work to GitHub.
+git push origin main
+
+How to run them all at once
+If you want to save time and fix everything in one go, you can copy and paste this entire line into your command prompt:
+
+git rebase --abort; git merge --abort; git add .; git commit -m "Safety save"; git pull origin main --rebase -X ours; git push origin main
+
+
+3. Moving from the incorrect branch to correct branch (main our correct, master our incorrect)
+   A. git branch -m master main
+   B. git checkout main
+   C. git branch
+
+
+4. GIT REMOTE & INDEX Recovery errors:
+   Use these commands if you see any of the following errors:
+   fatal: fetch-pack: invalid index-pack output (Usually caused by large files or a dropped internet connection).
+   fatal: 'origin' does not appear to be a git repository (The link to GitHub is broken or missing).
+   fatal: Could not read from remote repository.
+
+    Step 1: The Connection Test
+    Command:
+    ping github.com
+    What it resolves: Confirms if your computer can "talk" to the internet and GitHub's servers.
+    Result: If you get "Request timed out," the issue is your Wi-Fi or Firewall, not Git.
+
+    Step 2: The Remote Audit
+    Command:
+    git remote -v
+    What it resolves: Shows you the "Origin" (the cloud address).
+    Result: If this returns a blank line, Git has "forgotten" where your GitHub repo is. If it shows an old or wrong URL, the sync will fail.
+    
+    Step 3:
+    Test the Git Health (Is the local repo corrupted?)
+    Command:Since you got an index-pack error, some internal files might be half-written.
+    git fsck
+    What to look for: If you see "error" or "corrupt," we need to clean the cache.
+
+    Step 4: The Corruption Clean-up
+    Command:
+    git gc --prune=now
+    What it resolves: Fixes the invalid index-pack error.
+    How it works: Git "Garbage Collection" (gc) scans for half-finished or corrupted files created during a failed download and deletes them so you can start fresh.
+
+    Step 5: The Re-Linking (Repair)
+    Command:
+    git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git
+    What it resolves: Re-establishes the bridge between your computer and GitHub.
+    Note: If it says "remote origin already exists," use git remote set-url origin [URL] instead to update the existing link.
+
+   Step 6: The Handshake Test
+   Command:
+   git fetch origin
+   What it resolves: Verifies everything is fixed.
+   Result: If this runs without an error, your automated script is safe to start again.
+   Summary of Resolution
+   By running these, you are clearing the "trash" from your local database (gc), verifying your network (ping), and pointing Git back to the correct cloud storage (remote add).
