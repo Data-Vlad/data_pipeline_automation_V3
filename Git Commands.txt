@@ -1,0 +1,92 @@
+### TABLE OF CONTENTS ###
+
+1. Initial Setup
+2. Daily Workflow: Push (Save & Upload)
+3. Force Pull (Overwrite Local with Server)
+4. Advanced: Push to Multiple Repositories
+5. How to Remove from Source Control
+
+-----------------------------------------------------------------
+### STEP 1: INITIAL SETUP (DO THIS FIRST) ###
+
+Create a file named .gitignore in your project folder to prevent sensitive files (like passwords) from being uploaded.
+Common files to list in .gitignore:
+
+**** inside the .gitignore file
+# Environment Variables (Secrets)
+.env
+
+# Python
+__pycache__/
+*.pyc
+venv/
+*.egg-info/
+
+# Logs
+*.log
+launcher-error.log
+simple_ui.log
+
+# Dagster & Project Data
+dagster_home/
+generated_sql/
+backups/
+
+# IDE settings
+.vscode/
+.idea/
+**** inside the .gitignore file
+
+-----------------------------------------------------------------
+### DAILY WORKFLOW: SAVE & UPLOAD (PUSH) ###
+
+Step 1: Check status (See what changed)
+   git status
+
+Step 2: Stage changes (Prepare files to be saved)
+   git add .
+
+Step 3: Commit changes (Save a snapshot)
+   git commit -m "Describe your changes here"
+
+Step 4: Push to GitHub (Upload to server)
+   git push origin main
+   (Note: If your branch is named 'master', use: git push origin master)
+
+----------------------------------------------------------------
+### FORCE PULL (OVERWRITE LOCAL WITH SERVER) ###
+
+Use this to completely discard your local changes and make your project an exact copy of what is on the server.
+WARNING: This is destructive and will delete any unsaved local work.
+
+   git fetch origin
+   git reset --hard origin/main
+
+-----------------------------------------------------------------
+### ADVANCED: PUSH TO MULTIPLE REPOSITORIES ###
+
+You can configure a single remote (like 'origin') to push code to multiple places (e.g., GitHub and a backup server) simultaneously.
+
+1. Add your PRIMARY repository URL as a push target:
+   git remote set-url --add --push origin https://github.com/YourUsername/PrimaryRepo.git
+
+2. Add your SECONDARY repository URL as a push target:
+   git remote set-url --add --push origin https://github.com/YourUsername/BackupRepo.git
+
+3. Verify the configuration:
+   git remote -v
+   (You should see multiple lines for 'origin' marked as '(push)')
+
+4. Push:
+   git push origin main
+
+-----------------------------------------------------------------
+### HOW TO REMOVE FROM SOURCE CONTROL (VS CODE) ###
+
+To stop tracking a project in VS Code (remove the "U", "M" badges and empty the Source Control tab):
+
+1. Close Visual Studio Code.
+2. Open the project folder in your computer's file explorer.
+3. Enable "Hidden items" (View -> Show -> Hidden items).
+4. Delete the hidden folder named '.git'.
+5. Reopen VS Code. The project is no longer a Git repository.

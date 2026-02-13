@@ -1,0 +1,309 @@
+======================================================================
+  Effective Debugging for Batch (.bat) and Python (.py) Scripts
+======================================================================
+
+This guide provides a prioritized, step-by-step process for debugging
+applications that use a Windows Batch (`.bat`) file to launch Python (`.py`)
+scripts. By following these techniques, you can quickly isolate and solve
+even the most complex problems.
+
+----------------------------------------------------------------------
+  The General Debugging Workflow
+----------------------------------------------------------------------
+
+The key to effective debugging is to determine whether the error is in the
+**launcher** (`.bat` script) or the **application** (`.py` script).
+
+1.  **Observe the Failure.**
+    *   **Does the black console window show an error and close instantly?**
+        **Or, does it show a large "FATAL ERROR" message and pause?**
+        ```text
+         ========================================================================
+                                       FATAL ERROR
+         ========================================================================
+
+         The .env file is missing. This file is required.
+        ```
+        This points to a **Batch Script Error**. The launcher (`.bat`) failed.
+        > **Start with the techniques in the "Debugging Batch (.bat) Scripts" section.**
+
+    *   **Does the launcher script seem to finish, but the application doesn't work correctly or shows an error in its own window/log?**
+        For example, does the `simple_ui.log` file contain a `CRITICAL` error like this?
+        ```text
+        CRITICAL - --- Application Initialization FAILED ---
+        Traceback (most recent call last):
+          ...
+        ValueError: Database username was not provided by the launcher.
+        ```
+        This points to a **Python Application Error**. The launcher worked, but the Python script (`.py`) failed.
+        > **Start with the techniques in the "Debugging Python (.py) Scripts" section.**
+
+2.  **Check the Logs.**
+    *   Always check `Launch Data Importer.log` (for batch errors) and `simple_ui.log` (for Python errors). A detailed error message is the fastest path to a solution.
+
+3.  **Isolate and Fix.**
+    *   Use the techniques below to pinpoint the exact line of code or
+      configuration value that is causing the problem.
+
+----------------------------------------------------------------------
+  Debugging Batch (.bat) Scripts
+----------------------------------------------------------------------
+
+### 1. Method: Variable Inspector
+*   **Reason for use:** To see the exact value of a variable (e.g., a file path or setting) at a specific point in the script.
+*   **Debugging Code:**
+    ```bat
+    :: --- Existing Code ---
+    endlocal & set "DB_SERVER=%DB_SERVER%" & set "DB_DATABASE=%DB_DATABASE%"
+
+    :: --- ADD FOR DEBUGGING ---
+    echo [DEBUG] The DB_SERVER variable is: "%DB_SERVER%"
+    pause
+
+    :: --- Existing Code ---
+    if not defined DB_SERVER call :handle_error "DB_SERVER is not defined..."
+    ```
+
+### 2. Method: Log Marker
+*   **Reason for use:** To find out which part of a long script is failing, especially if it closes silently.
+*   **Debugging Code:**
+    ```bat
+    :: --- ADD FOR DEBUGGING ---
+    echo [DEBUG] MARKER 1: About to call get_credentials.py >> "%MASTER_LOG%"
+
+    :: --- Existing Code ---
+    for /f "tokens=1,* delims==" %%a in ('""%PYTHON_EXE%" "%GET_CREDS_SCRIPT%"..."') do (
+        set "%%a=%%b"
+    )
+
+    :: --- ADD FOR DEBUGGING ---
+    echo [DEBUG] MARKER 2: Finished calling get_credentials.py >> "%MASTER_LOG%"
+    ```
+
+### 3. Method: Pause Command
+*   **Reason for use:** To prevent the console window from closing automatically, so you can read error messages printed to the screen.
+*   **Debugging Code:**
+    ```bat
+    :: --- Existing Code ---
+    python my_script.py
+    echo Process finished.
+
+    :: --- ADD AT THE END FOR DEBUGGING ---
+    pause
+    ```
+
+### 4. Method: Forcing a Fatal Error
+*   **Reason for use:** To intentionally stop the script with a clear error message when a certain condition is met during debugging.
+*   **Debugging Code:**
+    ```bat
+    :: --- Existing Code ---
+    mkdir "%SOME_IMPORTANT_FOLDER%"
+
+    :: --- ADD FOR DEBUGGING ---
+    if not exist "%SOME_IMPORTANT_FOLDER%\" (
+        call :handle_error "DEBUG CHECK FAILED: The folder '%SOME_IMPORTANT_FOLDER%' was not created."
+    )
+
+    :: --- Existing Code ---
+    :: ... script continues ...
+    ```
+
+
+
+----------------------------------------------------------------------
+  Debugging Python (.py) Scripts
+----------------------------------------------------------------------
+
+### 1. Method: Isolation Method (Always Start Here)
+*   **Reason for use:** To run a Python script by itself, away from the batch launcher, for clean error output.
+*   **Debugging Code:**
+    ```shell
+    :: 1. Navigate to your project folder
+    cd C:\Users\Staff\Dropbox\Projects\Work\data_pipeline_automation
+
+    :: 2. Activate the virtual environment
+    venv\Scripts\activate.bat
+
+    :: 3. Run the script directly
+    :: Example for a script with arguments (get_credentials.py)
+    (venv) > python get_credentials.py --dotenv-path .env --debug
+
+    :: Example for a script with environment variables (simple_ui.py)
+    (venv) > set DB_USERNAME=my_user
+    (venv) > set DB_PASSWORD=my_password
+    (venv) > set DB_SERVER=my_server
+    (venv) > python simple_ui.py
+    ```
+
+### 2. Method: Variable Inspector
+*   **Reason for use:** To see the exact value of a variable inside your Python code.
+*   **Debugging Code:**
+    ```python
+    # In simple_ui.py, inside _get_db_connection_details()
+    # --- Existing Code ---
+    username = os.getenv("DB_USERNAME", "").strip()
+    password = os.getenv("DB_PASSWORD", "").strip()
+
+    # --- ADD FOR DEBUGGING ---
+    print(f"DEBUG: Received username from environment: '{username}'")
+    print(f"DEBUG: Received password from environment: '{'******' if password else '<EMPTY>'}'")
+    ```
+
+### 3. Method: Attribute Inspector (for API Objects)
+*   **Reason for use:** To discover the available properties and methods of a complex object, especially when working with external libraries or APIs where the object's structure isn't immediately obvious. This is useful when you get errors like `AttributeError: 'SomeObject' has no attribute 'some_method'`.
+*   **Step 1: Get the library version.**
+    Knowing the library version is crucial, as methods can change between versions. Use `pip show` in the activated virtual environment to find the exact version you are working with.
+    ```shell
+    :: 1. Activate the virtual environment (see "Isolation Method" above)
+    (venv) > pip show dagster
+
+    :: Example Output:
+    :: Name: dagster
+    :: Version: 1.5.10
+    :: Summary: A data orchestrator for machine learning, analytics, and ETL.
+    :: ...
+    ```
+
+*   **Step 2: Inspect the object in code.**
+    Once you know the version, you can inspect the object's attributes directly in your code to find the correct method or property name.
+*   **Debugging Code Snippet:**
+    ```python
+    # In simple_ui.py, inside run_imports()
+    # --- Existing Code ---
+    try:
+        # ... code that gets a sensor object from the Dagster API ...
+        target_sensor_snapshot = next(
+            (snap for snap in target_repository_object.sensors if snap.name == sensor_name),
+            None,
+        )
+
+        # --- ADD FOR DEBUGGING ---
+        # If you are unsure what methods are on an object (e.g., 'get_origin' vs 'get_external_origin'),
+        # use dir() to list all its attributes and find the correct one.
+        logger.error(f"DEBUG: SensorSnap attributes: {dir(target_sensor_snapshot)}")
+
+        # --- Existing Code ---
+        sensor_origin = target_sensor_snapshot.get_external_origin()
+    ```
+
+### 3. Method: Log Marker
+*   **Reason for use:** To find which function or line is causing a crash inside a complex script.
+*   **Debugging Code:**
+    ```python
+    # In simple_ui.py, inside _initialize_app_thread()
+    # --- Existing Code ---
+    try:
+        # --- ADD DEBUG MARKERS LIKE THESE ---
+        logger.info("--- DEBUG: Starting Application Initialization ---")
+        logger.info("--- DEBUG: Step 1/2: Retrieving DB details... ---")
+        db_connection_details = _get_db_connection_details()
+        logger.info("--- DEBUG: Step 2/2: Testing DB connection... ---")
+        _test_db_connection(db_connection_details)
+        logger.info("--- DEBUG: Initialization successful ---")
+        # --- End of added markers ---
+    except Exception as e:
+        # ...
+    ```
+
+
+
+
+
+
+
+
+
+
+### 5. Method: Traceback Analyzer (Advanced)
+This is an excellent idea. Formalizing these steps into a clear manual will ensure that you and your team can quickly diagnose and permanently fix any import issue arising from Dagster (or other library) version changes in the future.
+
+Here is the complete manual, outlining the **Three-Tiered Dynamic Resolution System** and the **Self-Healing Persistence** mechanism.
+
+-----
+
+## 📘 Dagster Dynamic Import Resolver Manual
+
+This guide documents the behavior of the **Three-Tiered Dynamic Resolution System** implemented in `dependency_resolver.py` to automatically resolve `ImportError` and `ModuleNotFoundError` issues caused by internal library refactoring.
+
+### I. System Architecture
+
+The resolver attempts to locate a missing class (`ExternalSensorOrigin`) using a three-tiered approach, falling back to the next tier only if the previous one fails.
+
+| Tier | Method | Speed | Reliability |
+| :--- | :--- | :--- | :--- |
+| **Tier 1** | **Predictive Fix** (Reads `dagster_version_fixes.json`) | Fastest ($\approx$ 0.1s) | High (Guaranteed if path is known) |
+| **Tier 2** | **Simple Guessing** (Infers sibling modules) | Fast ($\approx$ 1s) | Medium (Covers common moves) |
+| **Tier 3** | **Recursive File Scan** (Reads source files on disk) | Slow ($\approx$ 10-30s) | Guaranteed (If the class exists) |
+
+-----
+
+### II. The Self-Healing Mechanism (The `dagster_version_fixes.json` File)
+
+The system uses the file **`dagster_version_fixes.json`** for permanent, self-healing persistence.
+
+  * **Function:** It stores the correct, working module paths for specific classes (`ExternalSensorOrigin`) linked to the Dagster version.
+  * **Creation:** The file is **automatically created and updated** if Tier 2 or Tier 3 successfully finds a path.
+  * **Loading:** Tier 1 loads this file at startup, prioritizing its contents for instantaneous fixes.
+
+-----
+
+### III. Diagnosis and Intervention Protocol
+
+If the system encounters an issue it cannot resolve, it will always fall back to the final, critical log message, which requires your immediate intervention.
+
+#### Step 1: Analyze the Resolver Log
+
+When a `Critical: ExternalSensorOrigin class could not be automatically located.` error occurs, inspect the server logs immediately before the error.
+
+| Scenario | Tier 3 Status in Log | Action Required |
+| :--- | :--- | :--- |
+| **Normal Failure** | Logs show T3 scan started and failed to find the class. | Proceed to **Step 2 (The Fatal Prompt)**. |
+| **Unexpected Crash** | Log shows T3 started, then crashes without logging "failure" or "success". | The class name or file permissions may be incorrect. **Perform the manual search immediately** (See **Step 3**). |
+
+#### Step 2: Respond to the Fatal Prompt (The Self-Healing Trigger)
+
+If the log shows the Tier 4 prompt (meaning Tiers 1, 2, and 3 have all failed), this indicates a version of Dagster has a class moved to a location completely unknown to the code.
+
+**Example Fatal Log Prompt:**
+
+```
+2025-12-11 15:23:36 - CRITICAL - FATAL RESOLUTION FAILURE for ExternalSensorOrigin in Dagster v1.12.3
+2025-12-11 15:23:36 - CRITICAL - MANUAL STEP REQUIRED:
+...
+2025-12-11 15:23:36 - CRITICAL - 3. MANUALLY CREATE/EDIT the file 'dagster_version_fixes.json' and add the fix:
+2025-12-11 15:23:36 - CRITICAL -    {"ExternalSensorOrigin": [["Confirmed_1.12.3_Manual", "dagster._core.definitions.MY_MODULE"]]}
+...
+```
+
+#### Step 3: Manual Fix and System Update
+
+1.  **Locate the Path:** Open your IDE (VS Code/PyCharm) and perform a recursive text search within your virtual environment's `site-packages\dagster` directory for the literal text: **`class ExternalSensorOrigin`**.
+
+2.  **Determine the Path:** Note the full Python module path corresponding to the file you found (e.g., `dagster._core.external_api.sensor_origin`).
+
+3.  **Create/Edit Fix File:** Create the file `dagster_version_fixes.json` in the project root (if it doesn't exist) and manually insert the fix using the path you found:
+
+    ```json
+    {
+        "ExternalSensorOrigin": [
+            ["Confirmed_1.12.3_Manual", "dagster._core.external_api.sensor_origin"] 
+            // ^ Replace with the actual path you found
+        ]
+    }
+    ```
+
+4.  **Restart:** Restart your `simple_ui.py` server. The problem will be resolved immediately and permanently for this Dagster version.
+    ```
+
+----------------------------------------------------------------------
+  Appendix: How to Un-pause a "Stuck" Console Window
+----------------------------------------------------------------------
+
+If you accidentally click inside the black console window while a script
+is running, it may pause execution. This is a Windows Command Prompt
+feature called "QuickEdit Mode" or "Insert Mode".
+
+**How to fix it:** Simply press the **Enter** or **Escape** key to resume the script.
+
+To prevent this from happening, you can right-click the title bar of the
+console window, go to `Properties`, and un-check `QuickEdit Mode`.

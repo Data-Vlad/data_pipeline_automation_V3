@@ -1,0 +1,628 @@
+import os
+import argparse
+import sys
+import time
+import threading
+import logging
+from collections import defaultdict
+from typing import List, Optional, Any
+from dotenv import load_dotenv
+from dagster import DagsterInstance, DagsterRunStatus
+from dagster._core.utils import make_new_run_id
+from dagster._core.workspace.context import WorkspaceProcessContext
+from dagster._core.workspace.load_target import WorkspaceFileTarget
+from flask import Flask, g, jsonify, make_response, render_template, request
+from sqlalchemy import create_engine, text
+from sqlalchemy.pool import NullPool
+
+
+# --- Python Path Correction ---
+project_root = os.path.dirname(__file__)
+# Add the project root to the path so that 'elt_project' can be imported as a package.
+if project_root not in sys.path:
+    sys.path.append(project_root)
+
+# --- Flask App Initialization ---
+# This must be done BEFORE any other imports that might touch Dagster,
+# and before the Flask app is created.
+dagster_home_path = os.path.join(os.path.dirname(__file__), 'dagster_home')
+if not os.path.exists(dagster_home_path):
+    os.makedirs(dagster_home_path)
+os.environ['DAGSTER_HOME'] = dagster_home_path
+
+# --- Logging Configuration ---
+# Configure a logger to provide detailed error messages with tracebacks.
+# This will replace all `print(..., file=sys.stderr)` calls for errors.
+class ApiOrErrorFilter(logging.Filter):
+    def filter(self, record):
+        return record.levelno >= logging.ERROR or "API" in record.getMessage()
+
+log_file_path = os.path.join(os.path.dirname(__file__), 'simple_ui.log')
+file_handler = logging.FileHandler(log_file_path, mode='w')
+stream_handler = logging.StreamHandler(sys.stdout)
+
+api_filter = ApiOrErrorFilter()
+file_handler.addFilter(api_filter)
+stream_handler.addFilter(api_filter)
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)-8s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+    handlers=[
+        file_handler,
+        stream_handler
+    ]
+)
+logger = logging.getLogger(__name__)
+
+app = Flask(__name__)
+app.template_folder = 'templates'
+app.secret_key = os.urandom(24)
+
+# Load environment variables from .env file
+load_dotenv()
+
+# --- Command-Line Argument Parsing ---
+parser = argparse.ArgumentParser(description="Data Importer UI")
+parser.add_argument("--server", required=True, help="Database server name")
+parser.add_argument("--database", required=True, help="Database name")
+parser.add_argument("--credential-target", required=True, help="The target name for Windows Credential Manager")
+cli_args = parser.parse_args()
+
+# --- Application State Management ---
+# This class will hold our long-lived objects and track the app's initialization status.
+# This is a more robust, thread-safe pattern than using global variables directly.
+class AppState:
+    def __init__(self):
+        self.db_engine = None
+        self.initialization_status = "PENDING"  # PENDING, SUCCESS, or FAILED
+        self.initialization_error = None
+        self.lock = threading.Lock()
+
+APP_STATE = AppState()
+
+
+def _initialize_app_thread():
+    """
+    Runs the app's initialization logic in a background thread.
+    This prevents a slow or failed connection from blocking the server from starting.
+    Updates the global APP_STATE with the result.
+    """
+    try:
+        # --- Step 1: Retrieve Database Credentials ---
+        # These are set by the launcher script. Using a 'DAGSTER_' prefix is a good convention.
+        username = os.getenv("DAGSTER_DB_USERNAME", "").strip()
+        password = os.getenv("DAGSTER_DB_PASSWORD", "").strip()
+
+        if not username:
+            raise ValueError(
+                "Database username was not provided by the launcher."
+            )
+        if not password:
+            raise ValueError(
+                f"Database password for target '{cli_args.credential_target}' could not be retrieved."
+            )
+
+        # --- Step 2: Test Database Connection ---
+        _test_db_connection(username, password)
+
+        # --- Step 3: Verify Dagster Workspace ---
+        workspace_file_path = os.path.join(dagster_home_path, "workspace.yaml")
+        if not os.path.exists(workspace_file_path):
+            raise FileNotFoundError(
+                f"Dagster workspace file not found at '{workspace_file_path}'. "
+            )
+
+        # --- Success! Mark app as ready. ---
+        with APP_STATE.lock:
+            APP_STATE.initialization_status = "SUCCESS"
+
+    except Exception as e:
+        # --- Failure: Update global state with error info ---
+        # Log the full exception traceback for detailed debugging.
+        logger.critical(
+            "--- Application Initialization FAILED ---",
+            exc_info=True,
+        )
+        # Add a clear resolution block to the logs.
+        logger.critical("-" * 60)
+        logger.critical(f"[RESOLUTION] Startup failed due to: {e}")
+        logger.critical("Please check the traceback above and review the launcher logs ('launcher-error.log') for related errors.")
+        logger.critical("-" * 60)
+        with APP_STATE.lock:
+            APP_STATE.initialization_status = "FAILED"
+            # Provide a more user-friendly error message that includes the resolution steps.
+            APP_STATE.initialization_error = f"Startup failed: {e}"
+
+
+def _test_db_connection(username, password):
+    """Create a temporary engine to test the DB connection, then discard it."""
+    db_driver_raw = os.getenv("DB_DRIVER", "ODBC Driver 17 for SQL Server")
+    driver = db_driver_raw.strip('"').strip('{}').replace(' ', '+')
+    conn_string = (
+        f"mssql+pyodbc://{username}:{password}@{cli_args.server}/{cli_args.database}"
+        f"?driver={driver}&TrustServerCertificate=yes"
+    )
+    # Create a temporary engine with no pooling to test the connection.
+    temp_engine = create_engine(conn_string, poolclass=NullPool, connect_args={"timeout": 10})
+    try:
+        with temp_engine.connect():
+            pass
+    except Exception as e:
+        # This provides a highly specific error message if the connection itself fails.
+        logger.error(
+            f"DB      : Connection test failed for server '{cli_args.server}' and database '{cli_args.database}'.",
+            exc_info=True,
+        )
+        logger.error(
+            "[RESOLUTION] Check: 1) DB server is running. 2) .env server/db names are correct. 3) Network/firewall allows connection. 4) Credentials are correct."
+        )
+        raise e # Re-raise the exception to be caught by the main initializer.
+    finally:
+        # Ensure the temporary engine is disposed of.
+        temp_engine.dispose()
+
+
+def _get_db_engine():
+    """
+    Ensures the SQLAlchemy engine is initialized and returns it.
+    The engine is stored globally in APP_STATE.db_engine.
+    """
+    # This is the key fix: The engine is created on the first request,
+    # ensuring it is created in the correct thread context for the web server.
+    with APP_STATE.lock:
+        if APP_STATE.db_engine is None:
+            password = os.getenv("DAGSTER_DB_PASSWORD", "").strip()
+            username = os.getenv("DAGSTER_DB_USERNAME", "").strip()
+            db_driver_raw = os.getenv("DB_DRIVER", "ODBC Driver 17 for SQL Server")
+            driver = db_driver_raw.strip('"').strip('{}').replace(' ', '+')
+            conn_string = (
+                f"mssql+pyodbc://{username}:{password}@{cli_args.server}/{cli_args.database}"
+                f"?driver={driver}&TrustServerCertificate=yes"
+            )
+            # pool_pre_ping checks connection validity; connect_args prevents hangs on new connections.
+            # A 10-second timeout is a reasonable default.
+            APP_STATE.db_engine = create_engine(conn_string, pool_pre_ping=True, connect_args={"timeout": 10})
+    return APP_STATE.db_engine
+
+
+def _recreate_db_engine():
+    """Disposes of the old engine and creates a new one."""
+    with APP_STATE.lock:
+        if APP_STATE.db_engine:
+            APP_STATE.db_engine.dispose()
+        APP_STATE.db_engine = None  # Force re-initialization on next call
+    return _get_db_engine()
+
+
+def get_db_connection():
+    """
+    Returns a database connection for the current request.
+    The connection is stored in Flask's `g` object and closed automatically
+    at the end of the request.
+    """
+    if 'db_conn' not in g:
+        engine = _get_db_engine()
+        g.db_conn = engine.connect()
+    return g.db_conn
+
+
+@app.teardown_appcontext
+def close_db_connection(exception):
+    """Closes the database connection at the end of the request."""
+    db_conn = g.pop('db_conn', None)
+    if db_conn is not None:
+        # This is very verbose, so we can comment it out unless debugging connection pool issues.
+        # logger.info(f"DB      : Closing connection for request {request.path}")
+        db_conn.close()
+
+
+@app.before_request
+def check_initialization():
+    """
+    Before every request, check if the app is initialized.
+    This middleware protects all endpoints from being accessed before the app is ready.
+    """
+    # Allow access to status/shutdown endpoints regardless of state
+    if request.path in ["/status", "/api/status", "/api/shutdown"]:
+        return
+
+    with APP_STATE.lock:
+        if APP_STATE.initialization_status == "PENDING":
+            return render_template("status.html", auto_refresh=True)
+        if APP_STATE.initialization_status == "FAILED":
+            return render_template("error.html", error_message=APP_STATE.initialization_error), 500
+        # If SUCCESS, proceed to the requested endpoint.
+
+@app.after_request
+def log_response(response):
+    """Log the status code of the response for each request."""
+    return response
+
+
+@app.route("/status")
+def status_page():
+    """Renders the status page."""
+    return render_template("status.html", auto_refresh=True)
+
+
+@app.route("/api/status")
+def api_status():
+    """API endpoint for the frontend to poll the app's initialization status."""
+    with APP_STATE.lock:
+        return jsonify(
+            {"status": APP_STATE.initialization_status, "error": APP_STATE.initialization_error}
+        )
+
+@app.route("/", methods=["GET"])
+def index():
+    """Renders the main UI page."""
+    # The before_request handler ensures this only runs after successful initialization.
+    response = make_response(render_template("index.html"))
+    return response
+
+@app.route("/favicon.ico")
+def favicon():
+    """
+    Handles the browser's request for a favicon.
+    Returns a 204 No Content response to prevent 404 errors in the logs.
+    """
+    return "", 204
+
+@app.route("/api/pipelines")
+def get_pipelines():
+    """
+    API endpoint to fetch all active pipelines and their associated imports from the database.
+    This data is used to populate the main checklist on the UI.
+    """
+    pipelines = []
+    # Use a defaultdict to easily group imports under their parent pipeline.
+    pipeline_groups = defaultdict(lambda: {"imports": [], "monitored_directory": None})
+
+    for attempt in range(2):  # Allow one retry
+        try:
+            conn = get_db_connection()
+            # Query to get all active pipeline configurations.
+            query = text("""
+                SELECT pipeline_name, import_name, monitored_directory
+                FROM elt_pipeline_configs
+                WHERE is_active = 1
+                ORDER BY pipeline_name, import_name
+            """)
+            results = conn.execute(query).fetchall()  # Eagerly fetch all results
+
+            # Group the flat SQL results into a nested structure.
+            for row in results:  # Iterate over the fetched results
+                pipeline_groups[row.pipeline_name]["imports"].append(row.import_name)
+                if row.monitored_directory:
+                    pipeline_groups[row.pipeline_name]["monitored_directory"] = os.path.normpath(
+                        row.monitored_directory.strip()
+                    )
+
+            # Convert the grouped data into a list format for the JSON response.
+            for pipeline_name, data in pipeline_groups.items():
+                pipelines.append({"pipeline_name": pipeline_name, **data})
+            return jsonify(pipelines)
+
+        except Exception as e:
+            if attempt == 0:  # If this was the first attempt
+                _recreate_db_engine()
+                # The loop will now continue to the second attempt
+            else:  # If this was the second attempt
+                logger.error("API     : Failed to fetch pipeline configurations from the database after retrying.", exc_info=True)
+                logger.error(
+                    "[RESOLUTION] This indicates a persistent DB connection problem. Verify the database is running and the 'elt_pipeline_configs' table is accessible."
+                )
+                return jsonify({"error": "An internal error occurred while fetching pipeline data."}), 500
+
+    # This line should not be reachable, but is here as a fallback.
+    return jsonify({"error": "An unexpected error occurred in get_pipelines."}), 500
+
+def _monitor_run_status(run_id, job_name):
+    """
+    Background thread to poll for run status and log it to simple_ui.log.
+    This gives the user visibility into the execution phase.
+    """
+    try:
+        # Create a fresh instance for this thread
+        instance = DagsterInstance.get()
+        last_status = None
+        logs_seen_count = 0
+        
+        # Poll for up to 2 hours
+        for _ in range(7200): 
+            run = instance.get_run_by_id(run_id)
+            if not run:
+                break
+            
+            # --- Status Updates ---
+            current_status = run.status
+            if current_status != last_status:
+                logger.info(f"API     : Run '{run_id}' ({job_name}) status changed to: {current_status.value}")
+                last_status = current_status
+            
+            # --- Log Updates ---
+            # Fetch logs to show progress (Asset materializations, errors, user logs)
+            try:
+                all_logs = instance.all_logs(run_id)
+                if len(all_logs) > logs_seen_count:
+                    new_logs = all_logs[logs_seen_count:]
+                    logs_seen_count = len(all_logs)
+                    
+                    for record in new_logs:
+                        # Ensure the message passes the "API" filter in simple_ui.py
+                        prefix = f"API     : [{job_name}]"
+                        if hasattr(record, 'step_key') and record.step_key:
+                            prefix += f"[{record.step_key}]"
+                        
+                        clean_msg = record.message.replace('\n', ' ') if record.message else ""
+                        
+                        if hasattr(record, 'level') and record.level >= logging.ERROR:
+                            logger.error(f"{prefix} {clean_msg}")
+                        else:
+                            logger.info(f"{prefix} {clean_msg}")
+            except Exception as log_e:
+                # Don't crash the monitor thread if log fetching fails
+                logger.warning(f"API     : Failed to fetch logs for run '{run_id}': {log_e}")
+
+            if run.is_finished:
+                logger.info(f"API     : Run '{run_id}' ({job_name}) finished with final status: {current_status.value}")
+                break
+                
+            time.sleep(2)
+    except Exception as e:
+        logger.error(f"API     : Error monitoring run '{run_id}': {e}")
+
+@app.route("/api/run_imports", methods=["POST"])
+def run_imports():
+    """
+    API endpoint to trigger Dagster job runs for the imports selected by the user.
+    """
+    try:
+        data = request.json
+        selected_imports = data.get("imports", [])
+        if not selected_imports:
+            return jsonify({"error": "No imports selected"}), 400
+
+        logger.info(f"API     : Received request to run {len(selected_imports)} imports: {[item['import_name'] for item in selected_imports]}")
+
+        logger.info("API     : Loading Dagster workspace context...")
+        workspace_file_path = os.path.join(dagster_home_path, "workspace.yaml")
+        instance = DagsterInstance.get()
+        with WorkspaceProcessContext(
+            # Use DagsterInstance.get() which respects the DAGSTER_HOME environment variable.
+            # This creates a non-ephemeral instance that can be used for cross-process
+            # communication, which is required by WorkspaceProcessContext.
+            instance=instance,
+            workspace_load_target=WorkspaceFileTarget(paths=[workspace_file_path]),
+        ) as process_context:
+            logger.info("API     : Workspace context loaded successfully.")
+            request_context = process_context.create_request_context()
+            location_name = "elt_project"
+            code_location = request_context.get_code_location(location_name)
+
+            if not code_location:
+                # This is a critical failure, so we log it as an error and raise an exception.
+                error_msg = f"Could not find Dagster code location '{location_name}'."
+                logger.error(f"API     : {error_msg} [RESOLUTION] Check 'dagster_home/workspace.yaml' for a correct 'module_name' and ensure 'definitions.py' exists. Run 'dagster dev' to debug code loading.")
+                raise RuntimeError(error_msg)
+
+            logger.info(f"API     : Found code location '{location_name}'.")
+            repositories = code_location.get_repositories()
+            if not repositories:
+                raise RuntimeError(f"No repositories found in code location '{location_name}'. Check your definitions file.")
+            
+            # Get the ExternalRepository object (wrapper)
+            external_repo = list(repositories.values())[0]
+            logger.info(f"API     : Using repository '{external_repo.name}' from location '{location_name}'")
+
+            results = []
+
+            for item in selected_imports:
+                import_name = item["import_name"]
+                sensor_name = f"sensor_{import_name}"
+                logger.info(f"API     : Processing import '{import_name}' (Sensor: '{sensor_name}')...")
+
+                # Default result object for this import
+                import_result = {
+                    "import_name": import_name,
+                    "status": "skipped",
+                    "run_id": None,
+                    "error": None
+                }
+
+                try:
+                    if not external_repo.has_sensor(sensor_name):
+                        raise RuntimeError(f"Sensor '{sensor_name}' not found in repository.")
+
+                    external_sensor = external_repo.get_sensor(sensor_name)
+
+                    # 1. Tick the sensor to get RunRequests (this does not launch them automatically)
+                    logger.info(f"API     :  - Ticking sensor '{sensor_name}'...")
+                    tick_result = code_location.get_sensor_execution_data(
+                        instance=instance,
+                        repository_handle=external_repo.handle,
+                        name=sensor_name,
+                        last_tick_completion_time=None,
+                        last_run_key=None,
+                        cursor=None,
+                        log_key=[sensor_name],
+                        last_sensor_start_time=None,
+                    )
+                    
+                    # 2. Process the results and launch the actual runs
+                    run_requests = tick_result.run_requests
+                    logger.info(f"API     :  - Sensor tick complete. Generated {len(run_requests) if run_requests else 0} run requests.")
+
+                    # --- FORCE RUN LOGIC ---
+                    # If the sensor found no "new" files (e.g. timestamp hasn't changed),
+                    # but the user explicitly requested a run via the UI, we FORCE it.
+                    if not run_requests:
+                        logger.info(f"API     :  - Sensor '{sensor_name}' produced no requests. Attempting FORCE RUN.")
+                        
+                        # Try to resolve the job name from the sensor's targets
+                        job_name = None
+                        if external_sensor.targets:
+                            job_name = external_sensor.targets[0].job_name
+                        
+                        if job_name:
+                            logger.info(f"API     :  - Force launching job '{job_name}' with default config.")
+                            # Create a synthetic run request to force the job to run.
+                            # We pass an empty run_config. The Asset logic in factory.py is designed
+                            # to handle this by looking up the latest file in the directory.
+                            class ForceRunRequest:
+                                def __init__(self, job_name):
+                                    self.job_name = job_name
+                                    self.run_config = {}
+                                    self.tags = {"dagster/run_reason": "manual_force_run"}
+                                    self.run_key = None
+                            
+                            run_requests = [ForceRunRequest(job_name)]
+                        else:
+                            import_result["error"] = "No new data & could not resolve job."
+                            results.append(import_result)
+                            continue
+
+                    for run_req in run_requests:
+                        # Resolve the job name (sensor might target a specific job or be dynamic)
+                        job_name = run_req.job_name
+                        if not job_name:
+                            targets = external_sensor.targets
+                            if targets:
+                                job_name = targets[0].job_name
+                        
+                        if not job_name:
+                            continue
+
+                        # Create and submit the run
+                        external_job = external_repo.get_full_job(job_name)
+                        
+                        # Prepare tags, ensuring run_key is preserved if present
+                        run_tags = run_req.tags if run_req.tags else {}
+                        if run_req.run_key:
+                            run_tags["dagster/run_key"] = run_req.run_key
+
+                        logger.info(f"API     :  - Preparing to launch job '{job_name}'...")
+                        logger.info(f"API     :  - Run Config: {run_req.run_config}")
+
+                        # Generate Execution Plan
+                        logger.info(f"API     :  - Generating execution plan for job '{job_name}'...")
+                        execution_plan = code_location.get_execution_plan(
+                            remote_job=external_job,
+                            run_config=run_req.run_config or {},
+                            step_keys_to_execute=None,
+                            known_state=None,
+                            instance=instance,
+                        )
+
+                        run_id = make_new_run_id()
+
+                        logger.info(f"API     :  - Creating run '{run_id}'...")
+                        run = instance.create_run(
+                            job_name=job_name,
+                            run_id=run_id,
+                            run_config=run_req.run_config or {},
+                            resolved_op_selection=None,
+                            step_keys_to_execute=None,
+                            status=DagsterRunStatus.NOT_STARTED,
+                            op_selection=None,
+                            root_run_id=None,
+                            parent_run_id=None,
+                            tags=run_tags,
+                            job_snapshot=external_job.job_snapshot,
+                            execution_plan_snapshot=execution_plan.execution_plan_snapshot,
+                            parent_job_snapshot=external_job.parent_job_snapshot,
+                            remote_job_origin=external_job.get_remote_origin(),
+                            job_code_origin=external_job.get_python_origin(),
+                            asset_selection=None,
+                            asset_check_selection=None,
+                            asset_graph=None
+                        )
+                        logger.info(f"API     :  - Launching run '{run_id}'...")
+                        instance.launch_run(run.run_id, workspace=request_context)
+                        logger.info(f"API     :  - Successfully launched run '{run.run_id}' for job '{job_name}'.")
+                        
+                        # Start background monitoring so logs show progress
+                        logger.info(f"API     :  - Starting background monitor for run '{run.run_id}'...")
+                        threading.Thread(target=_monitor_run_status, args=(run.run_id, job_name), daemon=True).start()
+                        
+                        # Success! Create a specific result entry for this run
+                        success_result = import_result.copy()
+                        success_result["status"] = "launched"
+                        success_result["run_id"] = run.run_id
+                        results.append(success_result)
+
+                except Exception as e:
+                    logger.warning(f"API     :  - An unexpected error occurred while ticking sensor '{sensor_name}'. Skipping.", exc_info=True)
+                    import_result["status"] = "error"
+                    import_result["error"] = str(e)
+                    results.append(import_result)
+
+        return jsonify({
+            "message": f"Processed {len(selected_imports)} imports.",
+            "results": results
+        })
+    except Exception as e:
+        logger.error("API     : A critical failure occurred in the 'run_imports' endpoint.", exc_info=True)
+        logger.error(
+            "[RESOLUTION] This may be a problem with the Dagster instance, 'workspace.yaml', or the gRPC server. Run 'dagster dev' to check for code location loading errors."
+        )
+        return jsonify({"error": "An internal error occurred while ticking sensors."}), 500
+
+@app.route("/api/run_status/<run_id>")
+def get_run_status(run_id):
+    """
+    API endpoint to check the status of a specific Dagster run.
+    """
+    try:
+        instance = DagsterInstance.get()
+        run = instance.get_run_by_id(run_id)
+        
+        if not run:
+            return jsonify({"error": "Run not found"}), 404
+            
+        return jsonify({
+            "run_id": run_id,
+            "status": run.status.value
+        })
+    except Exception as e:
+        logger.error(f"API     : Failed to fetch status for run '{run_id}'.", exc_info=True)
+        return jsonify({"error": str(e)}), 500
+
+@app.route("/api/shutdown", methods=["POST"])
+def shutdown():
+    """
+    API endpoint to shut down the application server.
+    """
+    # For a simple UI application served by Waitress and launched from a script,
+    # a direct exit is the most reliable way to ensure the process terminates
+    # when the user closes the application via the UI button.
+    os._exit(0)
+
+@app.errorhandler(404)
+def not_found_error(error):
+    """Custom 404 error handler to return JSON instead of HTML."""
+    return jsonify({"error": "Not Found", "message": f"The requested URL {request.path} was not found on the server."}), 404
+
+
+@app.errorhandler(500)
+def internal_error(error):
+    """Custom 500 error handler to return JSON instead of HTML."""
+    # This provides a clear, final error message for any unhandled exception.
+    logger.error("--- Unhandled Internal Server Error ---", exc_info=error)
+    logger.error("[RESOLUTION] A generic server error occurred. The traceback above contains the exact cause. Check for DB connection issues, errors in Dagster project code, or workspace configuration problems.")
+    return jsonify({"error": "Internal Server Error", "message": "An unexpected error occurred on the server."}), 500
+
+if __name__ == "__main__":
+    # Use Waitress, a production-ready WSGI server.
+    from waitress import serve
+
+    # Start the initialization process in a separate thread.
+    # This allows the web server to start immediately and serve the status page.
+    init_thread = threading.Thread(target=_initialize_app_thread, daemon=True)
+    init_thread.start()
+
+    # The server starts immediately. The launcher script (`.bat` file) is responsible
+    # for opening the web browser. The user will first see the status page.
+    serve(app, host="0.0.0.0", port=3000)
