@@ -1,0 +1,10 @@
+run_coordinator:
+  module: dagster.core.run_coordinator
+  class: QueuedRunCoordinator
+  config:
+    # This ensures that any job with the 'global_elt_pipeline_lock' tag
+    # is limited to 1 concurrent run at a time.
+    tag_concurrency_limits:
+      - key: "dagster/concurrency_key"
+        value: "global_elt_pipeline_lock"
+        limit: 1
