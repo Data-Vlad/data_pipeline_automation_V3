@@ -1,0 +1,34 @@
+﻿
+# --- OS Metadata ---
+.DS_Store
+Thumbs.db
+desktop.ini
+$RECYCLE.BIN/
+
+# --- Dropbox Specific ---
+# Ignore the "Conflicted Copy" files Dropbox creates
+*conflicted*
+.dropbox
+.dropbox.attr
+
+# --- Python / Data Pipeline (If applicable) ---
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+.env
+
+# --- Editor / IDE ---
+.vscode/
+.idea/
+*.swp
+*.log
+
+# --- Large Data Safety ---
+# Prevents accidental upload of massive datasets (common in pipelines)
+*.csv
+*.json
+*.sqlite
+!example.json

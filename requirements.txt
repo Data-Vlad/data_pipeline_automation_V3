@@ -1,0 +1,17 @@
+# --- Core Dagster Stack (Pinned to latest stable) ---
+dagster==1.12.3
+dagster-webserver==1.12.3
+dagster-pipes==1.12.3
+
+# --- Database Drivers (Replaces dagster-mssql) ---
+pyodbc==5.1.0
+SQLAlchemy==2.0.31
+
+# --- Data & Utilities ---
+pandas==2.2.2
+python-dotenv==1.2.1
+keyring==25.7.0
+
+# --- Web/Server (Compatible versions) ---
+Flask==3.0.3
+waitress==3.0.2
