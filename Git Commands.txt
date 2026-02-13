@@ -5,6 +5,18 @@
 3. Force Pull (Overwrite Local with Server)
 4. Advanced: Push to Multiple Repositories
 5. How to Remove from Source Control
+6. Troubleshooting
+
+
+
+### COMMANDS###
+
+git remote -v:(checks if your project is living on the internet and its permissions)
+git pull: Grabs changes from the remote and immediately merges them into your local branch.
+git push: Sends your committed changes to the remote repository.
+git fetch: The "safe" version of pull. It downloads the data from the remote but doesn't change your local files. It just lets you see what others have done.
+git remote add <name> <url>: Connects your local folder to a brand new online repository.
+
 
 -----------------------------------------------------------------
 ### STEP 1: INITIAL SETUP (DO THIS FIRST) ###
@@ -90,3 +102,50 @@ To stop tracking a project in VS Code (remove the "U", "M" badges and empty the 
 3. Enable "Hidden items" (View -> Show -> Hidden items).
 4. Delete the hidden folder named '.git'.
 5. Reopen VS Code. The project is no longer a Git repository.
+
+
+-----------------------------------------------------------------
+### TROUBLESHOOTING###
+
+1. Fixing this error: error: failed to push some refs to 'https://github.com/Data-Vlad/data_pipeline_automation.git'
+   A. cd /d "..."
+   Goal: This moves your terminal into the specific folder where the code lives.
+   Success looks like: The prompt line changes to show your folder path.
+   B. git pull origin main --rebase --allow-unrelated-histories
+   Goal: This forces Git to download the files from GitHub (the "origin") and merge them with your local "main" branch, even if they have completely different histories.
+   Success looks like: A list of files being "unpacked" and a message saying Successfully rebased and updated.
+   C. git push origin main
+   Goal: Now that your computer is in sync with GitHub, this sends your local work up to the cloud.
+   Success looks like: Total 0 (delta 0), reused 0 (delta 0) followed by To https://github.com/...
+
+
+2. Fixing any merging issues:
+
+A. The "Emergency Brake"
+Run these to stop any "frozen" processes.
+git rebase --abort
+git merge --abort
+
+B. The "Safety Save"
+Run these to save your current work locally before trying to sync.
+git add .
+git commit -m "Safety save before sync"
+
+C. The "Smart Sync"
+Run this to pull from GitHub while automatically choosing your files if there is a conflict.
+git pull origin main --rebase -X ours
+
+D. The Final Push
+Run this to send your clean, updated work to GitHub.
+git push origin main
+
+How to run them all at once
+If you want to save time and fix everything in one go, you can copy and paste this entire line into your command prompt:
+
+git rebase --abort; git merge --abort; git add .; git commit -m "Safety save"; git pull origin main --rebase -X ours; git push origin main
+
+
+3. Moving from the incorrect branch to correct branch (main our correct, master our incorrect)
+   A. git branch -m master main
+   B. git checkout main
+   C. git branch
