@@ -1,5 +1,0 @@
-load_from:
-  - python_module:
-      module_name: "elt_project.elt_project.definitions"
-      location_name: "elt_project"
-      working_directory: "C:/Users/Staff/Dropbox/Projects/Work/data_pipeline_automation/"
